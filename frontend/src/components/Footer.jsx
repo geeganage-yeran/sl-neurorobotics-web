@@ -7,12 +7,11 @@ import { FaYoutube } from "react-icons/fa";
 function Footer() {
   return (
    <>
-    <footer className="bg-gray-900 text-gray-300 px-8 py-10">
+    <footer className="bg-gray-900 text-gray-300 px-8 py-10 mt-3">
         <div className="max-w-7xl mx-auto">
-          <div className="flex justify-between">
+          <div className="flex flex-col justify-between md:flex-row ">
             <div>
               <div className="flex items-center space-x-3">
-                {/* Replace with your logo */}
                 <div>
                   <img src={icon} alt="" className="w-[410px] h-[71px]" />
                 </div>
@@ -23,8 +22,8 @@ function Footer() {
                 Sri Lanka
               </p>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-20">
-              {/* Product Links */}
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:gap-20  mt-2 sm:mt-1">
+            
               <div>
                 <h3 className="text-white text-lg mb-4 font-semibold">
                   Product
@@ -53,7 +52,7 @@ function Footer() {
                 </ul>
               </div>
 
-              {/* Company Links */}
+              
               <div>
                 <h3 className="text-white text-lg mb-4 font-semibold">
                   Company
@@ -82,8 +81,8 @@ function Footer() {
                 </ul>
               </div>
 
-              {/* Follow Icons */}
-              <div>
+           
+              <div className='mt-3 sm:mt-0'>
                 <h3 className="text-white text-lg mb-4 font-semibold">
                   Follow
                 </h3>
