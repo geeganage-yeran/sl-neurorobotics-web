@@ -8,6 +8,7 @@ import { CgMail } from "react-icons/cg";
 import { TbWorld } from "react-icons/tb";
 import React, { useState } from "react";
 import Footer from "../components/Footer";
+import Navigation from "../components/Navigation";
 
 function AboutUs() {
 
@@ -24,7 +25,8 @@ function AboutUs() {
 };
 
   return (
-    <div className="w-full">
+    <div>
+      <Navigation/>
     <div className="h-48 flex justify-center items-center bg-[#051923]">
       <img className="w-4/5 max-w-2xl h-auto" src={pictute01} alt="logo" />
     </div>
