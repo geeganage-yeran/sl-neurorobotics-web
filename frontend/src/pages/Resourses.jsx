@@ -5,6 +5,14 @@ import Footer from '../components/Footer';
 import Navigation from '../components/Navigation';
 
 function Resourses() {
+
+  const handlescroll = () =>{
+    const section = document.getElementById("section-1");
+    if(section){
+      section.scrollIntoView({behavior:"smooth"});
+    }
+  };
+  
   return (
     <div>
         <Navigation/>
@@ -31,14 +39,14 @@ function Resourses() {
         <div className="md:px-12">
              <h1 className='font-semibold text-[#121212] text-[55.64px]'>BrainAcccess HALO Setup Tutorial</h1>
         </div>
-        <div className="md:px-12 pt-5">
+        <div className="md:px-12 pt-5" id="section-1">
              <iframe className='w-full h-[720px]' src="https://www.youtube.com/embed/wVIwf9ZhChs?si=0gLdbCGbJmTGWE7i" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
         </div>
         <div className="md:px-12 flex flex-col md:flex-row py-8">
             <div className='md:w-3/5'>
                 <h1 className='font-semibold text-[#121212] text-[55.64px]'>Specifications</h1>
                 <p className='text-justify text-[22.64px] font-normal text-[#000000] leading-7 mt-3'>here are many variations of passages of Lorem Ipsum available, but the majority have suffered alteration in some form, by injected humour, or randomised words which don't look even slightly believable. If you are going to use a passage of Lorem Ipsum, you need to be sure there isn't anything embarrassing hidden in the middle of text. All the Lorem Ipsum generators on the Internet tend to repeat predefined chunks as necessary, making this the first true generator on the Internet. It uses a dictionary of over 200 Latin words, combined with a handful of model sentence structures, to generate Lorem Ipsum which looks reasonable. The generated Lorem Ipsum is therefore always free from repetition, injected humou</p>
-                 <button className='bg-[#003554] text-[#FFFFFF] font-medium text-[26.64px] px-3 py-1 rounded-md mt-10'>Want to Know more ?</button>
+                 <button className='bg-[#003554] text-[#FFFFFF] font-medium text-[26.64px] px-3 py-1 rounded-md mt-10' onClick={handlescroll}>Want to Know more ?</button>
             </div>
             <div className='md:w-2/5 md:ml-24'>
             <img className="h-auto w-full" src={headeeg2} alt='headeeg'/>
