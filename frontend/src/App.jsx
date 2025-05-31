@@ -3,6 +3,7 @@ import AboutUs from './pages/AboutUs'
 import "./App.css";
 import './index.css'
 import Resourses from './pages/Resourses';
+import Product from './pages/Product';
 
 function App() {
   
@@ -13,7 +14,8 @@ function App() {
         SL Neurorobotics
       </div> */}
       {/* <AboutUs/> */}
-      <Resourses/>
+      {/* <Resourses/> */}
+      <Product/>
     </>
   )
 }
