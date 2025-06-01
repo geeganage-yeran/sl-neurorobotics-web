@@ -7,14 +7,14 @@ import Footer from "../components/Footer";
 function Product() {
   return (
     <div>
-      <div className="md:px-12">
+      <div className="px-4 md:px-12">
         <div className="flex flex-col text-center gap-4">
-          <h1 className="font-semibold text-[#051923] text-7xl">Shop</h1>
+          <h1 className="font-semibold text-[#051923] text-5xl md:text-7xl">Shop</h1>
           <h1>
             Check out our full collection of products tailored to your needs.
           </h1>
           <h1>
-            <form class="w-[450px] mx-auto bg-transparent">
+            <form class="md:w-[450px] mx-auto bg-transparent">
               <div class="relative">
                 <input
                   type="search"
@@ -47,7 +47,7 @@ function Product() {
             </form>
           </h1>
         </div>
-        <div className="flex justify-center gap-14 md:py-8">
+        <div className="flex justify-center gap-6 md:gap-14 pt-8 flex-col md:flex-row ">
           <div class="w-full max-w-sm  rounded-lg shadow-sm bg-[#00355412]">
             <div className="px-5 p-3">
               <span class="text-2xl font-semibold text-black">
@@ -62,7 +62,7 @@ function Product() {
                 <div class="px-5 py-2.5 ">
                   <a href="">
                     {" "}
-                    <img src={ar} className="w-[58px] h-[58px]" />
+                    <img src={ar} className="w-[58px] h-[58px] " />
                   </a>
                   <span className="font-medium text-[9px]">View with AR</span>
                 </div>
@@ -73,7 +73,7 @@ function Product() {
             </div>
 
             <a href="#">
-              <img class="p-8 rounded-t-lg" src={epoc} alt="product image" />
+              <img class="p-8 rounded-t-lg transition-all duration-300 hover:scale-110" src={epoc} alt="product image"/>
             </a>
             <div class="px-5 pb-5">
               <div class="flex items-center gap-2">
@@ -117,7 +117,7 @@ function Product() {
             </div>
 
             <a href="#">
-              <img class="p-8 rounded-t-lg" src={epoc} alt="product image" />
+              <img class="p-8 rounded-t-lg transition-all duration-300 hover:scale-110" src={epoc} alt="product image" />
             </a>
             <div class="px-5 pb-5">
               <div class="flex items-center gap-2">
@@ -161,7 +161,7 @@ function Product() {
             </div>
 
             <a href="#">
-              <img class="p-8 rounded-t-lg" src={epoc} alt="product image" />
+              <img class="p-8 rounded-t-lg transition-all duration-300 hover:scale-110" src={epoc} alt="product image" />
             </a>
             <div class="px-5 pb-5">
               <div class="flex items-center gap-2">
@@ -181,7 +181,7 @@ function Product() {
             </div>
           </div>
         </div>
-        <div className="flex justify-center gap-14 md:py-8">
+        <div className="flex justify-center gap-6 md:gap-14 py-8 flex-col md:flex-row">
           <div class="w-full max-w-sm  rounded-lg shadow-sm bg-[#00355412]">
             <div className="px-5 p-3">
               <span class="text-2xl font-semibold text-black">
@@ -207,7 +207,7 @@ function Product() {
             </div>
 
             <a href="#">
-              <img class="p-8 rounded-t-lg" src={epoc} alt="product image" />
+              <img class="p-8 rounded-t-lg transition-all duration-300 hover:scale-110" src={epoc} alt="product image" />
             </a>
             <div class="px-5 pb-5">
               <div class="flex items-center gap-2">
@@ -251,7 +251,7 @@ function Product() {
             </div>
 
             <a href="#">
-              <img class="p-8 rounded-t-lg" src={epoc} alt="product image" />
+              <img class="p-8 rounded-t-lg transition-all duration-300 hover:scale-110" src={epoc} alt="product image" />
             </a>
             <div class="px-5 pb-5">
               <div class="flex items-center gap-2">
@@ -295,7 +295,7 @@ function Product() {
             </div>
 
             <a href="#">
-              <img class="p-8 rounded-t-lg" src={epoc} alt="product image" />
+              <img class="p-8 rounded-t-lg transition-all duration-300 hover:scale-110" src={epoc} alt="product image" />
             </a>
             <div class="px-5 pb-5">
               <div class="flex items-center gap-2">
