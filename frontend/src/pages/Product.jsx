@@ -136,46 +136,43 @@ function Product() {
               </div>
             </div>
           </div>
-              <div class="w-full max-w-sm  rounded-lg shadow-sm bg-[#00355412]">
-            <div className="px-5 p-3">
+              <div class="w-full max-w-sm  rounded-lg shadow-sm bg-[#FAF4EE]">
+            <div className="px-5 p-3 flex items-center justify-between">
               <span class="text-2xl font-semibold text-black">
                 14 channel wireless EEG
               </span>
+               <span class="text-sm font-semibold text-black bg-white px-2">
+                New
+              </span>
             </div>
             <div className="px-5">
-              <div class="flex items-center justify-between">
+              <div class="pt-8">
                 <span class="text-4xl font-semibold text-[#003554]">
                   Epoc X
                 </span>
-                <div class="px-5 py-2.5 ">
+                {/* <div class="px-5 py-2.5 ">
                   <a href="">
                     {" "}
                     <img src={ar} className="w-[58px] h-[58px]" />
                   </a>
                   <span className="font-medium text-[9px]">View with AR</span>
-                </div>
+                </div> */}
               </div>
             </div>
-            <div className="px-5">
-              <span class="text-[20px] font-bold text-[#003554]">$999.00</span>
+            <div className="px-5 py-4">
+              <span class="text-[20px] font-bold text-[#003554]">Coming Soon</span>
             </div>
 
             <a href="#">
               <img class="p-8 rounded-t-lg transition-all duration-300 hover:scale-110" src={epoc} alt="product image" />
             </a>
             <div class="px-5 pb-5">
-              <div class="flex items-center gap-2">
-                <a
-                  href="#"
-                  class="text-white font-medium rounded-lg text-sm px-5 py-2.5 text-center bg-[#003554] border hover:text-[#003554] hover:bg-transparent hover:border-[#003554]"
-                >
-                  Buy now
-                </a>
+              <div class="flex items-center">
                 <a
                   href="#"
                   class="text-[#003554] font-medium rounded-lg text-sm px-5 py-2.5 text-center border border-[#003554] hover:bg-[#003554] hover:text-white"
                 >
-                  Add to cart
+                  Learn More
                 </a>
               </div>
             </div>
@@ -226,7 +223,7 @@ function Product() {
               </div>
             </div>
           </div>
-           <div class="w-full max-w-sm  rounded-lg shadow-sm bg-[#00355412]">
+           <div class="w-full max-w-sm  rounded-lg shadow-sm bg-[#FAF4EE]">
             <div className="px-5 p-3">
               <span class="text-2xl font-semibold text-black">
                 14 channel wireless EEG

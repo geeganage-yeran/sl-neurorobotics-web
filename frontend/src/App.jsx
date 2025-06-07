@@ -4,6 +4,7 @@ import "./App.css";
 import './index.css'
 import Resourses from './pages/Resourses';
 import Product from './pages/Product';
+import Userdashboard from './pages/Userdashboard';
 
 function App() {
   
@@ -15,7 +16,8 @@ function App() {
       </div> */}
       {/* <AboutUs/> */}
       {/* <Resourses/> */}
-      <Product/>
+      {/* <Product/> */}
+      <Userdashboard/>
     </>
   )
 }
