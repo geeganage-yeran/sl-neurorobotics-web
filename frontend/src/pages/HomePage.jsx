@@ -4,44 +4,47 @@ import Footer from "../components/Footer";
 import Button from "../components/Button";
 import product1 from "../assets/landing.png";
 import product2 from "../assets/chairbed.png";
+import Alert from "../components/Alert";
+import { use } from "react";
 
-export default function SLNeuroroboticsLanding() {
+export default function HomePage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [email, setEmail] = useState("");
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [alert, setAlert] = useState({
+    open: false,
+    message: "",
+    type: "success",
+    position: "top-right",
+  });
+
+  {
+    /* Handling alerts section */
+  }
+  const showAlert = (message, type = "success", position = "top-right") => {
+    setAlert({ open: true, message, type, position });
+  };
+
+  const closeAlert = () => {
+    setAlert((prev) => ({ ...prev, open: false }));
+  };
 
   const handleSearch = () => {
     console.log("Search query:", searchQuery);
   };
 
   const handleSubscribe = () => {
+    if (!email) {
+      showAlert("Please enter a valid email address.", "error", "top-right");
+      return;
+    }
     console.log("Subscribe email:", email);
     setEmail("");
   };
 
   return (
     <div className="min-h-screen bg-white">
-      {/* Header Navigation */}
       <Header />
-
-      {/* Hero Section 
-      <section className="bg-gradient-to-br from-slate-900 via-blue-900 to-black text-white py-20 lg:py-32">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center">
-            <h1 className="text-4xl sm:text-5xl lg:text-7xl font-bold leading-tight mb-8">
-              Powering
-              <br />
-              the Future Through
-              <br />
-              <span className="text-blue-400">Brainwaves</span>
-            </h1>
-            <button className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-4 rounded-lg text-lg font-semibold transition-colors transform hover:scale-105">
-              View All Products
-            </button>
-          </div>
-        </div>
-      </section>*/}
-
       <div className="relative w-full h-screen">
         {/* Background Video */}
         <video
@@ -134,13 +137,12 @@ export default function SLNeuroroboticsLanding() {
               <div className="p-8 lg:p-12 bg-[#051923] flex items-center justify-center min-h-96">
                 <div className="relative">
                   {/* Container with your image */}
-                  <div className="w-100 h-100 rounded-2xl relative  overflow-hidden">
-                    <img
-                      src={product2}
-                      alt="product2"
-                      className="w-full h-full object-cover transition-transform duration-300 ease-in-out transform hover:scale-110"
-                    />
-                  </div>
+
+                  <img
+                    src={product2}
+                    alt="product2"
+                    className="w-full h-full object-cover transition-transform duration-300 ease-in-out transform hover:scale-110"
+                  />
                 </div>
               </div>
               <div className="p-8 lg:p-12">
@@ -192,10 +194,16 @@ export default function SLNeuroroboticsLanding() {
               Subscribe
             </button>
           </div>
+          <Alert
+            open={alert.open}
+            onClose={closeAlert}
+            message={alert.message}
+            type={alert.type}
+            position={alert.position}
+            autoHideDuration={3000}
+          />
         </div>
       </section>
-
-      {/* Footer */}
       <Footer />
     </div>
   );

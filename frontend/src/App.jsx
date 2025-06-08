@@ -1,16 +1,19 @@
-import { useState } from 'react'
-import './App.css'
-import Footer from './components/Footer'
-import SLNeuroroboticsLanding from './pages/landingPage'
+import { useState } from "react";
+import "./App.css";
+import Footer from "./components/Footer";
+import HomePage from "./pages/HomePage";
+import { Routes, Route, BrowserRouter } from "react-router-dom";
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [count, setCount] = useState(0);
 
   return (
-    <>
-      <SLNeuroroboticsLanding/>
-    </>
-  )
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<HomePage />} />
+      </Routes>
+    </BrowserRouter>
+  );
 }
 
-export default App
+export default App;
