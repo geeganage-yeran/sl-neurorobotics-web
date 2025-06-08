@@ -5,7 +5,6 @@ import Button from "../components/Button";
 import product1 from "../assets/landing.png";
 import product2 from "../assets/chairbed.png";
 import Alert from "../components/Alert";
-import { use } from "react";
 
 export default function HomePage() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -51,7 +50,7 @@ export default function HomePage() {
           autoPlay
           loop
           muted
-          className="absolute top-0 left-0 w-full h-full object-cover"
+          className="absolute top-0 left-0 object-cover w-full h-full"
         >
           <source src="../src/assets/1080.mp4 " type="video/mp4" />
         </video>
@@ -60,9 +59,9 @@ export default function HomePage() {
         <div className="absolute top-0 left-0 w-full h-full bg-black opacity-50"></div>
 
         {/* Content */}
-        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-white text-2xl">
+        <div className="absolute text-2xl text-white transform -translate-x-1/2 -translate-y-1/2 top-1/2 left-1/2">
           <div className="text-center">
-            <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold leading-tight mb-8">
+            <h1 className="mb-8 text-5xl font-bold leading-tight sm:text-6xl lg:text-7xl">
               Powering
               <br />
               The Future Through
@@ -78,25 +77,25 @@ export default function HomePage() {
 
       {/* Upcoming Devices Section */}
       <section className="py-12 bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
+        <div className="px-4 mx-auto max-w-7xl sm:px-6 lg:px-8">
+          <div className="mb-12 text-center">
             <h2 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-[#003554] mb-6">
               Upcoming Devices
             </h2>
-            <p className="text-lg lg:text-xl text-gray-600 max-w-3xl mx-auto">
+            <p className="max-w-3xl mx-auto text-lg text-gray-600 lg:text-xl">
               Our upcoming products are designed to push the boundaries of
               brain-tech integration blending human experience with tech.
             </p>
           </div>
 
-          <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
-            <div className="grid lg:grid-cols-2 gap-0 items-center">
-              <div className="p-8 lg:p-12 bg-gray-100 flex items-center justify-center min-h-96">
+          <div className="overflow-hidden bg-white shadow-xl rounded-2xl">
+            <div className="grid items-center gap-0 lg:grid-cols-2">
+              <div className="flex items-center justify-center p-8 bg-gray-100 lg:p-12 min-h-96">
                 <div className="relative">
                   <img
                     src={product1}
                     alt="SL Neurorobotics prouduct1"
-                    className="w-full h-full transition-transform object-cover duration-300 ease-in-out transform hover:scale-110"
+                    className="object-cover w-full h-full transition-transform duration-300 ease-in-out transform hover:scale-110"
                   />
                 </div>
               </div>
@@ -106,7 +105,7 @@ export default function HomePage() {
                   <br />
                   EEG Headset
                 </h3>
-                <p className="text-gray-600 text-lg mb-8 text-justify leading-relaxed">
+                <p className="mb-8 text-lg leading-relaxed text-justify text-gray-600">
                   Lorem ipsum is simply dummy text of the printing and
                   typesetting industry. Lorem ipsum has been the industry's
                   standard dummy text ever since the 1500s, when an unknown
@@ -115,7 +114,7 @@ export default function HomePage() {
                   also the leap into electronic typesetting, remaining
                   essentially unchanged.
                 </p>
-                <div className="flex flex-col sm:flex-row gap-4">
+                <div className="flex flex-col gap-4 sm:flex-row">
                   <Button variant="primary" size="medium">
                     More About
                   </Button>
@@ -131,9 +130,9 @@ export default function HomePage() {
 
       {/* New Arrivals Section */}
       <section className="py-20 bg-[#051923]">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="px-4 mx-auto max-w-7xl sm:px-6 lg:px-8">
           <div className="bg-[#051923] rounded-2xl shadow-2xl overflow-hidden">
-            <div className="grid lg:grid-cols-2 gap-0 items-center">
+            <div className="grid items-center gap-0 lg:grid-cols-2">
               <div className="p-8 lg:p-12 bg-[#051923] flex items-center justify-center min-h-96">
                 <div className="relative">
                   {/* Container with your image */}
@@ -141,7 +140,7 @@ export default function HomePage() {
                   <img
                     src={product2}
                     alt="product2"
-                    className="w-full h-full object-cover transition-transform duration-300 ease-in-out transform hover:scale-110"
+                    className="object-cover w-full h-full transition-transform duration-300 ease-in-out transform hover:scale-110"
                   />
                 </div>
               </div>
@@ -150,12 +149,12 @@ export default function HomePage() {
                   New Arrivals
                 </span>
                 <h3
-                  className="text-3xl lg:text-4xl font-bold mb-6 leading-tight"
+                  className="mb-6 text-3xl font-bold leading-tight lg:text-4xl"
                   style={{ color: "#FFFFFF" }}
                 >
                   EEG Controlled Chairbed
                 </h3>
-                <p className="text-gray-300 text-justify text-lg mb-8 leading-relaxed">
+                <p className="mb-8 text-lg leading-relaxed text-justify text-gray-300">
                   Lorem ipsum is simply dummy text of the printing and
                   typesetting industry. Lorem ipsum has been the industry's
                   standard dummy text ever since the 1500s, when an unknown
@@ -175,11 +174,11 @@ export default function HomePage() {
 
       {/* Newsletter Section */}
       <section className="py-16 bg-white">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+        <div className="max-w-4xl px-4 mx-auto text-center sm:px-6 lg:px-8">
           <h2 className="text-3xl text-all-ca font-bold text-[#051923] leading-9 mb-8 uppercase">
             Subscribe to Our Newsletter
           </h2>
-          <div className="flex flex-col sm:flex-row max-w-lg mx-auto">
+          <div className="flex flex-col max-w-lg mx-auto sm:flex-row">
             <input
               type="email"
               value={email}
