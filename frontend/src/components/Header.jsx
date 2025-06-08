@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import logo from './assets/image4.png';
+import logo from '../assets/image4.png';
 import { FaSearch, FaBars, FaTimes } from 'react-icons/fa'; // Importing icons
 
 const Header = () => {
@@ -28,7 +28,7 @@ const Header = () => {
     };
 
     return (
-        <header className="bg-white shadow-md py-4 px-6 relative">
+        <header className="bg-white shadow-md py-4 px-6 fixed top-0 left-0 w-full z-50">
             <div className="container mx-auto flex items-center justify-between">
                 {/* Left Section - Logo */}
                 <div className="flex items-center">
@@ -40,12 +40,12 @@ const Header = () => {
                 </div>
 
                 {/* Desktop Navigation - Hidden on mobile/tablet */}
-                <nav className="hidden lg:flex space-x-8">
-                    <a href="#" className="font-medium text-gray-700 hover:text-gray-900 transition-colors">Home</a>
-                    <a href="#" className="font-medium text-gray-700 hover:text-gray-900 transition-colors">Resources</a>
-                    <a href="#" className="font-medium text-gray-700 hover:text-gray-900 transition-colors">Shop</a>
-                    <a href="#" className="font-medium text-gray-700 hover:text-gray-900 transition-colors">About Us</a>
-                    <a href="#" className="font-medium text-gray-700 hover:text-gray-900 transition-colors">Contact</a>
+                <nav className="hidden lg:flex space-x-12">
+                    <a href="#" className="font-semibold text-[#003554] hover:text-[#006494] transition-colors">Home</a>
+                    <a href="#" className="font-semibold text-[#003554] hover:text-[#006494] transition-colors">Resources</a>
+                    <a href="#" className="font-semibold text-[#003554] hover:text-[#006494] transition-colors">Shop</a>
+                    <a href="#" className="font-semibold text-[#003554] hover:text-[#006494] transition-colors">About Us</a>
+                    <a href="#" className="font-semibold text-[#003554] hover:text-[#006494] transition-colors">Contact</a>
                 </nav>
 
                 {/* Right Section - Desktop */}
@@ -53,7 +53,7 @@ const Header = () => {
                     {/* Search Icon Button */}
                     <button
                         onClick={handleSearchToggle}
-                        className="text-gray-700 hover:text-gray-900 transition-colors p-2"
+                        className="text-gray-700 hover:text-[#006494] transition-colors p-2 cursor-pointer"
                         aria-label="Toggle search"
                     >
                         <FaSearch />
@@ -66,13 +66,13 @@ const Header = () => {
                             value={searchTerm}
                             onChange={handleSearchChange}
                             placeholder="Search..."
-                            className="px-4 py-2 bg-[#003554] text-white rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+                            className="px-8 py-2 bg-white text-[#003554] rounded-md focus:outline-none focus:ring-2 focus:ring-[#006494] transition-all"
                             autoFocus
                         />
                     )}
 
                     {/* Account Button */}
-                    <button className="px-4 py-2 bg-gray-900 text-white rounded-md hover:bg-blue-700 transition-colors">
+                    <button className="px-5 py-2 bg-[#006494] text-white rounded-md hover:bg-[#003554] font-semibold transition-all duration-300 ease-in-out cursor-pointer">
                         Account
                     </button>
                 </div>
@@ -82,7 +82,7 @@ const Header = () => {
                     {/* Search Icon for Mobile */}
                     <button
                         onClick={handleSearchToggle}
-                        className="text-gray-700 hover:text-gray-900 transition-colors p-2"
+                        className="text-gray-700 hover:text-[#006494] transition-colors p-2"
                         aria-label="Toggle search"
                     >
                         <FaSearch />
@@ -91,7 +91,7 @@ const Header = () => {
                     {/* Hamburger Menu Button */}
                     <button
                         onClick={handleMobileMenuToggle}
-                        className="text-gray-700 hover:text-gray-900 transition-colors p-2"
+                        className="text-gray-700 hover:text-[#006494] transition-colors p-2 cursor-pointer"
                         aria-label="Toggle menu"
                     >
                         {isMobileMenuOpen ? <FaTimes size={20} /> : <FaBars size={20} />}
@@ -107,7 +107,7 @@ const Header = () => {
                         value={searchTerm}
                         onChange={handleSearchChange}
                         placeholder="Search..."
-                        className="w-full px-4 py-2 bg-[#003554] text-white rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="w-full px-4 py-2 bg-white text-[#003554] rounded-md focus:outline-none focus:ring-2 focus:ring-[#006494]"
                         autoFocus
                     />
                 </div>
@@ -119,35 +119,35 @@ const Header = () => {
                     <nav className="flex flex-col py-4">
                         <a
                             href="#"
-                            className="px-6 py-3 font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50 transition-colors border-b border-gray-100"
+                            className="px-6 py-3 font-medium text-[#003554] hover:text-[#006494] hover:bg-gray-100 transition-colors border-b border-gray-100"
                             onClick={handleLinkClick}
                         >
                             Home
                         </a>
                         <a
                             href="#"
-                            className="px-6 py-3 font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50 transition-colors border-b border-gray-100"
+                            className="px-6 py-3 font-medium text-[#003554] hover:text-[#006494] hover:bg-gray-100 transition-colors border-b border-gray-100"
                             onClick={handleLinkClick}
                         >
                             Resources
                         </a>
                         <a
                             href="#"
-                            className="px-6 py-3 font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50 transition-colors border-b border-gray-100"
+                            className="px-6 py-3 font-medium text-[#003554] hover:text-[#006494] hover:bg-gray-100 transition-colors border-b border-gray-100"
                             onClick={handleLinkClick}
                         >
                             Shop
                         </a>
                         <a
                             href="#"
-                            className="px-6 py-3 font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50 transition-colors border-b border-gray-100"
+                            className="px-6 py-3 font-medium text-[#003554] hover:text-[#006494] hover:bg-gray-100 transition-colors border-b border-gray-100"
                             onClick={handleLinkClick}
                         >
                             About Us
                         </a>
                         <a
                             href="#"
-                            className="px-6 py-3 font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50 transition-colors border-b border-gray-100"
+                            className="px-6 py-3 font-medium text-[#003554] hover:text-[#006494] hover:bg-gray-100 transition-colors border-b border-gray-100"
                             onClick={handleLinkClick}
                         >
                             Contact
@@ -156,7 +156,7 @@ const Header = () => {
                         {/* Account Button in Mobile Menu */}
                         <div className="px-6 py-3">
                             <button
-                                className="w-full px-4 py-2 bg-gray-900 text-white rounded-md hover:bg-blue-700 transition-colors"
+                                className="w-full px-4 py-2 bg-[#006494] text-white rounded-md hover:bg-[#003554] transition-all duration-300 ease-in-out"
                                 onClick={handleLinkClick}
                             >
                                 Account
