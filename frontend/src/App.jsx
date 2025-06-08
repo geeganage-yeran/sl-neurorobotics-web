@@ -11,13 +11,6 @@ function App() {
 
   return (
     <>
-      {/* <div className='text-lg'>
-        SL Neurorobotics
-      </div> */}
-      {/* <AboutUs/> */}
-      {/* <Resourses/> */}
-      {/* <Product/> */}
-      <Userdashboard/>
     </>
   )
 }
