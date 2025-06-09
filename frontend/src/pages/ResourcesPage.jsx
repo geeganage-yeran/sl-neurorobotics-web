@@ -23,7 +23,7 @@ const ResourcesPage = () => {
                 of
               </p>
               <Button variant="primary" px="px-5" className="flex items-center gap-2 text-sm" size="medium">
-                <Download className="w-4 h-4" />
+                <Download className="w-4 h-4 animate-bounce" />
                 Download User Manual
               </Button>
             </div>
@@ -46,7 +46,7 @@ const ResourcesPage = () => {
 
       {/* Overview Section */}
       <section className="py-16 lg:py-24">
-        <div className="px-6 mx-auto lg:px-6 xl:px-0 md:px-6 max-w-7xl">
+        <div data-aos="fade-up" className="px-6 mx-auto lg:px-6 xl:px-0 md:px-6 max-w-7xl">
           <h2 className="mb-12 text-2xl font-bold text-gray-900 md:text-3xl lg:text-4xl">
             Overview
           </h2>
@@ -109,7 +109,7 @@ const ResourcesPage = () => {
 
       {/* Specifications Section */}
       <section className="py-16 lg:py-24">
-        <div className="px-6 mx-auto lg:px-6 xl:px-0 md:px-6 max-w-7xl">
+        <div data-aos="fade-up" className="px-6 mx-auto lg:px-6 xl:px-0 md:px-6 max-w-7xl">
           <h2 className="mb-12 text-2xl font-bold text-gray-900 md:text-3xl lg:text-4xl">
             Specifications
           </h2>

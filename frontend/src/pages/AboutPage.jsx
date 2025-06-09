@@ -189,7 +189,7 @@ export default function AboutPage() {
         </div>
 
         {/* Technology Image - Responsive */}
-        <div className="mb-12 sm:mb-16">
+        <div data-aos="fade-up" className="mb-12 sm:mb-16">
           <div className="w-full h-auto overflow-hidden shadow-md rounded-xl">
             <img
               src={image2}
