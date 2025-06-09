@@ -3,8 +3,8 @@ import logo2 from '../assets/image5.png';
 
 const Footer = () => {
     return (
-        <footer className="px-6 py-12 text-white bg-gray-900">
-            <div className="max-w-6xl mx-auto">
+        <footer className="px-6 py-12 text-white bg-[#121212]">
+            <div className="mx-auto max-w-7xl">
                 <div className="grid grid-cols-1 gap-8 md:grid-cols-4">
                     {/* Logo and Company Info Section */}
                     <div className="col-span-1 md:col-span-2">

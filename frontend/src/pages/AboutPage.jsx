@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState,useEffect } from "react";
 import { Mail, Phone, MapPin, Globe } from "lucide-react";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
@@ -13,6 +13,22 @@ export default function AboutPage() {
     type: "success",
     position: "top-right",
   });
+
+   useEffect(() => {
+    if (window.location.hash === "#contactUs") {
+      setTimeout(() => {
+        const contactElement = document.getElementById("contactUs");
+        if (contactElement) {
+          const headerHeight = 80; // Match your header height
+          const elementPosition = contactElement.offsetTop - headerHeight;
+          window.scrollTo({
+            top: elementPosition,
+            behavior: "smooth",
+          });
+        }
+      }, 100); // Small delay to ensure page is fully loaded
+    }
+  }, []);
 
   const showAlert = (message, type = "success", position = "top-right") => {
     setAlert({ open: true, message, type, position });
@@ -109,43 +125,43 @@ export default function AboutPage() {
       <Header />
 
       {/* Top Bar with Company Name and Brain Logo */}
-      <div className="bg-slate-800 text-white mt-16 py-8">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+      <div className="py-8 mt-16 text-white bg-slate-800">
+        <div className="max-w-6xl px-4 mx-auto text-center sm:px-6 lg:px-8">
           <div className="flex items-center justify-center">
             {/* Company Logo Only */}
-            <div className="w-80 h-16 sm:w-80 sm:h-20 lg:h-24 xl:w-130 xl:h-28">
+            <div className="h-16 w-80 sm:w-80 sm:h-20 lg:h-24 xl:w-130 xl:h-28">
               <img
                 src={image1}
                 alt="SL Neurorobotics Logo"
-                className="w-full h-full object-contain"
+                className="object-contain w-full h-full"
               />
             </div>
           </div>
         </div>
       </div>
 
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
+      <div className="max-w-6xl px-4 py-8 mx-auto sm:px-6 lg:px-8 sm:py-12">
         {/* About Us Section - Responsive Layout */}
         <div className="mb-12 sm:mb-16">
           {/* Mobile: Image stacked on top, Desktop: Image on left */}
-          <div className="flex flex-col lg:flex-row lg:items-start lg:space-x-8 space-y-6 lg:space-y-0">
+          <div className="flex flex-col space-y-6 lg:flex-row lg:items-start lg:space-x-8 lg:space-y-0">
             {/* Image Container */}
             <div className="flex-shrink-0 w-full lg:w-auto">
-              <div className="w-full lg:w-96 xl:w-96 h-64 sm:w-100 lg:h-80 bg-blue-100 rounded-lg flex items-center justify-center overflow-hidden mx-auto lg:mx-0">
+              <div className="flex items-center justify-center w-full h-64 mx-auto overflow-hidden bg-blue-100 rounded-lg lg:w-96 xl:w-96 sm:w-100 lg:h-80 lg:mx-0">
                 <img
                   src={image1}
                   alt="Company Logo"
-                  className="w-full h-full object-cover"
+                  className="object-cover w-full h-full"
                 />
               </div>
             </div>
 
             {/* About Content */}
             <div className="flex-1">
-              <h2 className="text-2xl sm:text-3xl font-extrabold text-gray-900 mb-4 sm:mb-6 text-center lg:text-left">
+              <h2 className="mb-4 text-2xl font-extrabold text-center text-gray-900 sm:text-3xl sm:mb-6 lg:text-left">
                 ABOUT US
               </h2>
-              <div className="text-gray-700 space-y-3 leading-6 sm:space-y-4  text-sm sm:text-base">
+              <div className="space-y-3 text-sm leading-6 text-gray-700 sm:space-y-4 sm:text-base">
                 <p className="text-justify font-medium text-[#5C728A]">
                   At SL Neurorobotics, we are dedicated to advancing and
                   transforming business through Smart PCs based. Our objective
@@ -174,25 +190,25 @@ export default function AboutPage() {
 
         {/* Technology Image - Responsive */}
         <div className="mb-12 sm:mb-16">
-          <div className="w-full h-auto rounded-xl shadow-md overflow-hidden">
+          <div className="w-full h-auto overflow-hidden shadow-md rounded-xl">
             <img
               src={image2}
               alt="Technology illustration"
-              className="w-full h-auto object-cover"
+              className="object-cover w-full h-auto"
             />
           </div>
         </div>
 
         {/* Get In Touch Section - Responsive */}
-        <div>
+        <div id="contactUs">
           <h2 className="text-2xl sm:text-3xl font-bold text-[#051923] mb-6 sm:mb-8 text-center lg:text-left">
             GET IN TOUCH
           </h2>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8">
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-2 sm:gap-8">
             {/* Map Section - Mobile: Full width, Desktop: Left half */}
             <div className="order-2 lg:order-1">
-              <div className="rounded-lg h-64 sm:h-80 overflow-hidden">
+              <div className="h-64 overflow-hidden rounded-lg sm:h-80">
                 {/* Google Maps Embed */}
                 <iframe
                   src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3960.798511757686!2d79.85397541532826!3d6.919444295003654!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3ae2596b5c8c7e91%3A0x1b0a8f5f8f5f8f5f!2sTemple%20Road%2C%20Colombo!5e0!3m2!1sen!2slk!4v1620000000000!5m2!1sen!2slk"
@@ -207,35 +223,35 @@ export default function AboutPage() {
             </div>
 
             {/* Contact Info and Form - Mobile: Full width, Desktop: Right half */}
-            <div className="space-y-6 order-1 lg:order-2">
+            <div className="order-1 space-y-6 lg:order-2">
               {/* Contact Details - Responsive */}
               <div className="space-y-5 sm:space-y-4">
-                <div className="flex items-start sm:items-center space-x-3">
+                <div className="flex items-start space-x-3 sm:items-center">
                   <Phone className="w-5 h-5 text-[#003554] flex-shrink-0 mt-0.5 sm:mt-0" />
-                  <span className="text-gray-700 text-sm font-medium sm:text-base">
+                  <span className="text-sm font-medium text-gray-700 sm:text-base">
                     +94 71 081 9833
                   </span>
                 </div>
                 <div className="flex items-start space-x-3">
                   <MapPin className="w-5 h-5 text-[#003554] flex-shrink-0 mt-0.5" />
-                  <div className="text-gray-700 text-sm sm:text-base">
+                  <div className="text-sm text-gray-700 sm:text-base">
                     <div className="font-medium">
                       SL Neurorobotics (PVT) LTD
                     </div>
-                    <div className="text-xs sm:text-sm mt-1">
+                    <div className="mt-1 text-xs sm:text-sm">
                       80/3/2, Temple Road, Kandukkapatha Batahola, Sri Lanka
                     </div>
                   </div>
                 </div>
-                <div className="flex items-start sm:items-center space-x-3">
+                <div className="flex items-start space-x-3 sm:items-center">
                   <Mail className="w-5 h-5 text-[#003554] flex-shrink-0 mt-0.5 sm:mt-0" />
-                  <span className="text-gray-700 font-medium text-sm sm:text-base break-all">
+                  <span className="text-sm font-medium text-gray-700 break-all sm:text-base">
                     slneurorobotics@gmail.com
                   </span>
                 </div>
-                <div className="flex items-start sm:items-center space-x-3">
+                <div className="flex items-start space-x-3 sm:items-center">
                   <Globe className="w-5 h-5 text-[#003554] flex-shrink-0 mt-0.5 sm:mt-0" />
-                  <span className="text-gray-700 text-sm sm:text-base break-all font-medium">
+                  <span className="text-sm font-medium text-gray-700 break-all sm:text-base">
                     www.slneurorobotics.com
                   </span>
                 </div>
@@ -249,7 +265,7 @@ export default function AboutPage() {
 
                 <div className="space-y-4">
                   {/* Name and Email Row - Responsive */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                     <input
                       type="text"
                       name="name"
@@ -269,7 +285,7 @@ export default function AboutPage() {
                   </div>
 
                   {/* Contact Number and Email Row - Responsive */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                     <input
                       type="tel"
                       name="contactNumber"
