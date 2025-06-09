@@ -41,13 +41,13 @@ const Header = () => {
         {/* Desktop Navigation - Hidden on mobile/tablet */}
         <nav className="hidden lg:flex space-x-12">
           <a
-            href="#"
+            href="/"
             className="font-semibold text-[#003554] hover:text-[#006494] transition-colors"
           >
             Home
           </a>
           <a
-            href="#"
+            href=""
             className="font-semibold text-[#003554] hover:text-[#006494] transition-colors"
           >
             Resources
@@ -59,7 +59,7 @@ const Header = () => {
             Shop
           </a>
           <a
-            href="#"
+            href="/about"
             className="font-semibold text-[#003554] hover:text-[#006494] transition-colors"
           >
             About Us

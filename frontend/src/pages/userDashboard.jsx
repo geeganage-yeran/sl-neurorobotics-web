@@ -1,304 +1,382 @@
-import React, { useState } from 'react';
-import { Search, Bell, User, ShoppingCart, Star, MessageCircle, X, Send } from 'lucide-react';
-import logo from './assets/image4.png';
-import Footer from './Footer';
+import React, { useState } from "react";
+import Footer from "../components/Footer";
+import {
+  Dialog,
+  DialogBackdrop,
+  DialogPanel,
+  DialogTitle,
+} from "@headlessui/react";
+import { ExclamationTriangleIcon } from "@heroicons/react/24/outline";
 
-const Dashboard = () => {
-    const [isChatOpen, setIsChatOpen] = useState(false);
-    const [messages, setMessages] = useState([
-        {
-            id: 1,
-            text: "Hello! I'm your NeuroTechX assistant. How can I help you today?",
-            sender: 'bot',
-            timestamp: new Date()
-        }
-    ]);
-    const [newMessage, setNewMessage] = useState('');
-    const handleSendMessage = () => {
-        if (newMessage.trim()) {
-            const userMessage = {
-                id: messages.length + 1,
-                text: newMessage,
-                sender: 'user',
-                timestamp: new Date()
-            };
-
-            setMessages([...messages, userMessage]);
-            setNewMessage('');
-
-            // Simulate bot response
-            setTimeout(() => {
-                const botResponse = {
-                    id: messages.length + 2,
-                    text: "Thanks for your message! Our team will get back to you shortly with information about our brain-computer interface products.",
-                    sender: 'bot',
-                    timestamp: new Date()
-                };
-                setMessages(prev => [...prev, botResponse]);
-            }, 1000);
-        }
-    };
-
-    const products = [
-        {
-            id: 1,
-            name: 'Apex X',
-            category: 'EEG Headset with Wireless EEG',
-            price: '$2,499.00',
-            rating: 4.8,
-            reviews: 124,
-            image: '/api/placeholder/300/200',
-            badge: 'Bestseller'
-        },
-        {
-            id: 2,
-            name: 'Apex X',
-            category: 'EEG Headset with Wireless EEG',
-            price: '$2,499.00',
-            rating: 4.8,
-            reviews: 124,
-            image: '/api/placeholder/300/200',
-            badge: 'New Arrival'
-        },
-        {
-            id: 3,
-            name: 'Chair X',
-            category: 'Ergonomic Brain Chair',
-            price: '$899.00',
-            rating: 4.9,
-            reviews: 89,
-            image: '/api/placeholder/300/200',
-            badge: 'Popular'
-        },
-        {
-            id: 4,
-            name: 'Emotiv Flex 2',
-            category: 'Wireless Brain Monitoring',
-            price: '$1,299.00',
-            rating: 4.7,
-            reviews: 156,
-            image: '/api/placeholder/300/200',
-            badge: 'Featured'
-        }
-    ];
-
-    return (
-        <div className="min-h-screen bg-gray-50">
-            {/* Header */}
-            <header className="bg-white shadow-sm border-b">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="flex items-center justify-between h-16">
-                        {/* Logo */}
-                        <div className="flex items-center">
-                            <img
-                                src={logo}
-                                alt="SL Neurorobotics Logo"
-                                className="h-8"
-                            />
-                        </div>
-
-                        {/* Search Bar */}
-                        <div className="flex-1 max-w-2xl mx-8">
-                            <div className="relative">
-                                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-                                <input
-                                    type="text"
-                                    placeholder="Search products, categories..."
-                                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                />
-                            </div>
-                        </div>
-
-                        {/* Right Icons */}
-                        <div className="flex items-center space-x-4">
-                            <button className="p-2 text-gray-400 hover:text-gray-600 transition-colors">
-                                <Bell className="w-6 h-6" />
-                            </button>
-                            <button className="p-2 text-gray-400 hover:text-gray-600 transition-colors">
-                                <ShoppingCart className="w-6 h-6" />
-                            </button>
-                            <button className="p-2 text-gray-400 hover:text-gray-600 transition-colors">
-                                <User className="w-6 h-6" />
-                            </button>
-                        </div>
-                    </div>
+function Userdashboard() {
+  function renderTabContent(tab) {
+    switch (tab) {
+      case "Orders":
+        return <div>Order history and tracking info...</div>;
+      case "Settings":
+        return (
+          <div className="setting">
+            <div className="sm:pe-48">
+              <h2 className="font-semibold text-[#003554] text-[30px]">
+                Personal Information
+              </h2>
+              <div className="mt-10 grid grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-6">
+                <div className="sm:col-span-3">
+                  <label
+                    htmlFor="first-name"
+                    className="block text-lg font-medium text-[#003554]"
+                  >
+                    First name
+                  </label>
+                  <div className="mt-2">
+                    <input
+                      id="first-name"
+                      name="first-name"
+                      type="text"
+                      autoComplete="given-name"
+                      className="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-[#003554] sm:text-sm/6"
+                    />
+                  </div>
                 </div>
-            </header>
-
-            {/* Main Content */}
-            <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-                {/* Welcome Section */}
-                <div className="bg-gradient-to-r from-blue-900 to-indigo-900 rounded-2xl p-8 mb-12 text-white">
-                    <div className="max-w-3xl">
-                        <h1 className="text-4xl font-bold mb-4">Welcome, Yeran</h1>
-                        <h2 className="text-3xl font-light mb-6">
-                            Powering<br />
-                            the Future Through<br />
-                            Brainwaves
-                        </h2>
-                        <button className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-lg font-semibold transition-colors">
-                            Get Started
-                        </button>
-                    </div>
+                <div className="sm:col-span-3">
+                  <label
+                    htmlFor="last-name"
+                    className="block text-lg font-medium text-[#003554]"
+                  >
+                    Last name
+                  </label>
+                  <div className="mt-2">
+                    <input
+                      id="last-name"
+                      name="last-name"
+                      type="text"
+                      autoComplete="family-name"
+                      className="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-[#003554] sm:text-sm/6"
+                    />
+                  </div>
                 </div>
 
-                {/* Products Section */}
-                <section>
-                    <div className="flex items-center justify-between mb-8">
-                        <h2 className="text-2xl font-bold text-gray-900">Explore Our Products</h2>
-                        <button className="text-blue-600 hover:text-blue-700 font-medium">
-                            View All →
-                        </button>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                        {products.map((product) => (
-                            <div key={product.id} className="bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow border border-gray-100">
-                                <div className="relative">
-                                    <div className="aspect-w-16 aspect-h-12 bg-gray-100 rounded-t-xl">
-                                        <div className="w-full h-48 bg-gradient-to-br from-gray-100 to-gray-200 rounded-t-xl flex items-center justify-center">
-                                            <div className="w-24 h-24 bg-gray-300 rounded-lg flex items-center justify-center">
-                                                <span className="text-gray-500 text-sm font-medium">Product</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div className="absolute top-3 left-3">
-                                        <span className="bg-blue-600 text-white px-2 py-1 rounded-full text-xs font-medium">
-                                            {product.badge}
-                                        </span>
-                                    </div>
-                                </div>
-
-                                <div className="p-6">
-                                    <h3 className="font-semibold text-gray-900 mb-2">{product.name}</h3>
-                                    <p className="text-gray-600 text-sm mb-3">{product.category}</p>
-
-                                    <div className="flex items-center mb-4">
-                                        <div className="flex items-center">
-                                            <Star className="w-4 h-4 text-yellow-400 fill-current" />
-                                            <span className="ml-1 text-sm font-medium text-gray-900">{product.rating}</span>
-                                        </div>
-                                        <span className="text-gray-500 text-sm ml-2">({product.reviews} reviews)</span>
-                                    </div>
-
-                                    <div className="flex items-center justify-between">
-                                        <span className="text-xl font-bold text-gray-900">{product.price}</span>
-                                        <button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
-                                            Add to Cart
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                </section>
-
-                {/* Stats Section */}
-                <section className="mt-16 grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
-                        <h3 className="text-lg font-semibold text-gray-900 mb-2">Total Orders</h3>
-                        <p className="text-3xl font-bold text-blue-600">127</p>
-                        <p className="text-sm text-gray-600 mt-2">+12% from last month</p>
-                    </div>
-                    <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
-                        <h3 className="text-lg font-semibold text-gray-900 mb-2">Active Devices</h3>
-                        <p className="text-3xl font-bold text-green-600">8</p>
-                        <p className="text-sm text-gray-600 mt-2">2 devices online</p>
-                    </div>
-                    <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
-                        <h3 className="text-lg font-semibold text-gray-900 mb-2">Data Sessions</h3>
-                        <p className="text-3xl font-bold text-purple-600">1,847</p>
-                        <p className="text-sm text-gray-600 mt-2">+24% this week</p>
-                    </div>
-                </section>
-            </main>
-
-            {/* Footer */}
-            <Footer />
-
-            {/* Chatbot Widget */}
-            <div className="fixed bottom-6 right-6 z-50">
-                {/* Chat Window */}
-                {isChatOpen && (
-                    <div className="absolute bottom-16 right-0 w-80 bg-white rounded-lg shadow-2xl border border-gray-200 overflow-hidden">
-                        {/* Chat Header */}
-                        <div className="bg-blue-600 text-white p-4 flex items-center justify-between">
-                            <div className="flex items-center">
-                                <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center mr-3">
-                                    <MessageCircle className="w-4 h-4" />
-                                </div>
-                                <div>
-                                    <h3 className="font-semibold">NeuroTechX Support</h3>
-                                    <p className="text-xs text-blue-100">Usually replies instantly</p>
-                                </div>
-                            </div>
-                            <button
-                                onClick={() => setIsChatOpen(false)}
-                                className="text-white hover:text-blue-200 transition-colors"
-                            >
-                                <X className="w-5 h-5" />
-                            </button>
-                        </div>
-
-                        {/* Chat Messages */}
-                        <div className="h-64 overflow-y-auto p-4 space-y-4">
-                            {messages.map((message) => (
-                                <div
-                                    key={message.id}
-                                    className={`flex ${message.sender === 'user' ? 'justify-end' : 'justify-start'}`}
-                                >
-                                    <div
-                                        className={`max-w-xs rounded-lg p-3 ${message.sender === 'user'
-                                            ? 'bg-blue-600 text-white'
-                                            : 'bg-gray-100 text-gray-800'
-                                            }`}
-                                    >
-                                        <p className="text-sm">{message.text}</p>
-                                        <p className={`text-xs mt-1 ${message.sender === 'user' ? 'text-blue-100' : 'text-gray-500'
-                                            }`}>
-                                            {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                                        </p>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-
-                        {/* Chat Input */}
-                        <div className="border-t border-gray-200 p-4">
-                            <div className="flex items-center space-x-2">
-                                <input
-                                    type="text"
-                                    value={newMessage}
-                                    onChange={(e) => setNewMessage(e.target.value)}
-                                    onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
-                                    placeholder="Type your message..."
-                                    className="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                />
-                                <button
-                                    onClick={handleSendMessage}
-                                    className="bg-blue-600 text-white p-2 rounded-lg hover:bg-blue-700 transition-colors"
-                                >
-                                    <Send className="w-4 h-4" />
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                )}
-
-                {/* Chat Toggle Button */}
-                <button
-                    onClick={() => setIsChatOpen(!isChatOpen)}
-                    className="bg-blue-600 hover:bg-blue-700 text-white w-14 h-14 rounded-full shadow-lg flex items-center justify-center transition-all duration-200 hover:scale-110"
-                >
-                    {isChatOpen ? (
-                        <X className="w-6 h-6" />
-                    ) : (
-                        <MessageCircle className="w-6 h-6" />
-                    )}
+                <div className="sm:col-span-3">
+                  <label
+                    htmlFor="last-name"
+                    className="block text-lg font-medium text-[#003554]"
+                  >
+                    Email
+                  </label>
+                  <div className="mt-2">
+                    <input
+                      id="email"
+                      name="email"
+                      type="email"
+                      autoComplete="family-name"
+                      className="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-[#003554] sm:text-sm/6"
+                    />
+                  </div>
+                </div>
+                <div className="sm:col-span-3">
+                  <label
+                    htmlFor="last-name"
+                    className="block text-lg font-medium text-[#003554]"
+                  >
+                    Contact
+                  </label>
+                  <div className="mt-2">
+                    <input
+                      id="contact"
+                      name="contact"
+                      type="tel"
+                      autoComplete="family-name"
+                      className="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-[#003554] sm:text-sm/6"
+                    />
+                  </div>
+                </div>
+                <div className="sm:col-span-3">
+                  <label
+                    htmlFor="last-name"
+                    className="block text-lg font-medium text-[#003554]"
+                  >
+                    Country
+                  </label>
+                  <div className="mt-2">
+                    <input
+                      id="last-name"
+                      name="last-name"
+                      type="text"
+                      autoComplete="family-name"
+                      className="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-[#003554] sm:text-sm/6"
+                    />
+                  </div>
+                </div>
+              </div>
+              <div className="flex items-center gap-3 mt-5">
+                <button className="text-[#003554] font-medium rounded-lg text-sm px-5 py-2.5 text-center border border-[#003554] hover:bg-[#003554] hover:text-white">
+                  Cancel
                 </button>
+                <button className="text-white font-medium rounded-lg text-sm px-5 py-2.5 text-center bg-[#003554] border hover:text-[#003554] hover:bg-transparent hover:border-[#003554]">
+                  Update
+                </button>
+              </div>
             </div>
-        </div>
-    );
-};
+            {/* update password */}
+            <div className="sm:pe-48 mt-10">
+              <h2 className="font-semibold text-[#003554] text-[30px]">
+                Update your password
+              </h2>
+              <div className="mt-10 grid grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-6">
+                <div className="sm:col-span-3">
+                  <label
+                    htmlFor="oldpassword"
+                    className="block text-lg font-medium text-[#003554]"
+                  >
+                    Old Password
+                  </label>
+                  <div className="mt-2">
+                    <input
+                      id="oldpassword"
+                      name="oldpassword"
+                      type="password"
+                      autoComplete="given-name"
+                      className="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-[#003554] sm:text-sm/6"
+                    />
+                  </div>
+                </div>
+                <div className="sm:col-span-3"></div>
+                <div className="sm:col-span-3">
+                  <label
+                    htmlFor="New Password"
+                    className="block text-lg font-medium text-[#003554]"
+                  >
+                    New Password
+                  </label>
+                  <div className="mt-2">
+                    <input
+                      id="New Password"
+                      name="New Password"
+                      type="password"
+                      autoComplete="family-name"
+                      className="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-[#003554] sm:text-sm/6"
+                    />
+                  </div>
+                </div>
+                <div className="sm:col-span-3">
+                  <label
+                    htmlFor="Confirm New Password"
+                    className="block text-lg font-medium text-[#003554]"
+                  >
+                    Confirm New Password
+                  </label>
+                  <div className="mt-2">
+                    <input
+                      id="Confirm New Password"
+                      name="Confirm New Password"
+                      type="password"
+                      autoComplete="family-name"
+                      className="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-[#003554] sm:text-sm/6"
+                    />
+                  </div>
+                </div>
+              </div>
+              <div className="flex items-center gap-3 mt-5">
+                <button className="text-[#003554] font-medium rounded-lg text-sm px-5 py-2.5 text-center border border-[#003554] hover:bg-[#003554] hover:text-white">
+                  Cancel
+                </button>
+                <button className="text-white font-medium rounded-lg text-sm px-5 py-2.5 text-center bg-[#003554] border hover:text-[#003554] hover:bg-transparent hover:border-[#003554]">
+                  Update
+                </button>
+              </div>
+            </div>
+            {/* delete ac */}
+            <div className="sm:pe-48 my-10">
+              <h2 className="font-semibold text-[#003554] text-[30px]">
+                Delete Your Account
+              </h2>
+              <div className="flex items-center gap-3 mt-5">
+                <button
+                  onClick={() => setOpen(true)}
+                  className="text-white font-medium rounded-lg text-sm px-5 py-2.5 text-center bg-red-600 border hover:border-red hover:bg-red-700"
+                >
+                  Delete Your Account
+                </button>
+              </div>
+            </div>
+            <Dialog open={open} onClose={setOpen} className="relative z-10">
+              <DialogBackdrop
+                transition
+                className="fixed inset-0 bg-gray-500/75 transition-opacity data-closed:opacity-0 data-enter:duration-300 data-enter:ease-out data-leave:duration-200 data-leave:ease-in"
+              />
 
-export default Dashboard;
+              <div className="fixed inset-0 z-10 w-screen overflow-y-auto">
+                <div className="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
+                  <DialogPanel
+                    transition
+                    className="relative transform overflow-hidden rounded-lg bg-white text-left shadow-xl transition-all data-closed:translate-y-4 data-closed:opacity-0 data-enter:duration-300 data-enter:ease-out data-leave:duration-200 data-leave:ease-in sm:my-8 sm:w-full sm:max-w-lg data-closed:sm:translate-y-0 data-closed:sm:scale-95"
+                  >
+                    <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                      <div className="sm:flex sm:items-start">
+                        <div className="mx-auto flex size-12 shrink-0 items-center justify-center rounded-full bg-red-100 sm:mx-0 sm:size-10">
+                          <ExclamationTriangleIcon
+                            aria-hidden="true"
+                            className="size-6 text-red-600"
+                          />
+                        </div>
+                        <div className="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
+                          <DialogTitle
+                            as="h3"
+                            className="text-base font-semibold text-gray-900"
+                          >
+                            Deactivate account
+                          </DialogTitle>
+                          <div className="mt-2">
+                            <p className="text-sm text-gray-500">
+                              Are you sure you want to deactivate your account?
+                              All of your data will be permanently removed. This
+                              action cannot be undone.
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="bg-gray-50 px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6">
+                      <button
+                        type="button"
+                        onClick={() => setOpen(false)}
+                        className="inline-flex w-full justify-center rounded-md bg-red-600 px-3 py-2 text-sm font-semibold text-white shadow-xs hover:bg-red-500 sm:ml-3 sm:w-auto"
+                      >
+                        Deactivate
+                      </button>
+                      <button
+                        type="button"
+                        data-autofocus
+                        onClick={() => setOpen(false)}
+                        className="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-xs ring-1 ring-gray-300 ring-inset hover:bg-gray-50 sm:mt-0 sm:w-auto"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </DialogPanel>
+                </div>
+              </div>
+            </Dialog>
+          </div>
+        );
+      case "Shipping Address":
+        return <div>Manage shipping addresses here...</div>;
+      case "Quotations":
+        return(
+        <div class="relative">
+          <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400 border dark:border-gray-700">
+            <thead class="text-xs text-[#003554] uppercase ">
+              <tr className="border-b dark:border-gray-700">
+                <th scope="col" class="px-6 py-3">
+                  Id
+                </th>
+                <th scope="col" class="px-6 py-3">
+                  Date
+                </th>
+                <th scope="col" class="px-6 py-3">
+                  Status
+                </th>
+                <th scope="col" class="px-6 py-3">
+                  Download
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="border-b dark:border-gray-700  text-[#514B4B]">
+                <th
+                  scope="row"
+                  class="px-6 py-4 font-medium text-[#514B4B] whitespace-nowrap"
+                >
+                  Q123KLI
+                </th>
+                <td class="px-6 py-4">05/12/2025</td>
+                <td class="px-6 py-4">Sent</td>
+                <td class="px-6 py-4">
+                  <a
+                    href="#"
+                    class="font-medium text-[#003554] hover:underline"
+                  >
+                    Download
+                  </a>
+                </td>
+              </tr>
+               <tr class="border-b dark:border-gray-700  text-[#514B4B]">
+                <th
+                  scope="row"
+                  class="px-6 py-4 font-medium text-[#514B4B] whitespace-nowrap"
+                >
+                  Q123KLI
+                </th>
+                <td class="px-6 py-4">05/12/2025</td>
+                <td class="px-6 py-4">Sent</td>
+                <td class="px-6 py-4">
+                  <a
+                    href="#"
+                    class="font-medium text-[#003554] hover:underline"
+                  >
+                    Download
+                  </a>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>);
+      case "Help Center":
+        return <div>FAQ and contact support...</div>;
+      default:
+        return null;
+    }
+  }
+
+  const [activeTab, setActiveTab] = useState("Orders");
+  const tabs = [
+    "Orders",
+    "Settings",
+    "Shipping Address",
+    "Quotations",
+    "Help Center",
+  ];
+
+  const [open, setOpen] = useState(false);
+
+  return (
+    <>
+      <div className="md:px-12">
+        <div className="flex flex-col md:flex-row p-4">
+          <aside className="bg-[#F2F2F2] md:w-64 w-full p-4 rounded-2xl">
+            <h2 className="text-lg font-semibold mb-4 text-[#003554]">
+              Account
+            </h2>
+            <ul className="space-y-2">
+              {tabs.map((tab) => (
+                <li
+                  key={tab}
+                  onClick={() => setActiveTab(tab)}
+                  className={`cursor-pointer px-3 py-2 rounded ${
+                    activeTab === tab
+                      ? "bg-[#003554] text-white font-medium"
+                      : "text-[#003554] hover:bg-blue-100 font-medium"
+                  }`}
+                >
+                  {tab}
+                </li>
+              ))}
+            </ul>
+          </aside>
+          <main className="flex-1 px-4">
+            <h2 className="text-lg font-semibold mb-4 text-[#003554] bg-[#F2F2F2] px-2.5 py-3 rounded-t-[15px]">
+              {activeTab}
+            </h2>
+            <div className="bg-[#F2F2F2] h-[calc(100vh-6rem)] rounded-lg p-4 overflow-y-auto">
+              {/* Dynamic content goes here */}
+              {renderTabContent(activeTab)}
+            </div>
+          </main>
+        </div>
+      </div>
+      <Footer />
+    </>
+  );
+}
+
+export default Userdashboard;

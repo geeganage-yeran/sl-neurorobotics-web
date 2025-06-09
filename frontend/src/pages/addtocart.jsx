@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Trash2, Plus, Minus, ShoppingBag, Tag, Truck, X } from 'lucide-react';
 
-const ShoppingCartPage = () => {
+const AddToCart = () => {
     const [cartItems, setCartItems] = useState([
         {
             id: 1,
@@ -314,4 +314,4 @@ const ShoppingCartPage = () => {
     );
 };
 
-export default ShoppingCartPage;
+export default AddToCart;
