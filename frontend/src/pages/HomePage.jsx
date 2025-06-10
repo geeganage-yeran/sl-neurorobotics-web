@@ -69,9 +69,9 @@ export default function HomePage() {
               <br />
               Brainwaves
             </h1>
-            <Button variant="primary" px="px-6" size="large">
+            <a href="/product"><Button variant="primary" px="px-6" size="large">
               View All Products
-            </Button>
+            </Button></a>
           </div>
         </div>
       </div>
