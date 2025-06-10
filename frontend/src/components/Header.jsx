@@ -28,9 +28,11 @@ const Header = () => {
     setIsMobileMenuOpen(false);
   };
 
+  
+
   return (
-    <header className="bg-white shadow-md py-4 px-6 fixed top-0 left-0 w-full z-50">
-      <div className="container mx-auto flex items-center justify-between">
+    <header className="fixed top-0 left-0 z-50 w-full px-6 py-4 bg-white shadow-md">
+      <div className="flex items-center justify-between mx-auto max-w-7xl">
         {/* Left Section - Logo */}
         <div className="flex items-center">
           <Link to="/">
@@ -39,7 +41,7 @@ const Header = () => {
         </div>
 
         {/* Desktop Navigation - Hidden on mobile/tablet */}
-        <nav className="hidden lg:flex space-x-12">
+        <nav className="hidden space-x-12 lg:flex">
           <a
             href="/"
             className="font-semibold text-[#003554] hover:text-[#006494] transition-colors"
@@ -47,7 +49,7 @@ const Header = () => {
             Home
           </a>
           <a
-            href=""
+            href="/resources"
             className="font-semibold text-[#003554] hover:text-[#006494] transition-colors"
           >
             Resources
@@ -65,7 +67,7 @@ const Header = () => {
             About Us
           </a>
           <a
-            href="#"
+            href="/about#contactUs"
             className="font-semibold text-[#003554] hover:text-[#006494] transition-colors"
           >
             Contact
@@ -73,7 +75,7 @@ const Header = () => {
         </nav>
 
         {/* Right Section - Desktop */}
-        <div className="hidden lg:flex items-center space-x-4">
+        <div className="items-center hidden space-x-4 lg:flex">
           {/* Search Icon Button */}
           <button
             onClick={handleSearchToggle}
@@ -102,7 +104,7 @@ const Header = () => {
         </div>
 
         {/* Mobile/Tablet Right Section */}
-        <div className="flex lg:hidden items-center space-x-4">
+        <div className="flex items-center space-x-4 lg:hidden">
           {/* Search Icon for Mobile */}
           <button
             onClick={handleSearchToggle}
@@ -125,7 +127,7 @@ const Header = () => {
 
       {/* Mobile Search Box - Shows below header when open */}
       {isSearchOpen && (
-        <div className="lg:hidden mt-4 px-4">
+        <div className="max-w-6xl px-6 mx-auto mt-4 lg:hidden">
           <input
             type="text"
             value={searchTerm}
@@ -139,17 +141,17 @@ const Header = () => {
 
       {/* Mobile Menu Overlay */}
       {isMobileMenuOpen && (
-        <div className="lg:hidden absolute top-full left-0 right-0 bg-white shadow-lg border-t z-50">
-          <nav className="flex flex-col py-4">
+        <div className="absolute left-0 right-0 z-50 bg-white border-t shadow-lg lg:hidden top-full">
+          <nav className="flex flex-col max-w-6xl py-4 mx-auto">
             <a
-              href="#"
+              href="/"
               className="px-6 py-3 font-medium text-[#003554] hover:text-[#006494] hover:bg-gray-100 transition-colors border-b border-gray-100"
               onClick={handleLinkClick}
             >
               Home
             </a>
             <a
-              href="#"
+              href="/resources"
               className="px-6 py-3 font-medium text-[#003554] hover:text-[#006494] hover:bg-gray-100 transition-colors border-b border-gray-100"
               onClick={handleLinkClick}
             >
@@ -163,14 +165,14 @@ const Header = () => {
               Shop
             </a>
             <a
-              href="#"
+              href="/about"
               className="px-6 py-3 font-medium text-[#003554] hover:text-[#006494] hover:bg-gray-100 transition-colors border-b border-gray-100"
               onClick={handleLinkClick}
             >
               About Us
             </a>
             <a
-              href="#"
+              href="/about#contactUs"
               className="px-6 py-3 font-medium text-[#003554] hover:text-[#006494] hover:bg-gray-100 transition-colors border-b border-gray-100"
               onClick={handleLinkClick}
             >

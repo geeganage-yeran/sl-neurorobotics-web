@@ -6,6 +6,7 @@ import product1 from "../assets/landing.png";
 import product2 from "../assets/chairbed.png";
 import Alert from "../components/Alert";
 
+
 export default function HomePage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [email, setEmail] = useState("");
@@ -68,19 +69,19 @@ export default function HomePage() {
               <br />
               Brainwaves
             </h1>
-            <button className="bg-[#006494] hover:bg-[#003554] text-white px-8 py-3 rounded-lg text-lg font-semibold transition-colors transform hover:scale-105 cursor-pointer">
+            <Button variant="primary" px="px-6" size="large">
               View All Products
-            </button>
+            </Button>
           </div>
         </div>
       </div>
 
       {/* Upcoming Devices Section */}
       <section className="py-12 bg-gray-50">
-        <div className="px-4 mx-auto max-w-7xl sm:px-6 lg:px-8">
+        <div data-aos="fade-up" className="px-4 mx-auto max-w-7xl sm:px-6 lg:px-8">
           <div className="mb-12 text-center">
-            <h2 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-[#003554] mb-6">
-              Upcoming Devices
+            <h2 className="text-4xl sm:text-4xl lg:text-5xl font-bold text-[#003554] mb-6">
+              Upcoming Device
             </h2>
             <p className="max-w-3xl mx-auto text-lg text-gray-600 lg:text-xl">
               Our upcoming products are designed to push the boundaries of
@@ -130,7 +131,7 @@ export default function HomePage() {
 
       {/* New Arrivals Section */}
       <section className="py-20 bg-[#051923]">
-        <div className="px-4 mx-auto max-w-7xl sm:px-6 lg:px-8">
+        <div data-aos="fade-up" className="px-4 mx-auto max-w-7xl sm:px-6 lg:px-8">
           <div className="bg-[#051923] rounded-2xl shadow-2xl overflow-hidden">
             <div className="grid items-center gap-0 lg:grid-cols-2">
               <div className="p-8 lg:p-12 bg-[#051923] flex items-center justify-center min-h-96">
@@ -145,7 +146,7 @@ export default function HomePage() {
                 </div>
               </div>
               <div className="p-8 lg:p-12">
-                <span className="text-[#0582CA] text-lg font-bold uppercase tracking-wider">
+                <span className="text-[#0582CA] text-xl font-bold uppercase tracking-wider animate-pulse">
                   New Arrivals
                 </span>
                 <h3
