@@ -55,7 +55,7 @@ const Header = () => {
             Resources
           </a>
           <a
-            href="#"
+            href="/product"
             className="font-semibold text-[#003554] hover:text-[#006494] transition-colors"
           >
             Shop
