@@ -6,7 +6,6 @@ const Footer = () => {
         <footer className="px-6 py-12 text-white bg-[#121212]">
             <div className="mx-auto max-w-7xl">
                 <div className="grid grid-cols-1 gap-8 md:grid-cols-4">
-                    {/* Logo and Company Info Section */}
                     <div className="col-span-1 md:col-span-2">
                         <div className="flex items-center mb-4">
 
@@ -25,7 +24,6 @@ const Footer = () => {
                         </div>
                     </div>
 
-                    {/* Product Section */}
                     <div>
                         <h3 className="mb-4 font-semibold text-white">Product</h3>
                         <ul className="space-y-2 text-sm text-gray-400">
@@ -36,7 +34,6 @@ const Footer = () => {
                         </ul>
                     </div>
 
-                    {/* Company Section */}
                     <div>
                         <h3 className="mb-4 font-semibold text-white">Company</h3>
                         <ul className="space-y-2 text-sm text-gray-400">
@@ -48,7 +45,6 @@ const Footer = () => {
                     </div>
                 </div>
 
-                {/* Follow Section */}
                 <div className="pt-6 mt-8 border-t border-gray-800">
                     <div className="flex flex-col items-start justify-between md:flex-row md:items-center">
                         <div className="mb-4 md:mb-0">
@@ -79,7 +75,6 @@ const Footer = () => {
                     </div>
                 </div>
 
-                {/* Copyright */}
                 <div className="pt-4 mt-6 border-t border-gray-800">
                     <div className="text-sm text-center text-gray-400">
                         <p>© 2025 SL Neurorobotics. All rights reserved.</p>
