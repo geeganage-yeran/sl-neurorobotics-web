@@ -6,7 +6,7 @@ import Footer from "../components/Footer";
 
 function Product() {
   return (
-    <div>
+    <div className="mt-24">
       <div className="px-4 md:px-12">
         <div className="flex flex-col text-center gap-4">
           <h1 className="font-semibold text-[#051923] text-5xl md:text-7xl">Shop</h1>

@@ -1,46 +1,43 @@
 import React, { useState } from "react";
 import logo from "../assets/image4.png";
-import { FaSearch, FaBars, FaTimes } from "react-icons/fa"; // Importing icons
+import { FaSearch, FaBars, FaTimes } from "react-icons/fa";
 import { Link } from "react-router-dom";
 
 const Header = () => {
-  const [isSearchOpen, setIsSearchOpen] = useState(false); // State to toggle the search box visibility
-  const [searchTerm, setSearchTerm] = useState(""); // State to hold the search term
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false); // State for mobile menu
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-  // Function to toggle the search box visibility
+  // Function to toggle the search box
   const handleSearchToggle = () => {
     setIsSearchOpen(!isSearchOpen);
   };
 
-  // Function to handle changes in the search input
+  // Function handle changes in search input
   const handleSearchChange = (event) => {
     setSearchTerm(event.target.value);
   };
 
-  // Function to toggle mobile menu
+  // Function toggle mobile menu
   const handleMobileMenuToggle = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
   };
 
-  // Function to close mobile menu when a link is clicked
+  // Function close mobile menu
   const handleLinkClick = () => {
     setIsMobileMenuOpen(false);
   };
 
-  
-
   return (
     <header className="fixed top-0 left-0 z-50 w-full px-6 py-4 bg-white shadow-md">
       <div className="flex items-center justify-between mx-auto max-w-7xl">
-        {/* Left Section - Logo */}
         <div className="flex items-center">
           <Link to="/">
             <img src={logo} alt="SL Neurorobotics Logo" className="h-8" />
           </Link>
         </div>
 
-        {/* Desktop Navigation - Hidden on mobile/tablet */}
+        {/* Desktop Navigation */}
         <nav className="hidden space-x-12 lg:flex">
           <a
             href="/"
@@ -74,9 +71,7 @@ const Header = () => {
           </a>
         </nav>
 
-        {/* Right Section - Desktop */}
         <div className="items-center hidden space-x-4 lg:flex">
-          {/* Search Icon Button */}
           <button
             onClick={handleSearchToggle}
             className="text-gray-700 hover:text-[#006494] transition-colors p-2 cursor-pointer"
@@ -85,7 +80,6 @@ const Header = () => {
             <FaSearch />
           </button>
 
-          {/* Conditional Rendering of Search Box */}
           {isSearchOpen && (
             <input
               type="text"
@@ -97,15 +91,12 @@ const Header = () => {
             />
           )}
 
-          {/* Account Button */}
           <button className="px-5 py-2 bg-[#006494] text-white rounded-md hover:bg-[#003554] font-semibold transition-all duration-300 ease-in-out cursor-pointer">
             Account
           </button>
         </div>
 
-        {/* Mobile/Tablet Right Section */}
         <div className="flex items-center space-x-4 lg:hidden">
-          {/* Search Icon for Mobile */}
           <button
             onClick={handleSearchToggle}
             className="text-gray-700 hover:text-[#006494] transition-colors p-2"
@@ -114,7 +105,7 @@ const Header = () => {
             <FaSearch />
           </button>
 
-          {/* Hamburger Menu Button */}
+          {/* Hamburger Menu */}
           <button
             onClick={handleMobileMenuToggle}
             className="text-gray-700 hover:text-[#006494] transition-colors p-2 cursor-pointer"
@@ -125,7 +116,6 @@ const Header = () => {
         </div>
       </div>
 
-      {/* Mobile Search Box - Shows below header when open */}
       {isSearchOpen && (
         <div className="max-w-6xl px-6 mx-auto mt-4 lg:hidden">
           <input
@@ -139,7 +129,6 @@ const Header = () => {
         </div>
       )}
 
-      {/* Mobile Menu Overlay */}
       {isMobileMenuOpen && (
         <div className="absolute left-0 right-0 z-50 bg-white border-t shadow-lg lg:hidden top-full">
           <nav className="flex flex-col max-w-6xl py-4 mx-auto">
@@ -179,7 +168,6 @@ const Header = () => {
               Contact
             </a>
 
-            {/* Account Button in Mobile Menu */}
             <div className="px-6 py-3">
               <button
                 className="w-full px-4 py-2 bg-[#006494] text-white rounded-md hover:bg-[#003554] transition-all duration-300 ease-in-out"
