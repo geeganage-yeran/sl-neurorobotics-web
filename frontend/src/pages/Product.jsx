@@ -1,15 +1,49 @@
-import React from "react";
+import React, { useState } from "react";
 import epoc from "../img/epoc.png";
 import ar from "../img/ar.gif";
 import Footer from "../components/Footer";
 
-
 function Product() {
+  const products = [
+    {
+      id: 1,
+      name: "14 channel wireless EEG",
+      subname: "Epoc X",
+      price: "$999.00",
+      image:epoc,
+    },
+    {
+      id: 2,
+      name: "14 channel wireless EEG",
+      subname: "Fpoc X",
+      price: "$999.00",
+      image:epoc,
+    },
+    {
+      id: 3,
+      name: "14 channel wireless EEG",
+      subname: "Gpoc X",
+      price: "$999.00",
+      image:epoc,
+    },
+    {
+      id: 4,
+      name: "14 channel wireless EEG",
+      subname: "Hpoc X",
+      price: "$999.00",
+      image:epoc,
+    },
+  ];
+
+  const [search,setSearch] = useState('');
+
   return (
     <div className="mt-24">
       <div className="px-4 md:px-12">
         <div className="flex flex-col text-center gap-4">
-          <h1 className="font-semibold text-[#051923] text-5xl md:text-7xl">Shop</h1>
+          <h1 className="font-semibold text-[#051923] text-5xl md:text-7xl">
+            Shop
+          </h1>
           <h1>
             Check out our full collection of products tailored to your needs.
           </h1>
@@ -22,6 +56,7 @@ function Product() {
                   class="block w-full p-2 ps-4 pr-12 text-sm border border-black rounded-3xl"
                   placeholder="Search ..."
                   required
+                  onChange={(e)=>setSearch(e.target.value)}
                 />
                 <button
                   type="submit"
@@ -47,139 +82,62 @@ function Product() {
             </form>
           </h1>
         </div>
-        <div className="flex justify-center gap-6 md:gap-14 pt-8 flex-col md:flex-row ">
-          <div class="w-full max-w-sm  rounded-lg shadow-sm bg-[#00355412]">
-            <div className="px-5 p-3">
-              <span class="text-2xl font-semibold text-black">
-                14 channel wireless EEG
-              </span>
-            </div>
-            <div className="px-5">
-              <div class="flex items-center justify-between">
-                <span class="text-4xl font-semibold text-[#003554]">
-                  Epoc X
+        <div className="flex gap-6 md:gap-x-12 py-8 lg:px-20 px-10 flex-col md:flex-row flex-wrap">
+          {products.filter((product)=>{
+            return search.toLowerCase() === '' ? product:product.subname.toLowerCase().includes(search);
+          }).map((product) => (
+            <div class="w-full max-w-sm  rounded-lg shadow-sm bg-[#00355412]" key={product.id}>
+              <div className="px-5 p-3">
+                <span class="text-2xl font-semibold text-black">
+                  {product.name}
                 </span>
-                <div class="px-5 py-2.5 ">
-                  <a href="">
-                    {" "}
-                    <img src={ar} className="w-[58px] h-[58px] " />
+              </div>
+              <div className="px-5">
+                <div class="flex items-center justify-between">
+                  <span class="text-4xl font-semibold text-[#003554]">
+                    {product.subname}
+                  </span>
+                  <div class="px-5 py-2.5 ">
+                    <a href="">
+                      {" "}
+                      <img src={ar} className="w-[58px] h-[58px] " />
+                    </a>
+                    <span className="font-medium text-[9px]">View with AR</span>
+                  </div>
+                </div>
+              </div>
+              <div className="px-5">
+                <span class="text-[20px] font-bold text-[#003554]">
+                  {product.price}
+                </span>
+              </div>
+              <a href="#">
+                <img
+                  class="p-8 rounded-t-lg transition-all duration-300 hover:scale-110"
+                  src={product.image}
+                  alt="product image"
+                />
+              </a>
+              <div class="px-5 pb-5">
+                <div class="flex items-center gap-2">
+                  <a
+                    href="#"
+                    class="text-white font-medium rounded-lg text-sm px-5 py-2.5 text-center bg-[#003554] border hover:text-[#003554] hover:bg-transparent hover:border-[#003554]"
+                  >
+                    Buy now
                   </a>
-                  <span className="font-medium text-[9px]">View with AR</span>
+                  <a
+                    href="#"
+                    class="text-[#003554] font-medium rounded-lg text-sm px-5 py-2.5 text-center border border-[#003554] hover:bg-[#003554] hover:text-white"
+                  >
+                    Add to cart
+                  </a>
                 </div>
               </div>
             </div>
-            <div className="px-5">
-              <span class="text-[20px] font-bold text-[#003554]">$999.00</span>
-            </div>
+          ))}
 
-            <a href="#">
-              <img class="p-8 rounded-t-lg transition-all duration-300 hover:scale-110" src={epoc} alt="product image"/>
-            </a>
-            <div class="px-5 pb-5">
-              <div class="flex items-center gap-2">
-                <a
-                  href="#"
-                  class="text-white font-medium rounded-lg text-sm px-5 py-2.5 text-center bg-[#003554] border hover:text-[#003554] hover:bg-transparent hover:border-[#003554]"
-                >
-                  Buy now
-                </a>
-                <a
-                  href="#"
-                  class="text-[#003554] font-medium rounded-lg text-sm px-5 py-2.5 text-center border border-[#003554] hover:bg-[#003554] hover:text-white"
-                >
-                  Add to cart
-                </a>
-              </div>
-            </div>
-          </div>
-           <div class="w-full max-w-sm  rounded-lg shadow-sm bg-[#00355412]">
-            <div className="px-5 p-3">
-              <span class="text-2xl font-semibold text-black">
-                14 channel wireless EEG
-              </span>
-            </div>
-            <div className="px-5">
-              <div class="flex items-center justify-between">
-                <span class="text-4xl font-semibold text-[#003554]">
-                  Epoc X
-                </span>
-                <div class="px-5 py-2.5 ">
-                  <a href="">
-                    {" "}
-                    <img src={ar} className="w-[58px] h-[58px]" />
-                  </a>
-                  <span className="font-medium text-[9px]">View with AR</span>
-                </div>
-              </div>
-            </div>
-            <div className="px-5">
-              <span class="text-[20px] font-bold text-[#003554]">$999.00</span>
-            </div>
-
-            <a href="#">
-              <img class="p-8 rounded-t-lg transition-all duration-300 hover:scale-110" src={epoc} alt="product image" />
-            </a>
-            <div class="px-5 pb-5">
-              <div class="flex items-center gap-2">
-                <a
-                  href="#"
-                  class="text-white font-medium rounded-lg text-sm px-5 py-2.5 text-center bg-[#003554] border hover:text-[#003554] hover:bg-transparent hover:border-[#003554]"
-                >
-                  Buy now
-                </a>
-                <a
-                  href="#"
-                  class="text-[#003554] font-medium rounded-lg text-sm px-5 py-2.5 text-center border border-[#003554] hover:bg-[#003554] hover:text-white"
-                >
-                  Add to cart
-                </a>
-              </div>
-            </div>
-          </div>
-              <div class="w-full max-w-sm  rounded-lg shadow-sm bg-[#FAF4EE]">
-            <div className="px-5 p-3 flex items-center justify-between">
-              <span class="text-2xl font-semibold text-black">
-                14 channel wireless EEG
-              </span>
-               <span class="text-sm font-semibold text-black bg-white px-2">
-                New
-              </span>
-            </div>
-            <div className="px-5">
-              <div class="pt-8">
-                <span class="text-4xl font-semibold text-[#003554]">
-                  Epoc X
-                </span>
-                {/* <div class="px-5 py-2.5 ">
-                  <a href="">
-                    {" "}
-                    <img src={ar} className="w-[58px] h-[58px]" />
-                  </a>
-                  <span className="font-medium text-[9px]">View with AR</span>
-                </div> */}
-              </div>
-            </div>
-            <div className="px-5 py-4">
-              <span class="text-[20px] font-bold text-[#003554]">Coming Soon</span>
-            </div>
-
-            <a href="#">
-              <img class="p-8 rounded-t-lg transition-all duration-300 hover:scale-110" src={epoc} alt="product image" />
-            </a>
-            <div class="px-5 pb-5">
-              <div class="flex items-center">
-                <a
-                  href="#"
-                  class="text-[#003554] font-medium rounded-lg text-sm px-5 py-2.5 text-center border border-[#003554] hover:bg-[#003554] hover:text-white"
-                >
-                  Learn More
-                </a>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div className="flex justify-center gap-6 md:gap-14 py-8 flex-col md:flex-row">
-          <div class="w-full max-w-sm  rounded-lg shadow-sm bg-[#00355412]">
+          {/* <div class="w-full max-w-sm  rounded-lg shadow-sm bg-[#00355412]">
             <div className="px-5 p-3">
               <span class="text-2xl font-semibold text-black">
                 14 channel wireless EEG
@@ -204,7 +162,11 @@ function Product() {
             </div>
 
             <a href="#">
-              <img class="p-8 rounded-t-lg transition-all duration-300 hover:scale-110" src={epoc} alt="product image" />
+              <img
+                class="p-8 rounded-t-lg transition-all duration-300 hover:scale-110"
+                src={epoc}
+                alt="product image"
+              />
             </a>
             <div class="px-5 pb-5">
               <div class="flex items-center gap-2">
@@ -222,98 +184,10 @@ function Product() {
                 </a>
               </div>
             </div>
-          </div>
-           <div class="w-full max-w-sm  rounded-lg shadow-sm bg-[#FAF4EE]">
-            <div className="px-5 p-3">
-              <span class="text-2xl font-semibold text-black">
-                14 channel wireless EEG
-              </span>
-            </div>
-            <div className="px-5">
-              <div class="flex items-center justify-between">
-                <span class="text-4xl font-semibold text-[#003554]">
-                  Epoc X
-                </span>
-                <div class="px-5 py-2.5 ">
-                  <a href="">
-                    {" "}
-                    <img src={ar} className="w-[58px] h-[58px]" />
-                  </a>
-                  <span className="font-medium text-[9px]">View with AR</span>
-                </div>
-              </div>
-            </div>
-            <div className="px-5">
-              <span class="text-[20px] font-bold text-[#003554]">$999.00</span>
-            </div>
-
-            <a href="#">
-              <img class="p-8 rounded-t-lg transition-all duration-300 hover:scale-110" src={epoc} alt="product image" />
-            </a>
-            <div class="px-5 pb-5">
-              <div class="flex items-center gap-2">
-                <a
-                  href="#"
-                  class="text-white font-medium rounded-lg text-sm px-5 py-2.5 text-center bg-[#003554] border hover:text-[#003554] hover:bg-transparent hover:border-[#003554]"
-                >
-                  Buy now
-                </a>
-                <a
-                  href="#"
-                  class="text-[#003554] font-medium rounded-lg text-sm px-5 py-2.5 text-center border border-[#003554] hover:bg-[#003554] hover:text-white"
-                >
-                  Add to cart
-                </a>
-              </div>
-            </div>
-          </div>
-              <div class="w-full max-w-sm  rounded-lg shadow-sm bg-[#00355412]">
-            <div className="px-5 p-3">
-              <span class="text-2xl font-semibold text-black">
-                14 channel wireless EEG
-              </span>
-            </div>
-            <div className="px-5">
-              <div class="flex items-center justify-between">
-                <span class="text-4xl font-semibold text-[#003554]">
-                  Epoc X
-                </span>
-                <div class="px-5 py-2.5 ">
-                  <a href="">
-                    {" "}
-                    <img src={ar} className="w-[58px] h-[58px]" />
-                  </a>
-                  <span className="font-medium text-[9px]">View with AR</span>
-                </div>
-              </div>
-            </div>
-            <div className="px-5">
-              <span class="text-[20px] font-bold text-[#003554]">$999.00</span>
-            </div>
-
-            <a href="#">
-              <img class="p-8 rounded-t-lg transition-all duration-300 hover:scale-110" src={epoc} alt="product image" />
-            </a>
-            <div class="px-5 pb-5">
-              <div class="flex items-center gap-2">
-                <a
-                  href="#"
-                  class="text-white font-medium rounded-lg text-sm px-5 py-2.5 text-center bg-[#003554] border hover:text-[#003554] hover:bg-transparent hover:border-[#003554]"
-                >
-                  Buy now
-                </a>
-                <a
-                  href="#"
-                  class="text-[#003554] font-medium rounded-lg text-sm px-5 py-2.5 text-center border border-[#003554] hover:bg-[#003554] hover:text-white"
-                >
-                  Add to cart
-                </a>
-              </div>
-            </div>
-          </div>
+          </div> */}
         </div>
       </div>
-      <Footer/>
+      <Footer />
     </div>
   );
 }
