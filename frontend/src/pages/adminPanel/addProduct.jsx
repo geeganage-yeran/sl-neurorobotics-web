@@ -1,6 +1,8 @@
 import React, { useState } from "react";
-import { Plus, X, Upload, Trash2 } from "lucide-react";
+import axios from "axios";
+import { Plus, X, Upload, Trash2, ChevronUp, ChevronDown } from "lucide-react";
 import Button from "../../components/Button";
+import Alert from "../../components/Alert";
 import {
   validateForm,
   validateField,
@@ -30,6 +32,24 @@ const addProduct = () => {
   const [specErrors, setSpecErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  const [alert, setAlert] = useState({
+    open: false,
+    message: "",
+    type: "success",
+    position: "top-right",
+  });
+
+  {
+    /* Handling alerts section */
+  }
+  const showAlert = (message, type = "success", position = "top-right") => {
+    setAlert({ open: true, message, type, position });
+  };
+
+  const closeAlert = () => {
+    setAlert((prev) => ({ ...prev, open: false }));
+  };
+
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
     const newValue = type === "checkbox" ? checked : value;
@@ -46,6 +66,14 @@ const addProduct = () => {
         return newErrors;
       });
     }
+  };
+
+  // Fixed toggle handler specifically for the enabled field
+  const handleToggleEnabled = () => {
+    setFormData((prev) => ({
+      ...prev,
+      enabled: !prev.enabled,
+    }));
   };
 
   const handleBlur = (fieldName) => {
@@ -102,6 +130,14 @@ const addProduct = () => {
     setSpecifications((prev) => prev.filter((spec) => spec.id !== id));
   };
 
+  // Update display orders after any image list change
+  const updateDisplayOrders = (images) => {
+    return images.map((image, index) => ({
+      ...image,
+      displayOrder: index + 1,
+    }));
+  };
+
   const handleImageUpload = (e) => {
     const files = Array.from(e.target.files);
     const validFiles = [];
@@ -125,6 +161,7 @@ const addProduct = () => {
       alert(`Image validation errors:\n${imageErrors.join("\n")}`);
     }
 
+    const newImages = [];
     validFiles.forEach((file) => {
       const reader = new FileReader();
       reader.onload = (event) => {
@@ -133,15 +170,52 @@ const addProduct = () => {
           url: event.target.result,
           name: file.name,
           file: file,
+          displayOrder: uploadedImages.length + newImages.length + 1,
         };
-        setUploadedImages((prev) => [...prev, newImage]);
+        newImages.push(newImage);
+
+        // Update state when all files are processed
+        if (newImages.length === validFiles.length) {
+          setUploadedImages((prev) =>
+            updateDisplayOrders([...prev, ...newImages])
+          );
+        }
       };
       reader.readAsDataURL(file);
     });
   };
 
   const removeImage = (id) => {
-    setUploadedImages((prev) => prev.filter((img) => img.id !== id));
+    setUploadedImages((prev) => {
+      const filtered = prev.filter((img) => img.id !== id);
+      return updateDisplayOrders(filtered);
+    });
+  };
+
+  const moveImageUp = (index) => {
+    if (index === 0) return;
+
+    setUploadedImages((prev) => {
+      const newImages = [...prev];
+      [newImages[index - 1], newImages[index]] = [
+        newImages[index],
+        newImages[index - 1],
+      ];
+      return updateDisplayOrders(newImages);
+    });
+  };
+
+  const moveImageDown = (index) => {
+    if (index === uploadedImages.length - 1) return;
+
+    setUploadedImages((prev) => {
+      const newImages = [...prev];
+      [newImages[index], newImages[index + 1]] = [
+        newImages[index + 1],
+        newImages[index],
+      ];
+      return updateDisplayOrders(newImages);
+    });
   };
 
   const handleSubmit = async (e) => {
@@ -175,28 +249,85 @@ const addProduct = () => {
       const productData = {
         ...validation.sanitizedData,
         specifications,
-        images: uploadedImages,
+        enabled: formData.enabled, // Explicitly include the enabled state
       };
 
-      console.log("Product Data:", productData);
-      alert("Product added successfully!");
+      const formDataToSend = new FormData();
 
-      // Reset form after successful submission
-      setFormData({
-        name: "",
-        summary: "",
-        description: "",
-        overview: "",
-        tutorialLink: "",
-        price: "",
-        enabled: true,
+      formDataToSend.append("product", JSON.stringify(productData));
+
+      uploadedImages.forEach((img) => {
+        formDataToSend.append("images", img.file);
+        formDataToSend.append("imageNames", img.name);
+        formDataToSend.append("displayOrders", img.displayOrder.toString());
       });
-      setSpecifications([]);
-      setUploadedImages([]);
-      setErrors({});
+
+      // Send POST request to the backend
+      const response = await axios.post(
+        "http://localhost:8080/api/products/addProduct",
+        formDataToSend,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+      console.log(response.data.message);
+
+      if (response.data === "Product created successfully") {
+        showAlert(
+          "Item added to the system successfully",
+          "success",
+          "top-right"
+        );
+        // Reset form after successful submission
+        setFormData({
+          name: "",
+          summary: "",
+          description: "",
+          overview: "",
+          tutorialLink: "",
+          price: "",
+          enabled: true,
+        });
+        setSpecifications([]);
+        setUploadedImages([]);
+        setErrors({});
+      } else {
+        showAlert(
+          "Unexpected error occur please try again",
+          "error",
+          "top-right"
+        );
+      }
     } catch (error) {
-      console.error("Error adding product:", error);
-      alert("Error adding product. Please try again.");
+      showAlert(
+        "Unexpected error occur please try again",
+        "error",
+        "top-right"
+      );
+
+      if (error.response) {
+        console.error("Response data:", error.response.data);
+        console.error("Response status:", error.response.status);
+        console.error("Response headers:", error.response.headers);
+
+        if (error.response.data && typeof error.response.data === "string") {
+          alert(`Error: ${error.response.data}`);
+        } else {
+          alert(
+            `Error adding product: ${error.response.status} - ${error.response.statusText}`
+          );
+        }
+      } else if (error.request) {
+        console.error("Request made but no response:", error.request);
+        alert(
+          "No response from server. Please check if the backend is running."
+        );
+      } else {
+        console.error("Error setting up request:", error.message);
+        alert("Error setting up request. Please try again.");
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -394,7 +525,7 @@ const addProduct = () => {
             </div>
 
             {/* Specifications Section */}
-            <div className="bg-gray-50 rounded-lg sm:rounded-xl p-4 sm:p-6">
+            <div className="rounded-lg sm:rounded-xl">
               <h3 className="text-base sm:text-lg font-semibold text-[#003554] mb-4">
                 Specifications
               </h3>
@@ -497,10 +628,14 @@ const addProduct = () => {
             </div>
 
             {/* Image Upload Section */}
-            <div className="bg-gray-50 rounded-lg sm:rounded-xl p-4 sm:p-6">
+            <div className="rounded-lg sm:rounded-xl">
               <h3 className="text-base sm:text-lg font-semibold text-[#003554] mb-4">
                 Product Images
               </h3>
+              <p className="text-xs sm:text-sm text-gray-600 mb-4">
+                Upload images and reorder them to set display priority. The
+                first image will be the main product image.
+              </p>
 
               {/* Upload Area */}
               <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 sm:p-6 lg:p-8 text-center mb-4 sm:mb-6">
@@ -536,40 +671,104 @@ const addProduct = () => {
                 </label>
               </div>
 
-              {/* Uploaded Images */}
+              {/* Uploaded Images with Ordering */}
               {uploadedImages.length > 0 && (
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 sm:gap-4">
-                  {uploadedImages.map((image) => (
-                    <div
-                      key={image.id}
-                      className="relative bg-white rounded-lg p-2 shadow-sm"
-                    >
-                      <img
-                        src={image.url}
-                        alt={image.name}
-                        className="w-full h-16 sm:h-20 lg:h-24 object-cover rounded"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => removeImage(image.id)}
-                        className="absolute -top-1 -right-1 sm:-top-2 sm:-right-2 bg-red-500 hover:bg-red-600 text-white rounded-full p-1 transition-colors"
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <h4 className="font-medium text-gray-800 text-sm sm:text-base">
+                      Uploaded Images ({uploadedImages.length}/10)
+                    </h4>
+                    <p className="text-xs text-gray-500">
+                      Use arrows to reorder images
+                    </p>
+                  </div>
+
+                  <div className="space-y-2">
+                    {uploadedImages.map((image, index) => (
+                      <div
+                        key={image.id}
+                        className="bg-white rounded-lg p-3 shadow-sm border"
                       >
-                        <Trash2
-                          size={10}
-                          className="sm:w-3 cursor-pointer sm:h-3"
-                        />
-                      </button>
-                      <p className="text-xs text-gray-600 mt-1 truncate">
-                        {image.name}
-                      </p>
-                    </div>
-                  ))}
+                        <div className="flex items-center gap-3">
+                          {/* Display Order Badge */}
+                          <div className="flex-shrink-0">
+                            <span className="inline-flex items-center justify-center w-8 h-8 bg-[#0582CA] text-white text-sm font-medium rounded-full">
+                              {image.displayOrder}
+                            </span>
+                          </div>
+
+                          {/* Image Preview */}
+                          <div className="flex-shrink-0">
+                            <img
+                              src={image.url}
+                              alt={image.name}
+                              className="w-16 h-16 sm:w-20 sm:h-20 object-cover rounded"
+                            />
+                          </div>
+
+                          {/* Image Info */}
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium text-gray-900 truncate">
+                              {image.name}
+                            </p>
+                            <p className="text-xs text-gray-500">
+                              Display Order: {image.displayOrder}
+                              {index === 0 && " (Main Image)"}
+                            </p>
+                          </div>
+
+                          {/* Action Buttons */}
+                          <div className="flex items-center gap-1">
+                            {/* Move Up Button */}
+                            <button
+                              type="button"
+                              onClick={() => moveImageUp(index)}
+                              disabled={index === 0}
+                              className={`p-1 rounded transition-colors ${
+                                index === 0
+                                  ? "text-gray-300 cursor-not-allowed"
+                                  : "text-gray-600 hover:text-gray-800 hover:bg-gray-100"
+                              }`}
+                              title="Move up"
+                            >
+                              <ChevronUp size={16} />
+                            </button>
+
+                            {/* Move Down Button */}
+                            <button
+                              type="button"
+                              onClick={() => moveImageDown(index)}
+                              disabled={index === uploadedImages.length - 1}
+                              className={`p-1 rounded transition-colors ${
+                                index === uploadedImages.length - 1
+                                  ? "text-gray-300 cursor-not-allowed"
+                                  : "text-gray-600 hover:text-gray-800 hover:bg-gray-100"
+                              }`}
+                              title="Move down"
+                            >
+                              <ChevronDown size={16} />
+                            </button>
+
+                            {/* Delete Button */}
+                            <button
+                              type="button"
+                              onClick={() => removeImage(image.id)}
+                              className="p-1 text-red-500 hover:text-red-700 hover:bg-red-50 rounded transition-colors ml-1"
+                              title="Remove image"
+                            >
+                              <Trash2 size={16} />
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               )}
             </div>
 
-            {/* Enable/Disable Toggle */}
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between bg-gray-50 rounded-lg sm:rounded-xl p-4 sm:p-6 gap-3 sm:gap-0">
+            {/* Enable/Disable Toggle - FIXED VERSION */}
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between bg-gray-50 rounded-lg sm:rounded-xl p-4 gap-3 sm:gap-0">
               <div>
                 <h3 className="text-base sm:text-lg font-semibold text-[#003554]">
                   Product Status
@@ -578,19 +777,28 @@ const addProduct = () => {
                   Enable or disable this product
                 </p>
               </div>
-              <label className="relative inline-flex items-center cursor-pointer">
-                <input
-                  type="checkbox"
-                  name="enabled"
-                  checked={formData.enabled}
-                  onChange={handleInputChange}
-                  className="sr-only peer"
-                />
-                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-[#0582CA] rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-500"></div>
-                <span className="ml-3 text-sm font-medium text-gray-700">
+              <div className="flex items-center gap-3">
+                <span
+                  className={`text-sm font-medium ${
+                    formData.enabled ? "text-green-600" : "text-gray-500"
+                  }`}
+                >
                   {formData.enabled ? "Enabled" : "Disabled"}
                 </span>
-              </label>
+                <button
+                  type="button"
+                  onClick={handleToggleEnabled}
+                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-[#0582CA] focus:ring-offset-2 ${
+                    formData.enabled ? "bg-green-500" : "bg-gray-200"
+                  }`}
+                >
+                  <span
+                    className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                      formData.enabled ? "translate-x-6" : "translate-x-1"
+                    }`}
+                  />
+                </button>
+              </div>
             </div>
 
             {/* Submit Button */}
@@ -600,6 +808,14 @@ const addProduct = () => {
               </Button>
             </div>
           </form>
+          <Alert
+            open={alert.open}
+            onClose={closeAlert}
+            message={alert.message}
+            type={alert.type}
+            position={alert.position}
+            autoHideDuration={3000}
+          />
         </div>
       </div>
     </div>

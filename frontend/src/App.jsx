@@ -6,7 +6,7 @@ import AddCart from "./pages/addtocart";
 import ResourcesPage from "./pages/ResourcesPage";
 import Userdashboard from "./pages/UserDashboard";
 import AdminDashboard from "./pages/AdminDashboard";
-import Register from "./pages/reg";
+//import Register from "./pages/RegistrationPage";
 
 function App() {
   const [count, setCount] = useState(0);
@@ -20,7 +20,6 @@ function App() {
         <Route path="/resources" element={<ResourcesPage />} />
         <Route path="/dashboard/*" element={<Userdashboard />} />
         <Route path="/admin/*" element={<AdminDashboard />} />
-        <Route path="/reg" element={<Register />} />
       </Routes>
     </BrowserRouter>
   );
