@@ -13,7 +13,6 @@ function UserDashboard() {
         <Route path="/" element={<Product />} />
         <Route path="account/*" element={<UserAccountOverview />} />
       </Routes>
-      <ChatBot/>
     </>
   );
 }
