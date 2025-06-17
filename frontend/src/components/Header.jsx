@@ -1,12 +1,18 @@
 import React, { useState } from "react";
 import logo from "../assets/image4.png";
 import { FaSearch, FaBars, FaTimes } from "react-icons/fa";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 const Header = () => {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  const navigate=useNavigate();
+
+  const handleAccountClick=()=>{
+    navigate("/user-reg");
+  }
 
   // Function to toggle the search box
   const handleSearchToggle = () => {
@@ -91,7 +97,7 @@ const Header = () => {
             />
           )}
 
-          <button className="px-5 py-2 bg-[#006494] text-white rounded-md hover:bg-[#003554] font-semibold transition-all duration-300 ease-in-out cursor-pointer">
+          <button className="px-5 py-2 bg-[#006494] text-white rounded-md hover:bg-[#003554] font-semibold transition-all duration-300 ease-in-out cursor-pointer" onClick={handleAccountClick}>
             Account
           </button>
         </div>
@@ -171,7 +177,7 @@ const Header = () => {
             <div className="px-6 py-3">
               <button
                 className="w-full px-4 py-2 bg-[#006494] text-white rounded-md hover:bg-[#003554] transition-all duration-300 ease-in-out"
-                onClick={handleLinkClick}
+                onClick={handleAccountClick}
               >
                 Account
               </button>

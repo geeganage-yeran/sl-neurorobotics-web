@@ -1,10 +1,12 @@
 import React, { useState } from "react";
 import Header from "../components/Header";
+
 import Footer from "../components/Footer";
 import Button from "../components/Button";
 import product1 from "../assets/landing.png";
 import product2 from "../assets/chairbed.png";
 import Alert from "../components/Alert";
+import ChatBot from "../components/ChatBot"
 
 
 export default function HomePage() {
@@ -146,7 +148,7 @@ export default function HomePage() {
                 </div>
               </div>
               <div className="p-8 lg:p-12">
-                <span className="text-[#0582CA] text-xl font-bold uppercase tracking-wider animate-pulse">
+                <span className="text-[#0582CA] text-2xl font-bold uppercase tracking-wider animate-pulse">
                   New Arrivals
                 </span>
                 <h3
@@ -204,6 +206,8 @@ export default function HomePage() {
           />
         </div>
       </section>
+
+      <ChatBot/>
       <Footer />
     </div>
   );
