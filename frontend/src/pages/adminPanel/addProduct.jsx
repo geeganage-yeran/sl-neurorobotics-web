@@ -272,7 +272,7 @@ const addProduct = () => {
           },
         }
       );
-      console.log(response.data.message);
+      //console.log(response.data.message);
 
       if (response.data === "Product created successfully") {
         showAlert(

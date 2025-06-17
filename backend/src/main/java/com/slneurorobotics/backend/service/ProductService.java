@@ -5,8 +5,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.slneurorobotics.backend.dto.productRequestDTO;
-import com.slneurorobotics.backend.entity.product;
-import com.slneurorobotics.backend.entity.product_image;
+import com.slneurorobotics.backend.entity.Product;
+import com.slneurorobotics.backend.entity.Product_image;
 import com.slneurorobotics.backend.repository.productRepository;
 import com.slneurorobotics.backend.repository.productImageRepository;
 import lombok.RequiredArgsConstructor;
@@ -29,13 +29,13 @@ public class ProductService {
     @Value("${product.image.upload.dir}")
     private String productImageUploadDir;
 
-    @Value("${product.details.json.file:products_details.json}")
+    @Value("${Product.details.json.file:products_details.json}")
     private String productDetailsJsonFile;
 
     @Transactional
     public void saveProduct(productRequestDTO productRequest, List<MultipartFile> images, List<String> imageNames, List<Integer> displayOrders) {
-        // 1. Save product data
-        product product = new product();
+        // 1. Save Product data
+        Product product = new Product();
         product.setName(productRequest.getName());
         product.setSummary(productRequest.getSummary());
         product.setDescription(productRequest.getDescription());
@@ -68,7 +68,7 @@ public class ProductService {
                     String imageName = imageNames.get(i);
                     Integer displayOrder = displayOrders.get(i);
 
-                    // Create the product directory if it doesn't exist
+                    // Create the Product directory if it doesn't exist
                     String productDir = productImageUploadDir + File.separator + product.getId();
                     File dir = new File(productDir);
                     if (!dir.exists()) {
@@ -79,8 +79,8 @@ public class ProductService {
                     String imagePath = productDir + File.separator + imageName;
                     imageFile.transferTo(new File(imagePath));
 
-                    // 4. Create ProductImage entity and link it to the product
-                    product_image productImage = new product_image();
+                    // 4. Create ProductImage entity and link it to the Product
+                    Product_image productImage = new Product_image();
                     productImage.setProduct(product);
                     productImage.setImageName(imageName);
                     productImage.setImageUrl(imagePath);  // Save the path to the image
@@ -95,7 +95,7 @@ public class ProductService {
         }
     }
 
-    private void appendProductDetailsToJson(product product, productRequestDTO productRequest) {
+    private void appendProductDetailsToJson(Product product, productRequestDTO productRequest) {
         try {
             ObjectMapper mapper = new ObjectMapper();
             File jsonFile = new File(productDetailsJsonFile);
@@ -111,7 +111,7 @@ public class ProductService {
 
                     // Check if the root is an array (legacy format)
                     if (existingJson.isArray()) {
-                        // If it's an array, just append the new product directly to the array
+                        // If it's an array, just append the new Product directly to the array
                         productsArray.addAll((ArrayNode) existingJson);
                     }
                     // Check if it's an object with a "products" property
@@ -128,7 +128,7 @@ public class ProductService {
                 }
             }
 
-            // Create the product object to be added
+            // Create the Product object to be added
             ObjectNode productNode = mapper.createObjectNode();
             productNode.put("id", product.getId());
             productNode.put("name", productRequest.getName());
@@ -138,7 +138,7 @@ public class ProductService {
             productNode.put("price", productRequest.getPrice());
             productNode.put("enabled", productRequest.getEnabled());
 
-            // Add new product to the array
+            // Add new Product to the array
             productsArray.add(productNode);
 
             // Set the products array in the root node
@@ -148,7 +148,7 @@ public class ProductService {
             mapper.writerWithDefaultPrettyPrinter().writeValue(jsonFile, rootNode);
 
         } catch (Exception e) {
-            System.err.println("Error appending product details to JSON file: " + e.getMessage());
+            System.err.println("Error appending Product details to JSON file: " + e.getMessage());
             e.printStackTrace();
         }
     }

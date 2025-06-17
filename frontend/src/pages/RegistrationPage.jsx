@@ -1,7 +1,21 @@
 import React, { useState } from "react";
 import LeftImage from "../assets/image1.jpg";
+import axios from "axios";
+import Alert from "../components/Alert";
+import {
+  validateForm,
+  hasErrors,
+  sanitizeFormData,
+  validateFirstName,
+  validateLastName,
+  validateEmail,
+  validateContact,
+  validateCountry,
+  validatePassword,
+  validateConfirmPassword,
+} from "../utils/signupValidation";
 
-export default function SignupPage() {
+export default function RegistrationPage() {
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -12,16 +26,222 @@ export default function SignupPage() {
     confirmPassword: "",
   });
 
-  const handleInputChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
+  const [alert, setAlert] = useState({
+    open: false,
+    message: "",
+    type: "success",
+    position: "top-right",
+  });
+
+  {
+    /* Handling alerts section */
+  }
+  const showAlert = (message, type = "success", position = "top-right") => {
+    setAlert({ open: true, message, type, position });
   };
 
-  const handleSubmit = (e) => {
+  const closeAlert = () => {
+    setAlert((prev) => ({ ...prev, open: false }));
+  };
+
+  const [errors, setErrors] = useState({
+    firstName: "",
+    lastName: "",
+    email: "",
+    contact: "",
+    country: "",
+    password: "",
+    confirmPassword: "",
+  });
+
+  const [touched, setTouched] = useState({
+    firstName: false,
+    lastName: false,
+    email: false,
+    contact: false,
+    country: false,
+    password: false,
+    confirmPassword: false,
+  });
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+
+    setFormData({
+      ...formData,
+      [name]: value,
+    });
+
+    if (touched[name]) {
+      let error = "";
+      switch (name) {
+        case "firstName":
+          error = validateFirstName(value);
+          break;
+        case "lastName":
+          error = validateLastName(value);
+          break;
+        case "email":
+          error = validateEmail(value);
+          break;
+        case "contact":
+          error = validateContact(value);
+          break;
+        case "country":
+          error = validateCountry(value);
+          break;
+        case "password":
+          error = validatePassword(value);
+          // Also revalidate confirm password if it's been touched
+          if (touched.confirmPassword) {
+            setErrors((prev) => ({
+              ...prev,
+              confirmPassword: validateConfirmPassword(
+                value,
+                formData.confirmPassword
+              ),
+            }));
+          }
+          break;
+        case "confirmPassword":
+          error = validateConfirmPassword(formData.password, value);
+          break;
+        default:
+          break;
+      }
+
+      setErrors((prev) => ({
+        ...prev,
+        [name]: error,
+      }));
+    }
+  };
+
+  const handleBlur = (e) => {
+    const { name } = e.target;
+
+    setTouched((prev) => ({
+      ...prev,
+      [name]: true,
+    }));
+
+    // Validate field on blur
+    let error = "";
+    switch (name) {
+      case "firstName":
+        error = validateFirstName(formData[name]);
+        break;
+      case "lastName":
+        error = validateLastName(formData[name]);
+        break;
+      case "email":
+        error = validateEmail(formData[name]);
+        break;
+      case "contact":
+        error = validateContact(formData[name]);
+        break;
+      case "country":
+        error = validateCountry(formData[name]);
+        break;
+      case "password":
+        error = validatePassword(formData[name]);
+        break;
+      case "confirmPassword":
+        error = validateConfirmPassword(formData.password, formData[name]);
+        break;
+      default:
+        break;
+    }
+
+    setErrors((prev) => ({
+      ...prev,
+      [name]: error,
+    }));
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("Form submitted:", formData);
+
+    setTouched({
+      firstName: true,
+      lastName: true,
+      email: true,
+      contact: true,
+      country: true,
+      password: true,
+      confirmPassword: true,
+    });
+
+    const formErrors = validateForm(formData);
+    setErrors(formErrors);
+
+    if (!hasErrors(formErrors)) {
+      const sanitizedData = sanitizeFormData(formData);
+      console.log("Form submitted successfully:", sanitizedData);
+
+      try {
+        const response = await axios.post(
+          "http://localhost:8080/api/user/register",
+          sanitizedData,
+          {
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }
+        );
+
+        if (response.data.success) {
+          showAlert(response.data.message);
+
+          setFormData({
+            firstName: "",
+            lastName: "",
+            email: "",
+            contact: "",
+            country: "",
+            password: "",
+            confirmPassword: "",
+          });
+
+          setTouched({
+            firstName: false,
+            lastName: false,
+            email: false,
+            contact: false,
+            country: false,
+            password: false,
+            confirmPassword: false,
+          });
+
+          setErrors({});
+        }
+      } catch (error) {
+        if (error.response && error.response.data) {
+          const errorData = error.response.data;
+
+          if (errorData.errors) {
+            showAlert(errorData.errors, "error");
+          } else {
+            showAlert(errorData.message, "error");
+          }
+        } else {
+          console.log("Network error occurred");
+        }
+      }
+    } else {
+      console.log("Form has validation errors:", formErrors);
+    }
+  };
+
+  const getInputClassName = (fieldName) => {
+    const baseClasses =
+      "w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-[#0582CA] focus:border-transparent transition-all duration-200";
+
+    if (touched[fieldName] && errors[fieldName]) {
+      return `${baseClasses} border-red-500 hover:border-red-400`;
+    }
+
+    return `${baseClasses} border-gray-200 hover:border-gray-300`;
   };
 
   return (
@@ -49,15 +269,18 @@ export default function SignupPage() {
           </div>
 
           {/* Form */}
-          <div data-aos="fade-up" className="bg-white rounded-2xl shadow-xl p-8">
-            <div className="space-y-5">
+          <div
+            data-aos="fade-up"
+            className="bg-white rounded-2xl shadow-xl p-8"
+          >
+            <form onSubmit={handleSubmit} className="space-y-5">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label
                     htmlFor="firstName"
                     className="block text-sm font-semibold text-gray-700 mb-2"
                   >
-                    First Name <span className="text-red-600" >*</span>
+                    First Name <span className="text-red-600">*</span>
                   </label>
                   <input
                     type="text"
@@ -65,10 +288,16 @@ export default function SignupPage() {
                     name="firstName"
                     value={formData.firstName}
                     onChange={handleInputChange}
+                    onBlur={handleBlur}
                     placeholder="Your first name"
-                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#0582CA] focus:border-transparent transition-all duration-200 hover:border-gray-300"
+                    className={getInputClassName("firstName")}
                     required
                   />
+                  {touched.firstName && errors.firstName && (
+                    <p className="mt-1 text-sm text-red-600">
+                      {errors.firstName}
+                    </p>
+                  )}
                 </div>
 
                 <div>
@@ -76,7 +305,7 @@ export default function SignupPage() {
                     htmlFor="lastName"
                     className="block text-sm font-semibold text-gray-700 mb-2"
                   >
-                    Last Name <span className="text-red-600" >*</span>
+                    Last Name <span className="text-red-600">*</span>
                   </label>
                   <input
                     type="text"
@@ -84,10 +313,16 @@ export default function SignupPage() {
                     name="lastName"
                     value={formData.lastName}
                     onChange={handleInputChange}
+                    onBlur={handleBlur}
                     placeholder="Your last name"
-                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#0582CA] focus:border-transparent transition-all duration-200 hover:border-gray-300"
+                    className={getInputClassName("lastName")}
                     required
                   />
+                  {touched.lastName && errors.lastName && (
+                    <p className="mt-1 text-sm text-red-600">
+                      {errors.lastName}
+                    </p>
+                  )}
                 </div>
               </div>
 
@@ -96,7 +331,7 @@ export default function SignupPage() {
                   htmlFor="email"
                   className="block text-sm font-semibold text-gray-700 mb-2"
                 >
-                  Email Address <span className="text-red-600" >*</span>
+                  Email Address <span className="text-red-600">*</span>
                 </label>
                 <input
                   type="email"
@@ -104,10 +339,14 @@ export default function SignupPage() {
                   name="email"
                   value={formData.email}
                   onChange={handleInputChange}
+                  onBlur={handleBlur}
                   placeholder="slneuro@example.com"
-                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#0582CA] focus:border-transparent transition-all duration-200 hover:border-gray-300"
+                  className={getInputClassName("email")}
                   required
                 />
+                {touched.email && errors.email && (
+                  <p className="mt-1 text-sm text-red-600">{errors.email}</p>
+                )}
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -116,7 +355,7 @@ export default function SignupPage() {
                     htmlFor="contact"
                     className="block text-sm font-semibold text-gray-700 mb-2"
                   >
-                    Phone Number <span className="text-red-600" >*</span>
+                    Phone Number <span className="text-red-600">*</span>
                   </label>
                   <input
                     type="tel"
@@ -124,10 +363,16 @@ export default function SignupPage() {
                     name="contact"
                     value={formData.contact}
                     onChange={handleInputChange}
+                    onBlur={handleBlur}
                     placeholder="+94 7544 4456"
-                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#0582CA] focus:border-transparent transition-all duration-200 hover:border-gray-300"
+                    className={getInputClassName("contact")}
                     required
                   />
+                  {touched.contact && errors.contact && (
+                    <p className="mt-1 text-sm text-red-600">
+                      {errors.contact}
+                    </p>
+                  )}
                 </div>
 
                 <div>
@@ -135,14 +380,15 @@ export default function SignupPage() {
                     htmlFor="country"
                     className="block text-sm font-semibold text-gray-700 mb-2"
                   >
-                    Country <span className="text-red-600" >*</span>
+                    Country <span className="text-red-600">*</span>
                   </label>
                   <select
                     id="country"
                     name="country"
                     value={formData.country}
                     onChange={handleInputChange}
-                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#0582CA] focus:border-transparent transition-all duration-200 hover:border-gray-300 bg-white"
+                    onBlur={handleBlur}
+                    className={`${getInputClassName("country")} bg-white`}
                     required
                   >
                     <option value="">Select Country</option>
@@ -232,7 +478,6 @@ export default function SignupPage() {
                     <option value="AF">Afghanistan</option>
                     <option value="PK">Pakistan</option>
                     <option value="BD">Bangladesh</option>
-                    <option value="LK">Sri Lanka</option>
                     <option value="NP">Nepal</option>
                     <option value="BT">Bhutan</option>
                     <option value="MV">Maldives</option>
@@ -256,6 +501,11 @@ export default function SignupPage() {
                     <option value="FM">Micronesia</option>
                     <option value="MH">Marshall Islands</option>
                   </select>
+                  {touched.country && errors.country && (
+                    <p className="mt-1 text-sm text-red-600">
+                      {errors.country}
+                    </p>
+                  )}
                 </div>
               </div>
 
@@ -264,7 +514,7 @@ export default function SignupPage() {
                   htmlFor="password"
                   className="block text-sm font-semibold text-gray-700 mb-2"
                 >
-                  Password 
+                  Password <span className="text-red-600">*</span>
                 </label>
                 <input
                   type="password"
@@ -272,10 +522,14 @@ export default function SignupPage() {
                   name="password"
                   value={formData.password}
                   onChange={handleInputChange}
+                  onBlur={handleBlur}
                   placeholder="••••••••"
-                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#0582CA] focus:border-transparent transition-all duration-200 hover:border-gray-300"
+                  className={getInputClassName("password")}
                   required
                 />
+                {touched.password && errors.password && (
+                  <p className="mt-1 text-sm text-red-600">{errors.password}</p>
+                )}
               </div>
 
               <div>
@@ -283,7 +537,7 @@ export default function SignupPage() {
                   htmlFor="confirmPassword"
                   className="block text-sm font-semibold text-gray-700 mb-2"
                 >
-                  Confirm Password
+                  Confirm Password <span className="text-red-600">*</span>
                 </label>
                 <input
                   type="password"
@@ -291,20 +545,25 @@ export default function SignupPage() {
                   name="confirmPassword"
                   value={formData.confirmPassword}
                   onChange={handleInputChange}
+                  onBlur={handleBlur}
                   placeholder="••••••••"
-                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#0582CA] focus:border-transparent transition-all duration-200 hover:border-gray-300"
+                  className={getInputClassName("confirmPassword")}
                   required
                 />
+                {touched.confirmPassword && errors.confirmPassword && (
+                  <p className="mt-1 text-sm text-red-600">
+                    {errors.confirmPassword}
+                  </p>
+                )}
               </div>
 
               <button
-                onClick={handleSubmit}
+                type="submit"
                 className="w-full bg-[#006494] text-white font-semibold py-3 px-4 rounded-lg hover:bg-[#003554] focus:outline-none focus:ring-2 focus:ring-[#0582CA] focus:ring-offset-2 transform transition-all cursor-pointer duration-200 hover:scale-105 shadow-lg"
               >
                 Create Account
               </button>
-
-            </div>
+            </form>
 
             <div className="mt-6">
               <div className="relative">
@@ -356,6 +615,14 @@ export default function SignupPage() {
           </div>
         </div>
       </div>
+      <Alert
+        open={alert.open}
+        onClose={closeAlert}
+        message={alert.message}
+        type={alert.type}
+        position={alert.position}
+        autoHideDuration={3000}
+      />
     </div>
   );
 }

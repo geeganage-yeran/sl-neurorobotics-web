@@ -10,12 +10,12 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @Entity
-@Table(name="product")
+@Table(name="Product")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 
-public class product {
+public class Product {
     @Id
     @GeneratedValue(strategy= GenerationType.IDENTITY)
     private Long id;
@@ -45,7 +45,7 @@ public class product {
     private Boolean enabled = true;
 
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-    private List<product_image> images;
+    private List<Product_image> images;
 
     @Column(name = "created_at")
     private LocalDateTime createdAt;

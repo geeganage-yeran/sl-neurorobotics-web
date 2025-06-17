@@ -30,7 +30,7 @@ public class productController {
             productService.saveProduct(productRequest, images, imageNames, displayOrders);
             return ResponseEntity.ok("Product created successfully");
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body("Failed to create product: " + e.getMessage());
+            return ResponseEntity.badRequest().body("Failed to create Product: " + e.getMessage());
         }
     }
 }

@@ -8,12 +8,12 @@ import lombok.NoArgsConstructor;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "product_image")
+@Table(name = "Product_image")
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 
-public class product_image {
+public class Product_image {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -36,7 +36,7 @@ public class product_image {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "product_id", nullable = false)
-    private product product;
+    private Product product;
 
     @PrePersist
     protected void onCreate() {
