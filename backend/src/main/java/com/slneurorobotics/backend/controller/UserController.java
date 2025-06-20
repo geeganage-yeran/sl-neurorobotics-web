@@ -1,9 +1,8 @@
 package com.slneurorobotics.backend.controller;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.slneurorobotics.backend.dto.errorResponseDTO;
-import com.slneurorobotics.backend.dto.userRegistrationDTO;
-import com.slneurorobotics.backend.service.userService;
+import com.slneurorobotics.backend.dto.response.ErrorResponseDTO;
+import com.slneurorobotics.backend.dto.request.UserRegistrationDTO;
+import com.slneurorobotics.backend.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -20,34 +19,33 @@ import java.util.Map;
 @RestController
 @RequestMapping("api/user")
 @RequiredArgsConstructor
-public class userController {
+public class UserController {
 
-    private final ObjectMapper objectMapper;
-    private final userService userService;
+    private final UserService userService;
 
     @PostMapping("/register")
-    public ResponseEntity<errorResponseDTO> registerUser(@Valid @RequestBody userRegistrationDTO userRegistrationDTO, BindingResult bindingResult) {
+    public ResponseEntity<ErrorResponseDTO> registerUser(@Valid @RequestBody UserRegistrationDTO userRegistrationDTO, BindingResult bindingResult) {
         try {
             if(bindingResult.hasErrors()){
                 Map<String, String> errors = new HashMap<>();
                 bindingResult.getFieldErrors().forEach(error ->
                         errors.put(error.getField(), error.getDefaultMessage())
                 );
-                errorResponseDTO errorResponse = new errorResponseDTO(false, "Validation failed", errors);
+                ErrorResponseDTO errorResponse = new ErrorResponseDTO(false, "Validation failed", errors);
                 return ResponseEntity.badRequest().body(errorResponse);
             }
 
             //success response
             userService.registerUser(userRegistrationDTO);
-            errorResponseDTO successResponse = new errorResponseDTO(true, "User registered successfully");
+            ErrorResponseDTO successResponse = new ErrorResponseDTO(true, "User registered successfully");
             return ResponseEntity.ok(successResponse);
 
         }catch (IllegalArgumentException e){
-            errorResponseDTO errorResponse = new errorResponseDTO(false, e.getMessage());
+            ErrorResponseDTO errorResponse = new ErrorResponseDTO(false, e.getMessage());
             errorResponse.setErrorType("BUSINESS_ERROR");
             return ResponseEntity.badRequest().body(errorResponse);
         } catch (Exception e) {
-            errorResponseDTO errorResponse = new errorResponseDTO(false, "An unexpected error occurred during registration");
+            ErrorResponseDTO errorResponse = new ErrorResponseDTO(false, "An unexpected error occurred during registration");
             errorResponse.setErrorType("SYSTEM_ERROR");
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
         }

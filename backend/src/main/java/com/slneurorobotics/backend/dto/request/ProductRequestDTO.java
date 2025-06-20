@@ -1,4 +1,4 @@
-package com.slneurorobotics.backend.dto;
+package com.slneurorobotics.backend.dto.request;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
@@ -12,7 +12,7 @@ import java.util.Map;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class productRequestDTO {
+public class ProductRequestDTO {
     private String name;
     private String summary;
     private String description;

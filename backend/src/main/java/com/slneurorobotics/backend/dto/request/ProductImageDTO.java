@@ -1,4 +1,4 @@
-package com.slneurorobotics.backend.dto;
+package com.slneurorobotics.backend.dto.request;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -8,7 +8,7 @@ import org.springframework.web.multipart.MultipartFile;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class productImageDTO {
+public class ProductImageDTO {
     private String imageName;
     private Integer displayOrder;
     private MultipartFile file;

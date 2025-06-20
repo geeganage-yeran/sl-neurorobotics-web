@@ -1,7 +1,7 @@
 package com.slneurorobotics.backend.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.slneurorobotics.backend.dto.productRequestDTO;
+import com.slneurorobotics.backend.dto.request.ProductRequestDTO;
 import com.slneurorobotics.backend.service.ProductService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -13,7 +13,7 @@ import java.util.List;
 @RestController
 @RequestMapping("api/products")
 @RequiredArgsConstructor
-public class productController {
+public class ProductController {
 
     private final ProductService productService;
     private final ObjectMapper objectMapper;
@@ -26,7 +26,7 @@ public class productController {
             @RequestParam("displayOrders") List<Integer> displayOrders
     ) {
         try {
-            productRequestDTO productRequest = objectMapper.readValue(productJson, productRequestDTO.class);
+            ProductRequestDTO productRequest = objectMapper.readValue(productJson, ProductRequestDTO.class);
             productService.saveProduct(productRequest, images, imageNames, displayOrders);
             return ResponseEntity.ok("Product created successfully");
         } catch (Exception e) {

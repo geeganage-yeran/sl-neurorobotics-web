@@ -1,4 +1,5 @@
-package com.slneurorobotics.backend.dto;
+package com.slneurorobotics.backend.dto.request;
+
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -11,7 +12,7 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class userRegistrationDTO {
+public class UserRegistrationDTO {
 
     @NotBlank(message = "Email is required")
     @Email(message = "Please provide a valid email address")
@@ -41,6 +42,4 @@ public class userRegistrationDTO {
 
     @NotBlank(message = "Country is required")
     private String country;
-
-    private Boolean is_admin=false;
 }

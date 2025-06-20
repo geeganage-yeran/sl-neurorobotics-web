@@ -5,8 +5,6 @@ import Button from "../components/Button";
 import product1 from "../assets/landing.png";
 import product2 from "../assets/chairbed.png";
 import Alert from "../components/Alert";
-import ChatBot from "../components/ChatBot"
-
 
 export default function HomePage() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -205,8 +203,6 @@ export default function HomePage() {
           />
         </div>
       </section>
-
-      <ChatBot/>
       <Footer />
     </div>
   );

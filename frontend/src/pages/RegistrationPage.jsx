@@ -13,9 +13,10 @@ import {
   validateCountry,
   validatePassword,
   validateConfirmPassword,
-} from "../utils/signupValidation";
+} from "../utils/SignupValidation";
 
 export default function RegistrationPage() {
+  
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -181,7 +182,7 @@ export default function RegistrationPage() {
 
       try {
         const response = await axios.post(
-          "http://localhost:8080/api/user/register",
+          "http://localhost:8080/api/auth/register",
           sanitizedData,
           {
             headers: {
@@ -245,9 +246,9 @@ export default function RegistrationPage() {
   };
 
   return (
-    <div className="min-h-screen flex overflow-hidden">
+    <div className="min-h-screen bg-[#F5F5F5] flex overflow-hidden">
       {/* Left side -Image */}
-      <div className="hidden lg:block lg:w-1/2 fixed left-0 top-0 h-screen">
+      <div data-aos="fade-right" className="hidden lg:block lg:w-1/2 fixed left-0 top-0 h-screen">
         <img
           src={LeftImage}
           alt="LeftImage"
@@ -260,7 +261,7 @@ export default function RegistrationPage() {
         <div className="w-full max-w-lg">
           {/* Header */}
           <div className="text-center mb-8">
-            <h2 className="text-3xl font-bold text-gray-900 mb-2">
+            <h2 className="text-3xl font-bold text-[#003554] mb-2">
               Get Started Now
             </h2>
             <p className="text-gray-600">
@@ -606,7 +607,7 @@ export default function RegistrationPage() {
             <p className="mt-6 text-center text-sm text-gray-600">
               Already have an account?{" "}
               <a
-                href="#"
+                href="/user-log"
                 className="font-semibold text-[#0582CA] transition-colors duration-200"
               >
                 Sign in here

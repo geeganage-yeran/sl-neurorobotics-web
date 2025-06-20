@@ -4,11 +4,11 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.slneurorobotics.backend.dto.productRequestDTO;
+import com.slneurorobotics.backend.dto.request.ProductRequestDTO;
 import com.slneurorobotics.backend.entity.Product;
 import com.slneurorobotics.backend.entity.Product_image;
-import com.slneurorobotics.backend.repository.productRepository;
-import com.slneurorobotics.backend.repository.productImageRepository;
+import com.slneurorobotics.backend.repository.ProductRepository;
+import com.slneurorobotics.backend.repository.ProductImageRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -23,8 +23,8 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ProductService {
 
-    private final productRepository productRepository;
-    private final productImageRepository productImageRepository;
+    private final ProductRepository productRepository;
+    private final ProductImageRepository productImageRepository;
 
     @Value("${product.image.upload.dir}")
     private String productImageUploadDir;
@@ -33,7 +33,7 @@ public class ProductService {
     private String productDetailsJsonFile;
 
     @Transactional
-    public void saveProduct(productRequestDTO productRequest, List<MultipartFile> images, List<String> imageNames, List<Integer> displayOrders) {
+    public void saveProduct(ProductRequestDTO productRequest, List<MultipartFile> images, List<String> imageNames, List<Integer> displayOrders) {
         // 1. Save Product data
         Product product = new Product();
         product.setName(productRequest.getName());
@@ -95,7 +95,7 @@ public class ProductService {
         }
     }
 
-    private void appendProductDetailsToJson(Product product, productRequestDTO productRequest) {
+    private void appendProductDetailsToJson(Product product, ProductRequestDTO productRequest) {
         try {
             ObjectMapper mapper = new ObjectMapper();
             File jsonFile = new File(productDetailsJsonFile);
