@@ -8,21 +8,44 @@ import Userdashboard from "./pages/UserDashboard";
 import AdminDashboard from "./pages/AdminDashboard";
 import Register from "./pages/RegistrationPage";
 import Login from "./pages/LoginPage";
+import ProtectedRoute from "./components/ProtectedRoute";
+import Page404 from "./pages/404Page";
 
 function App() {
-  const [count, setCount] = useState(0);
-
   return (
     <BrowserRouter>
       <Routes>
+        {/* No authentication needed */}
+
         <Route path="/" element={<HomePage />} />
         <Route path="/about" element={<AboutPage />} />
         <Route path="/addcart" element={<AddCart />} />
         <Route path="/resources" element={<ResourcesPage />} />
-        <Route path="/dashboard/*" element={<Userdashboard />} />
-        <Route path="/admin/*" element={<AdminDashboard />} />
         <Route path="/user-reg" element={<Register />} />
-        <Route path="/user-log" element={<Login />} />
+        <Route path="/login" element={<Login />} />
+
+        {/* Authentication needed */}
+
+        <Route
+          path="/dashboard/*"
+          element={
+            <ProtectedRoute requiredRole="USER">
+              <Userdashboard />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/admin/*"
+          element={
+            <ProtectedRoute requiredRole="ADMIN">
+              <AdminDashboard />
+            </ProtectedRoute>
+          }
+        />
+
+        {/*404 Page catchup */}
+        <Route path="*" element={<Page404 />} />
       </Routes>
     </BrowserRouter>
   );

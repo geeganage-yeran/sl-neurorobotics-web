@@ -22,7 +22,7 @@ public class AuthService {
     private final JwtUtil jwtUtil;
     private final UserDetailsServiceImpl userDetailsService;
 
-    // Simple in-memory blacklist (use Redis in production)
+    // Simple in-memory blacklist
     private final Set<String> blacklistedTokens = new HashSet<>();
 
     public User getUserByEmail(String email) {
@@ -30,37 +30,50 @@ public class AuthService {
                 .orElseThrow(() -> new UsernameNotFoundException("User not found: " + email));
     }
 
-    public LoginResponseDTO refreshAccessToken(String refreshToken) {
+    public static class RefreshResult {
+        public final String accessToken;
+        public final String refreshToken;
+        public final LoginResponseDTO responseDto;
+
+        public RefreshResult(String accessToken, String refreshToken, LoginResponseDTO responseDto) {
+            this.accessToken = accessToken;
+            this.refreshToken = refreshToken;
+            this.responseDto = responseDto;
+        }
+    }
+
+    public RefreshResult refreshAccessToken(String refreshToken) {
         try {
-            // Validate refresh token
+
+            if (isTokenBlacklisted(refreshToken)) {
+                throw new RuntimeException("Refresh token is blacklisted");
+            }
+
             if (!jwtUtil.isRefreshToken(refreshToken) || jwtUtil.isTokenExpired(refreshToken)) {
                 throw new RuntimeException("Invalid refresh token");
             }
 
             String username = jwtUtil.extractUsername(refreshToken);
             UserDetails userDetails = userDetailsService.loadUserByUsername(username);
-            User user = getUserByEmail(username);
 
-            // Generate new access token
+
             String newAccessToken = jwtUtil.generateToken(userDetails);
+            String newRefreshToken = jwtUtil.generateRefreshToken(userDetails);
 
-            LoginResponseDTO.UserInfoDTO userInfo = LoginResponseDTO.UserInfoDTO.builder()
-                    .id(user.getId())
-                    .firstName(user.getFirstName())
-                    .lastName(user.getLastName())
-                    .email(user.getEmail())
-                    .role(user.getRole().name())
-                    .build();
 
-            return LoginResponseDTO.builder()
+            if (!refreshToken.equals(newRefreshToken)) {
+                blacklistToken(refreshToken);
+            }
+
+            LoginResponseDTO responseDto = LoginResponseDTO.builder()
                     .success(true)
                     .message("Token refreshed successfully")
-                    .accessToken(newAccessToken)
-                    .refreshToken(refreshToken) // Keep the same refresh token
                     .tokenType("Bearer")
                     .expiresIn(jwtUtil.getExpirationTime() / 1000)
-                    .userInfo(userInfo)
                     .build();
+
+            // Return tokens separately so controller can set them as cookies
+            return new RefreshResult(newAccessToken, newRefreshToken, responseDto);
 
         } catch (Exception e) {
             log.error("Token refresh failed", e);

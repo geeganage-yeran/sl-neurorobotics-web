@@ -9,12 +9,18 @@ import {
   validatePassword,
   hasErrors,
 } from "../utils/SigninValidation";
+import { useNavigate } from "react-router-dom";
+import api from "../services/api";
 
 export default function LoginPage() {
   const [formData, setFormData] = useState({
     email: "",
     password: "",
   });
+
+  const navigate = useNavigate();
+
+  const [loading, setLoading] = useState(false);
 
   const [showPassword, setShowPassword] = useState(false);
 
@@ -121,34 +127,58 @@ export default function LoginPage() {
 
       console.log("Form submitted successfully:", sanitizedData);
 
-      /*       try {
-        const response = await axios.post(
-          "http://localhost:8080/api/user/login",
-          formData,
-          {
-            headers: {
-              "Content-Type": "application/json",
-            },
-          }
-        );
+      // Set loading state
+      setLoading(true);
+
+      try {
+        const response = await api.post("/auth/login", sanitizedData, {
+          headers: {
+            "Content-Type": "application/json",
+          },
+          withCredentials: true,
+          timeout: 10000,
+        });
 
         if (response.data.success) {
-          showAlert(response.data.message);
+          showAlert(response.data.message, "success");
+          setFormData({ email: "", password: "" });
+          setTouched({ email: false, password: false });
+          setErrors({});
+
+          navigate("/dashboard", { replace: true });
+        } else {
+          showAlert(response.data.message || "Login failed", "error");
         }
       } catch (error) {
         if (error.response && error.response.data) {
           const errorData = error.response.data;
+
           if (errorData.errors) {
-            showAlert(errorData.errors, "error");
+            if (typeof errorData.errors === "object") {
+              const errorMessages = Object.values(errorData.errors).join(", ");
+              showAlert(errorMessages, "error");
+            } else {
+              showAlert(errorData.errors, "error");
+            }
           } else {
-            showAlert(errorData.message, "error");
+            showAlert(errorData.message || "Login failed", "error");
           }
+        } else if (error.request) {
+          showAlert(
+            "Network error occurred. Please check your connection.",
+            "error"
+          );
         } else {
-          showAlert("Network error occurred", "error");
+          showAlert("An unexpected error occurred. Please try again.", "error");
         }
-      } */
+
+        console.error("Login error:", error);
+      } finally {
+        setLoading(false);
+      }
     } else {
-      console.log("Form Validation errors");
+      console.log("Form validation errors:", formErrors);
+      showAlert("Please fix the form errors before submitting", "error");
     }
   };
 
@@ -273,6 +303,7 @@ export default function LoginPage() {
 
               <button
                 type="submit"
+                disabled={loading}
                 className="w-full bg-[#006494] text-white font-semibold py-3 px-4 rounded-lg hover:bg-[#003554] focus:outline-none focus:ring-2 focus:ring-[#0582CA] focus:ring-offset-2 transform transition-all cursor-pointer duration-200 hover:scale-105 shadow-lg"
               >
                 Sign In

@@ -1,12 +1,13 @@
 package com.slneurorobotics.backend.dto.request;
 
-import jakarta.validation.Valid;
+
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import lombok.Builder;
 import lombok.Data;
 
 @Data
-
+@Builder
 public class LoginRequestDTO {
 
     @NotBlank(message = "Email is required")

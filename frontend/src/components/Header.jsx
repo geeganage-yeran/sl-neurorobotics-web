@@ -11,7 +11,7 @@ const Header = () => {
   const navigate=useNavigate();
 
   const handleAccountClick=()=>{
-    navigate("/user-log");
+    navigate("/login");
   }
 
   // Function to toggle the search box

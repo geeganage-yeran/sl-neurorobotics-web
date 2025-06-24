@@ -1,56 +1,66 @@
 package com.slneurorobotics.backend.controller;
 
+import com.slneurorobotics.backend.dto.response.CurrentUserResponseDTO;
 import com.slneurorobotics.backend.dto.response.ErrorResponseDTO;
-import com.slneurorobotics.backend.dto.request.UserRegistrationDTO;
-import com.slneurorobotics.backend.service.UserService;
-import jakarta.validation.Valid;
+import com.slneurorobotics.backend.dto.response.LoginResponseDTO;
+import com.slneurorobotics.backend.entity.User;
+import com.slneurorobotics.backend.service.AuthService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.HashMap;
-import java.util.Map;
 
+@Slf4j
 @RestController
-@RequestMapping("api/user")
+@RequestMapping("/api/user")
 @RequiredArgsConstructor
 public class UserController {
 
-    private final UserService userService;
+    private final AuthService authService;
 
-    @PostMapping("/register")
-    public ResponseEntity<ErrorResponseDTO> registerUser(@Valid @RequestBody UserRegistrationDTO userRegistrationDTO, BindingResult bindingResult) {
+    @GetMapping("/me")
+    public ResponseEntity<?> getCurrentUser(Authentication authentication) {
         try {
-            if(bindingResult.hasErrors()){
-                Map<String, String> errors = new HashMap<>();
-                bindingResult.getFieldErrors().forEach(error ->
-                        errors.put(error.getField(), error.getDefaultMessage())
-                );
-                ErrorResponseDTO errorResponse = new ErrorResponseDTO(false, "Validation failed", errors);
-                return ResponseEntity.badRequest().body(errorResponse);
+
+            if (authentication == null || !authentication.isAuthenticated()) {
+                ErrorResponseDTO errorResponse = new ErrorResponseDTO(false, "Not authenticated");
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorResponse);
             }
 
-            //success response
-            userService.registerUser(userRegistrationDTO);
-            ErrorResponseDTO successResponse = new ErrorResponseDTO(true, "User registered successfully");
-            return ResponseEntity.ok(successResponse);
+            String username = authentication.getName();
+            User user = authService.getUserByEmail(username);
 
-        }catch (IllegalArgumentException e){
-            ErrorResponseDTO errorResponse = new ErrorResponseDTO(false, e.getMessage());
-            errorResponse.setErrorType("BUSINESS_ERROR");
-            return ResponseEntity.badRequest().body(errorResponse);
+            if (user == null) {
+                ErrorResponseDTO errorResponse = new ErrorResponseDTO(false, "User not found");
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
+            }
+
+            LoginResponseDTO.UserInfoDTO userInfo = LoginResponseDTO.UserInfoDTO.builder()
+                    .id(user.getId())
+                    .firstName(user.getFirstName())
+                    .lastName(user.getLastName())
+                    .email(user.getEmail())
+                    .role(user.getRole().name())
+                    .build();
+
+            CurrentUserResponseDTO responseDTO = CurrentUserResponseDTO.builder()
+                    .success(true)
+                    .message("User info retrieved successfully")
+                    .userInfo(userInfo)
+                    .build();
+
+            return ResponseEntity.ok(responseDTO);
+
         } catch (Exception e) {
-            ErrorResponseDTO errorResponse = new ErrorResponseDTO(false, "An unexpected error occurred during registration");
-            errorResponse.setErrorType("SYSTEM_ERROR");
+            log.error("Get current user failed", e);
+            ErrorResponseDTO errorResponse = new ErrorResponseDTO(false, "Failed to get user info");
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
         }
     }
-
-
 
 }

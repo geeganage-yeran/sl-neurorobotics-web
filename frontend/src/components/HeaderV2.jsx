@@ -1,16 +1,20 @@
 import React, { useState } from "react";
 import logo from "../assets/image4.png";
+import { handleSignOut } from '../services/logout';
 import {
   FaSearch,
   FaShoppingCart,
   FaUser,
   FaChevronDown,
 } from "react-icons/fa";
-import { Link, useNavigate, Routes, Route } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+
 
 const HeaderV2 = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [isUserDropdownOpen, setIsUserDropdownOpen] = useState(false);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
+  
   const navigate = useNavigate(); 
 
 
@@ -25,9 +29,15 @@ const HeaderV2 = () => {
   };
 
 
-  const handleSignOut = () => {
-    setIsUserDropdownOpen(false);
-    console.log("Signing out...");
+  const handleSignOutClick = async () => {
+    if (isLoggingOut) return;
+        try {
+      await handleSignOut(navigate);
+    } catch (error) {
+      console.error('Logout error:', error);
+    } finally {
+      setIsLoggingOut(false);
+    }
   };
 
   return (
@@ -74,7 +84,8 @@ const HeaderV2 = () => {
                     Account
                   </button>
                   <button 
-                    onClick={handleSignOut}
+                    onClick={handleSignOutClick}
+                    disabled={isLoggingOut}
                     className="block w-full px-4 py-2 text-left font-semibold cursor-pointer text-gray-700 hover:bg-gray-100 transition-colors"
                   >
                     Sign Out
@@ -120,7 +131,8 @@ const HeaderV2 = () => {
                     Account
                   </button>
                   <button 
-                    onClick={handleSignOut}
+                    onClick={handleSignOutClick}
+                    disabled={isLoggingOut}
                     className="block w-full px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 transition-colors"
                   >
                     Sign Out

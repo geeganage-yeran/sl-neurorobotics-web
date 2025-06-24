@@ -607,7 +607,7 @@ export default function RegistrationPage() {
             <p className="mt-6 text-center text-sm text-gray-600">
               Already have an account?{" "}
               <a
-                href="/user-log"
+                href="/login"
                 className="font-semibold text-[#0582CA] transition-colors duration-200"
               >
                 Sign in here

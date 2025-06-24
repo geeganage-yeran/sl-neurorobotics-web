@@ -7,11 +7,16 @@ import com.slneurorobotics.backend.dto.response.ErrorResponseDTO;
 import com.slneurorobotics.backend.dto.response.LoginResponseDTO;
 import com.slneurorobotics.backend.entity.User;
 import com.slneurorobotics.backend.service.AuthService;
+import com.slneurorobotics.backend.service.UserDetailsServiceImpl;
 import com.slneurorobotics.backend.service.UserService;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -26,7 +31,7 @@ import java.util.Map;
 
 @Slf4j
 @RestController
-@RequestMapping("api/auth")
+@RequestMapping("/api/auth")
 @RequiredArgsConstructor
 public class AuthController {
 
@@ -34,6 +39,7 @@ public class AuthController {
     private final AuthenticationManager authenticationManager;
     private final AuthService authService;
     private final JwtUtil jwtUtil;
+    private final UserDetailsServiceImpl userDetailsServiceImpl;
 
     @PostMapping("/register")
     public ResponseEntity<ErrorResponseDTO> registerUser(@Valid @RequestBody UserRegistrationDTO userRegistrationDTO, BindingResult bindingResult) {
@@ -66,7 +72,7 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<?> loginUser(
             @Valid @RequestBody LoginRequestDTO loginRequest,
-            BindingResult bindingResult) {
+            BindingResult bindingResult, HttpServletResponse response) {
 
         try {
             // Validation errors
@@ -95,7 +101,11 @@ public class AuthController {
             String accessToken = jwtUtil.generateToken(userDetails);
             String refreshToken = jwtUtil.generateRefreshToken(userDetails);
 
-            // Build response
+            //Making token access only using Httponly cookies
+            setSecureCookie(response, "accessToken", accessToken, (int) (jwtUtil.getExpirationTime() / 1000));
+            setSecureCookie(response, "refreshToken", refreshToken, 7 * 24 * 60 * 60);
+
+            // Build responseDTO
             LoginResponseDTO.UserInfoDTO userInfo = LoginResponseDTO.UserInfoDTO.builder()
                     .id(user.getId())
                     .firstName(user.getFirstName())
@@ -104,18 +114,16 @@ public class AuthController {
                     .role(user.getRole().name())
                     .build();
 
-            LoginResponseDTO response = LoginResponseDTO.builder()
+            LoginResponseDTO responseDTO = LoginResponseDTO.builder()
                     .success(true)
                     .message("Login successful")
-                    .accessToken(accessToken)
-                    .refreshToken(refreshToken)
                     .tokenType("Bearer")
                     .expiresIn(jwtUtil.getExpirationTime() / 1000) // Convert to seconds
                     .userInfo(userInfo)
                     .build();
 
             log.info("User {} logged in successfully", loginRequest.getEmail());
-            return ResponseEntity.ok(response);
+            return ResponseEntity.ok(responseDTO);
 
         } catch (BadCredentialsException e) {
             log.warn("Login failed for user {}: Invalid credentials", loginRequest.getEmail());
@@ -131,43 +139,101 @@ public class AuthController {
     }
 
     @PostMapping("/refresh")
-    public ResponseEntity<?> refreshToken(@RequestBody Map<String, String> request) {
+    public ResponseEntity<?> refreshToken(HttpServletRequest request, HttpServletResponse response) {
         try {
-            String refreshToken = request.get("refresh_token");
+            // Read refresh token from cookie
+            String refreshToken = null;
+            Cookie[] cookies = request.getCookies();
+            if (cookies != null) {
+                for (Cookie cookie : cookies) {
+                    if ("refreshToken".equals(cookie.getName())) {
+                        refreshToken = cookie.getValue();
+                        break;
+                    }
+                }
+            }
 
             if (refreshToken == null) {
                 ErrorResponseDTO errorResponse = new ErrorResponseDTO(false, "Refresh token is required");
-                return ResponseEntity.badRequest().body(errorResponse);
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorResponse);
             }
 
-            // Validate refresh token and generate new access token
-            LoginResponseDTO response = authService.refreshAccessToken(refreshToken);
-            return ResponseEntity.ok(response);
+            AuthService.RefreshResult result = authService.refreshAccessToken(refreshToken);
+            setSecureCookie(response, "accessToken", result.accessToken, (int) (jwtUtil.getExpirationTime() / 1000));
+            setSecureCookie(response, "refreshToken", result.refreshToken, 7 * 24 * 60 * 60);
+
+            return ResponseEntity.ok(result.responseDto);
 
         } catch (Exception e) {
             log.error("Token refresh failed", e);
-            ErrorResponseDTO errorResponse = new ErrorResponseDTO(false, "Invalid refresh token");
-            errorResponse.setErrorType("AUTHENTICATION_ERROR");
+            ErrorResponseDTO errorResponse = new ErrorResponseDTO(false, "Token refresh failed");
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorResponse);
         }
     }
 
     @PostMapping("/logout")
-    public ResponseEntity<ErrorResponseDTO> logout(@RequestHeader("Authorization") String token) {
+    public ResponseEntity<ErrorResponseDTO> logout(HttpServletRequest request, HttpServletResponse response) {
         try {
-            // Extract token from Bearer format
-            String jwt = token.startsWith("Bearer ") ? token.substring(7) : token;
+            // Read access token from cookie
+            String accessToken = null;
+            String refreshToken = null;
 
-            // Add token to blacklist
-            authService.blacklistToken(jwt);
+            Cookie[] cookies = request.getCookies();
+            if (cookies != null) {
+                for (Cookie cookie : cookies) {
+                    if ("accessToken".equals(cookie.getName())) {
+                        accessToken = cookie.getValue();
+                    } else if ("refreshToken".equals(cookie.getName())) {
+                        refreshToken = cookie.getValue();
+                    }
+                }
+            }
 
-            ErrorResponseDTO response = new ErrorResponseDTO(true, "Logged out successfully");
-            return ResponseEntity.ok(response);
+            if (accessToken != null && !accessToken.isEmpty()) {
+                authService.blacklistToken(accessToken);
+            }
+
+            if (refreshToken != null && !refreshToken.isEmpty()) {
+                authService.blacklistToken(refreshToken);
+            }
+
+            // Clear cookies
+            clearCookie(response, "accessToken");
+            clearCookie(response, "refreshToken");
+
+            ErrorResponseDTO responseDTO = new ErrorResponseDTO(true, "Logged out successfully");
+            return ResponseEntity.ok(responseDTO);
         } catch (Exception e) {
             log.error("Logout failed", e);
             ErrorResponseDTO errorResponse = new ErrorResponseDTO(false, "Logout failed");
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
         }
+    }
+
+    //For setting HttpOnly cookies
+    private void setSecureCookie(HttpServletResponse response, String name, String value, int maxAge) {
+        ResponseCookie cookie = ResponseCookie.from(name, value)
+                .httpOnly(true)
+                .secure(false)
+                .path("/")
+                .maxAge(maxAge)
+                .sameSite("Strict")
+                .build();
+
+        response.addHeader("Set-Cookie", cookie.toString());
+    }
+
+    //Clear cookies when logout
+    private void clearCookie(HttpServletResponse response, String name) {
+        ResponseCookie cookie = ResponseCookie.from(name, "")
+                .httpOnly(true)
+                .secure(false)
+                .path("/")
+                .maxAge(0)
+                .sameSite("Strict")
+                .build();
+
+        response.addHeader("Set-Cookie", cookie.toString());
     }
 
 

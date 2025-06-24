@@ -1,5 +1,6 @@
-import React from "react";
+import { React, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
+import { handleSignOut } from "../services/logout";
 import {
   Settings,
   PackagePlus,
@@ -9,12 +10,25 @@ import {
   LayoutDashboard,
   UserCog,
   Package,
+  LogOut,
 } from "lucide-react";
 import Logo from "../assets/image5.png";
 
 const AdminSidebar = ({ activePage, setActivePage }) => {
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
+
+  const handleLogout = async () => {
+    if (isLoggingOut) return;
+    try {
+      await handleSignOut(navigate);
+    } catch (error) {
+      console.error("Logout error:", error);
+    } finally {
+      setIsLoggingOut(false);
+    }
+  };
 
   const navigationItems = [
     {
@@ -102,10 +116,21 @@ const AdminSidebar = ({ activePage, setActivePage }) => {
             );
           })}
         </nav>
+        {/* Mobile Logout Button */}
+
+        <div className="p-2 pb-4">
+          <button
+            onClick={handleLogout}
+            className="w-full cursor-pointer flex items-center justify-center p-3 rounded-lg text-white/80 hover:bg-red-500/20  transition-all duration-200"
+            title="Logout"
+          >
+            <LogOut size={20} />
+          </button>
+        </div>
       </div>
 
       {/* Desktop Sidebar */}
-      <div className="hidden lg:flex fixed top-0 left-0 h-screen bg-gray-50 border-r border-gray-200 w-75 xl:w-85 shadow-none flex-col z-30">
+      <div className="hidden lg:flex fixed top-0 left-0 overflow-auto h-screen bg-gray-50 border-r border-gray-200 w-75 xl:w-85 shadow-none flex-col z-30">
         <div className="pt-6 bg-[#003554] mb-5 pl-6">
           <Link to="/">
             <img
@@ -193,6 +218,32 @@ const AdminSidebar = ({ activePage, setActivePage }) => {
             );
           })}
         </nav>
+
+        {/* Desktop Logout Button */}
+        <div className="p-4 border-t border-gray-200">
+          <button
+            onClick={handleLogout}
+            className="w-full flex items-center justify-between p-4 rounded-xl hover:bg-red-50 text-gray-700 hover:text-red-600 transition-all duration-200 group cursor-pointer"
+          >
+            <div className="flex items-center space-x-4">
+              <div className="p-2 rounded-lg bg-gray-100 text-gray-600 group-hover:bg-red-100 group-hover:text-red-600 transition-colors">
+                <LogOut size={20} />
+              </div>
+              <div className="text-left">
+                <div className="font-medium text-gray-700 group-hover:text-red-600 transition-colors">
+                  Logout
+                </div>
+                <div className="text-xs text-gray-500 group-hover:text-red-500 transition-colors">
+                  Sign out of account
+                </div>
+              </div>
+            </div>
+            <ChevronRight
+              size={16}
+              className="text-gray-400 group-hover:text-red-500 group-hover:translate-x-1 transition-all duration-200"
+            />
+          </button>
+        </div>
 
         <div className="h-6"></div>
       </div>
