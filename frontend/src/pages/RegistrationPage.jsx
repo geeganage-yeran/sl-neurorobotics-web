@@ -1,7 +1,8 @@
 import React, { useState } from "react";
 import LeftImage from "../assets/image1.jpg";
-import axios from "axios";
+import { useNavigate } from "react-router-dom";
 import Alert from "../components/Alert";
+import api from "../services/api";
 import {
   validateForm,
   hasErrors,
@@ -16,7 +17,6 @@ import {
 } from "../utils/SignupValidation";
 
 export default function RegistrationPage() {
-  
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -33,6 +33,8 @@ export default function RegistrationPage() {
     type: "success",
     position: "top-right",
   });
+
+  const navigate = useNavigate();
 
   {
     /* Handling alerts section */
@@ -181,15 +183,12 @@ export default function RegistrationPage() {
       console.log("Form submitted successfully:", sanitizedData);
 
       try {
-        const response = await axios.post(
-          "http://localhost:8080/api/auth/register",
-          sanitizedData,
-          {
-            headers: {
-              "Content-Type": "application/json",
-            },
-          }
-        );
+        const response = await api.post("/auth/register", sanitizedData, {
+          headers: {
+            "Content-Type": "application/json",
+          },
+          withCredentials: true,
+        });
 
         if (response.data.success) {
           showAlert(response.data.message);
@@ -215,6 +214,8 @@ export default function RegistrationPage() {
           });
 
           setErrors({});
+
+          navigate("/login", { replace: true });
         }
       } catch (error) {
         if (error.response && error.response.data) {
@@ -247,8 +248,12 @@ export default function RegistrationPage() {
 
   return (
     <div className="min-h-screen bg-[#F5F5F5] flex overflow-hidden">
+      
       {/* Left side -Image */}
-      <div data-aos="fade-right" className="hidden lg:block lg:w-1/2 fixed left-0 top-0 h-screen">
+      <div
+        data-aos="fade-right"
+        className="hidden lg:block lg:w-1/2 fixed left-0 top-0 h-screen"
+      >
         <img
           src={LeftImage}
           alt="LeftImage"

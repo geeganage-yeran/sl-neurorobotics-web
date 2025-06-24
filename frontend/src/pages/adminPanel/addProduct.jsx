@@ -3,6 +3,7 @@ import axios from "axios";
 import { Plus, X, Upload, Trash2, ChevronUp, ChevronDown } from "lucide-react";
 import Button from "../../components/Button";
 import Alert from "../../components/Alert";
+import api from "../../services/api"
 import {
   validateForm,
   validateField,
@@ -263,13 +264,14 @@ const addProduct = () => {
       });
 
       // Send POST request to the backend
-      const response = await axios.post(
-        "http://localhost:8080/api/products/addProduct",
+      const response = await api.post(
+        "/admin/addProduct",
         formDataToSend,
         {
           headers: {
             "Content-Type": "multipart/form-data",
           },
+          withCredentials: true,
         }
       );
       //console.log(response.data.message);
