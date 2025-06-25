@@ -10,6 +10,8 @@ import Register from "./pages/RegistrationPage";
 import Login from "./pages/LoginPage";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Page404 from "./pages/404Page";
+import Shop from "./pages/Product";
+import Productview from "./pages/ProductView";
 
 function App() {
   return (
@@ -23,6 +25,8 @@ function App() {
         <Route path="/resources" element={<ResourcesPage />} />
         <Route path="/user-reg" element={<Register />} />
         <Route path="/login" element={<Login />} />
+        <Route path="/shop" element={<Shop />}/>
+        <Route path="/productview/:id" element={<Productview/>}/>
 
         {/* Authentication needed */}
 
