@@ -4,7 +4,7 @@ import SideBar from "../components/AdminSidebar";
 import AddProduct from "./adminPanel/addProduct";
 import ManageProduct from "./adminPanel/manageProducts"
 import Dashboard from "./adminPanel/dashboard";
-import Users from "./adminPanel/usersManagment";
+import Users from "./adminPanel\/userManagement";
 import Quotations from "./adminPanel/quotations";
 import FAQ from "./adminPanel/FAQ";
 import Settings from "./adminPanel/settings";

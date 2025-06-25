@@ -77,23 +77,11 @@ const setupInactivityChecker = () => {
   inactivityInterval = setInterval(checkInactivity, 60000);
 };
 
-const setupPageUnloadHandlers = () => {
-  const handleBeforeUnload = async() => {
-    if (navigator.sendBeacon) {
-      navigator.sendBeacon('/auth/logout', new FormData());
-    }
-    await callLogoutAPI();
-  };
-
-  window.addEventListener('beforeunload', handleBeforeUnload);
-};
-
 export const getIsLoggingOut = () => isLoggingOut;
 
 const initLogoutService = () => {
   setupActivityTracking();
   setupInactivityChecker();
-  setupPageUnloadHandlers();
 };
 
 
