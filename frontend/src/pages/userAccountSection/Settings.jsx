@@ -2,13 +2,35 @@ import React, { useState } from "react";
 import { AlertTriangle, Eye, EyeOff } from "lucide-react";
 import SecondaryButton from "../../components/SecondaryButton";
 import DeleteModal from "../../components/confirmDialog";
+import api from "../../services/api";
 
-function Settings() {
+function Settings({user}) {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
   const handleDeleteAccount = () => {
     console.log("Account deleted!");
   };
+
+  useEffect(() => {
+    const fetchUserSettings = async () => {
+
+      try {
+        const response = await api.get(
+          `http://localhost:8080/api/user/settings/${user.id}`,
+          {
+            withCredentials: true,
+            timeout: 10000,
+          }
+        );
+        console.log(response.data);
+
+      } catch (err) {
+        console.error('Settings API call failed:', err);
+      }
+    };
+
+    fetchUserSettings();
+  }, [user]);
 
   const defaultFormData = {
     firstName: "John",

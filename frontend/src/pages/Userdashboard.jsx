@@ -43,7 +43,7 @@ function UserDashboard() {
       <HeaderV2 />
       <Routes>
         <Route path="/" element={<Product />} />
-        <Route path="account/*" element={<UserAccountOverview />} />
+        <Route path="account/*" element={<UserAccountOverview user={user}/>} />
       </Routes>
     </>
   );

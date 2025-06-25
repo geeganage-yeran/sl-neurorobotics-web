@@ -8,7 +8,7 @@ import ShippingAddress from "./userAccountSection/Shipping";
 import Quotations from "./userAccountSection/Quotation";
 import HelpCenter from "./userAccountSection/HelpCenter";
 
-function UserAccountOverview() {
+function UserAccountOverview({user}) {
   const navigate = useNavigate();
   const location = useLocation();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -57,7 +57,7 @@ function UserAccountOverview() {
           <div className="lg:max-w-none">
             <Routes>
               <Route path="myorders" element={<MyOrders />} />
-              <Route path="settings" element={<Settings />} />
+              <Route path="settings" element={<Settings user={user}/>} />
               <Route path="shipping" element={<ShippingAddress />} />
               <Route path="quotations" element={<Quotations />} />
               <Route path="help" element={<HelpCenter />} />
