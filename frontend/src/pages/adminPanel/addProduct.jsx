@@ -3,7 +3,7 @@ import axios from "axios";
 import { Plus, X, Upload, Trash2, ChevronUp, ChevronDown } from "lucide-react";
 import Button from "../../components/Button";
 import Alert from "../../components/Alert";
-import api from "../../services/api"
+import api from "../../services/api";
 import {
   validateForm,
   validateField,
@@ -263,18 +263,13 @@ const addProduct = () => {
         formDataToSend.append("displayOrders", img.displayOrder.toString());
       });
 
-      // Send POST request to the backend
-      const response = await api.post(
-        "/admin/addProduct",
-        formDataToSend,
-        {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-          withCredentials: true,
-        }
-      );
-      //console.log(response.data.message);
+
+      const response = await api.post("/admin/addProduct", formDataToSend, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+        withCredentials: true,
+      });
 
       if (response.data === "Product created successfully") {
         showAlert(
@@ -282,7 +277,7 @@ const addProduct = () => {
           "success",
           "top-right"
         );
-        // Reset form after successful submission
+
         setFormData({
           name: "",
           summary: "",
@@ -336,18 +331,23 @@ const addProduct = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#F5F5F5] px-3 sm:px-4 lg:px-6">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 px-3 sm:px-4 lg:px-6">
       <div className="max-w-sm sm:max-w-lg md:max-w-2xl lg:max-w-4xl xl:max-w-6xl">
-        <div className="bg-white rounded-xl sm:rounded-2xl shadow-xl p-4 sm:p-6 lg:p-5">
-          <div className="mb-6 sm:mb-8">
-            <h1 className="text-2xl sm:text-3xl lg:text-3xl font-bold text-[#003554] mb-1">
-              Add New Product
-            </h1>
-            <p className="text-sm sm:text-base text-gray-600">
-              Fill in the details to add a new product to your catalog
-            </p>
-          </div>
 
+        <div className="flex items-center p-4 justify-between py-8">
+          <div className="flex items-center gap-4">
+            <div>
+              <h1 className="text-4xl font-bold text-[#003554]">
+                Add New Product
+              </h1>
+              <p className="text-gray-600 mt-1">
+                Fill in the details to add a new product to your catalog
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-xl sm:rounded-2xlshadow-xl p-4 sm:p-6 lg:p-5">
           <form onSubmit={handleSubmit} className="space-y-6 sm:space-y-8">
             {/* Basic Information */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">

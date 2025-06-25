@@ -2,13 +2,12 @@ package com.slneurorobotics.backend.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.slneurorobotics.backend.dto.request.ProductRequestDTO;
+import com.slneurorobotics.backend.dto.response.UserResponseDTO;
 import com.slneurorobotics.backend.service.ProductService;
+import com.slneurorobotics.backend.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
@@ -20,6 +19,7 @@ public class AdminController {
 
     private final ProductService productService;
     private final ObjectMapper objectMapper;
+    private final UserService userService;
 
     @PostMapping("/addProduct")
     public ResponseEntity<?> createProduct(
@@ -34,6 +34,26 @@ public class AdminController {
             return ResponseEntity.ok("Product created successfully");
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Failed to create Product: " + e.getMessage());
+        }
+    }
+
+    @GetMapping("/getUsers")
+    public ResponseEntity<List<UserResponseDTO>> getAllUsers() {
+        try {
+            List<UserResponseDTO> users = userService.getAllUsers();
+            return ResponseEntity.ok(users);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().build();
+        }
+    }
+
+    @PutMapping("/toggleUserStatus/{userId}")
+    public ResponseEntity<?> toggleUserStatus(@PathVariable Long userId) {
+        try {
+            userService.toggleUserStatus(userId);
+            return ResponseEntity.ok("User status updated successfully");
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Failed to update user status: " + e.getMessage());
         }
     }
 }

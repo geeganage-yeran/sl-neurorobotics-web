@@ -46,11 +46,22 @@ public class User implements UserDetails {
     @Column(nullable = false)
     private UserRole role = UserRole.USER;
 
+    @Column(name = "is_active", nullable = false)
+    private Boolean isActive = true;
+
+    @Column(name = "last_login")
+    private LocalDateTime lastLogin;
+
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+
+    public void updateLastLogin() {
+        this.lastLogin = LocalDateTime.now();
+    }
+
 
     @PrePersist
     protected void onCreate() {
@@ -96,6 +107,6 @@ public class User implements UserDetails {
 
     @Override
     public boolean isEnabled() {
-        return true;
+        return isActive != null ? isActive : true;
     }
 }
