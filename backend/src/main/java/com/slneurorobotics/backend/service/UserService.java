@@ -5,11 +5,10 @@ import com.slneurorobotics.backend.dto.response.UserResponseDTO;
 import com.slneurorobotics.backend.entity.User;
 import com.slneurorobotics.backend.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.modelmapper.ModelMapper;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -17,6 +16,7 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private ModelMapper modelMapper;
 
     public void registerUser(UserRegistrationDTO registrationDTO) {
         // Check if user already exists
