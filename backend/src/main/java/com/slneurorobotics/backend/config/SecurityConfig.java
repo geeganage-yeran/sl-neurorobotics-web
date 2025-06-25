@@ -53,6 +53,7 @@ public class SecurityConfig {
                                 "/api/auth/login",
                                 "/api/public/**",
                                 "/api/auth/refresh",
+                                "/uploads/**",
                                 "/api/auth/logout"
                         ).permitAll()
 

@@ -5,11 +5,16 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.slneurorobotics.backend.dto.request.ProductRequestDTO;
+import com.slneurorobotics.backend.dto.response.ProductImageResponseDTO;
+import com.slneurorobotics.backend.dto.response.ProductResponseDTO;
 import com.slneurorobotics.backend.entity.Product;
 import com.slneurorobotics.backend.entity.Product_image;
 import com.slneurorobotics.backend.repository.ProductRepository;
 import com.slneurorobotics.backend.repository.ProductImageRepository;
 import lombok.RequiredArgsConstructor;
+import org.modelmapper.ModelMapper;
+import org.modelmapper.TypeToken;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,7 +22,10 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -25,6 +33,9 @@ public class ProductService {
 
     private final ProductRepository productRepository;
     private final ProductImageRepository productImageRepository;
+
+    @Autowired
+    private ModelMapper modelMapper;
 
     @Value("${product.image.upload.dir}")
     private String productImageUploadDir;
@@ -152,6 +163,67 @@ public class ProductService {
             e.printStackTrace();
         }
     }
+
+    @Transactional(readOnly = true)
+    public List<ProductResponseDTO> getAllProducts() {
+        List<Product> productList = productRepository.findAllWithImages();
+
+        return productList.stream()
+                .filter(Product::getEnabled) // Only return enabled products
+                .map(this::convertToResponseDTO)
+                .collect(Collectors.toList());
+    }
+
+    private ProductResponseDTO convertToResponseDTO(Product product) {
+        ProductResponseDTO dto = new ProductResponseDTO();
+        dto.setId(product.getId());
+        dto.setName(product.getName());
+        dto.setSummary(product.getSummary());
+        dto.setDescription(product.getDescription());
+        dto.setOverview(product.getOverview());
+        dto.setTutorialLink(product.getTutorialLink());
+        dto.setPrice(product.getPrice());
+        dto.setEnabled(product.getEnabled());
+        dto.setSpecifications(product.getSpecifications());
+
+        // Convert images
+        List<ProductImageResponseDTO> imageDTOs = product.getImages().stream()
+                .map(this::convertToImageResponseDTO)
+                .sorted(Comparator.comparing(ProductImageResponseDTO::getDisplayOrder))
+                .collect(Collectors.toList());
+
+        dto.setImages(imageDTOs);
+        return dto;
+    }
+
+    private ProductImageResponseDTO convertToImageResponseDTO(Product_image image) {
+        ProductImageResponseDTO dto = new ProductImageResponseDTO();
+        dto.setId(image.getId());
+        dto.setImageUrl(image.getImageUrl());
+        dto.setImageName(image.getImageName());
+        dto.setDisplayOrder(image.getDisplayOrder());
+        return dto;
+    }
+
+    @Transactional(readOnly = true)
+    public Optional<ProductResponseDTO> getProductById(Long id) {
+        Optional<Product> productOptional = productRepository.findByIdWithImages(id);
+
+        if (productOptional.isEmpty()) {
+            return Optional.empty();
+        }
+
+        Product product = productOptional.get();
+
+        // Check if product is enabled
+        if (!product.getEnabled()) {
+            return Optional.empty();
+        }
+
+        return Optional.of(convertToResponseDTO(product));
+    }
+
+
 
 
 }
