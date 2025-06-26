@@ -11,19 +11,9 @@ import org.modelmapper.ModelMapper;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-<<<<<<< nisal2
-<<<<<<< Updated upstream
-=======
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
-
->>>>>>> Stashed changes
-=======
-import java.util.List;
-import java.util.stream.Collectors;
-
->>>>>>> main
 
 @Service
 @RequiredArgsConstructor

@@ -11,7 +11,7 @@ import {
 } from "lucide-react";
 import SButton from "../../components/SecondaryButton";
 import Alert from "../../components/Alert";
-import ConfirmDialog from "../../components/ConfirmDialog";
+import ConfirmDialog from "../../components/confirmDialog";
 import {
   validateFAQForm,
   sanitizeFAQFormData,
