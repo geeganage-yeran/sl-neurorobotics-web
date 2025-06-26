@@ -1,18 +1,19 @@
 package com.slneurorobotics.backend.controller;
 
-import com.slneurorobotics.backend.dto.response.CurrentUserResponseDTO;
-import com.slneurorobotics.backend.dto.response.ErrorResponseDTO;
-import com.slneurorobotics.backend.dto.response.LoginResponseDTO;
+import com.slneurorobotics.backend.dto.request.PasswordChangeDTO;
+import com.slneurorobotics.backend.dto.request.UserSettingUpdateDTO;
+import com.slneurorobotics.backend.dto.response.*;
 import com.slneurorobotics.backend.entity.User;
 import com.slneurorobotics.backend.service.AuthService;
+import com.slneurorobotics.backend.service.PasswordService;
+import com.slneurorobotics.backend.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 
 @Slf4j
@@ -22,6 +23,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class UserController {
 
     private final AuthService authService;
+    private final UserService userService;
 
     @GetMapping("/me")
     public ResponseEntity<?> getCurrentUser(Authentication authentication) {
@@ -62,5 +64,46 @@ public class UserController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
         }
     }
+
+    @GetMapping("/settings/{userid}")
+    public UserSettingResponseDTO getUserDetails(@PathVariable Long userid){
+        return userService.getUserDetails(userid);
+    }
+
+    @PutMapping("/settings/{userId}")
+    public ResponseEntity<?> updateUserSettings(
+            @PathVariable Long userId,
+            @RequestBody UserSettingUpdateDTO updateDTO) {
+        try {
+            boolean updated = userService.updateUserSettings(userId, updateDTO);
+            if (updated) {
+                return ResponseEntity.ok().build();
+            } else {
+                return ResponseEntity.notFound().build();
+            }
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    @Autowired
+    private PasswordService passwordService;
+
+    @PutMapping("/password/{userid}")
+    public ResponseEntity<?> updatePassword(
+            @PathVariable Long userid,
+            @RequestBody PasswordChangeDTO passwordChangeDTO) {
+        try {
+            boolean updated = passwordService.changePassword(userid,passwordChangeDTO);
+            if (updated) {
+                return ResponseEntity.ok().build();
+            } else {
+                return ResponseEntity.notFound().build();
+            }
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
 
 }
