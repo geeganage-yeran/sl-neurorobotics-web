@@ -12,13 +12,6 @@ const QuotationManagement = () => {
             status: 'Pending'
         },
         {
-            id: 2,
-            clientName: 'Sarah Johnson',
-            clientEmail: 'sarah.johnson@company.com',
-            requestedDate: '2024-01-18',
-            status: 'Approved'
-        },
-        {
             id: 3,
             clientName: 'Michael Brown',
             clientEmail: 'michael.brown@business.com',

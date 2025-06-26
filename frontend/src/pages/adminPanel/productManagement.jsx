@@ -25,17 +25,6 @@ const ProductManagement = () => {
       tutorialLink: 'https://example.com/tutorial2',
       overview: 'Track your fitness goals with precision using our advanced monitoring technology.'
     },
-    {
-      id: 3,
-      name: 'Wireless Charging Pad',
-      price: 49.99,
-      description: 'Fast wireless charging for compatible devices',
-      images: ['/api/placeholder/300/200', '/api/placeholder/300/200', '/api/placeholder/300/200'],
-      specifications: { power: '15W', compatibility: 'Qi-enabled devices' },
-      status: 'active',
-      tutorialLink: '',
-      overview: 'Convenient wireless charging solution for your modern lifestyle.'
-    }
   ]);
 
   const [searchTerm, setSearchTerm] = useState('');
