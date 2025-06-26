@@ -4,6 +4,7 @@ import HeaderV2 from "../components/HeaderV2";
 import Product from "./Product";
 import UserAccountOverview from "./UserAccountOverview";
 import axios from "axios";
+import api from "../services/api"
 
 function UserDashboard() {
   const [user, setUser] = useState(null);
@@ -13,19 +14,20 @@ function UserDashboard() {
   useEffect(() => {
     const verifyUser = async () => {
       try {
-        const response = await axios.get("http://localhost:8080/api/user/me", {
+        const response = await api.get("/user/me", {
           withCredentials: true,
           timeout: 10000,
         });
 
         if (response.data.success) {
+          console.log(response.data.userInfo);
           setUser(response.data.userInfo);
         } else {
-          navigate("/user-log", { replace: true });
+          navigate("/login", { replace: true });
         }
       } catch (err) {
         console.error("Auth verification failed:", err);
-        navigate("/user-log", { replace: true });
+        navigate("/login", { replace: true });
       } finally {
         setLoading(false);
       }

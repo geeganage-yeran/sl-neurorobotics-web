@@ -5,6 +5,7 @@ const SecondaryButton = ({
   color = '#003554', 
   hoverColor = '#1E3039',
   text = 'Button', 
+  className = '',
   icon=null,
   py = 'py-1', 
   px = 'px-4',
@@ -13,7 +14,7 @@ const SecondaryButton = ({
 }) => {
   const [isHovered, setIsHovered] = useState(false);
   
-  const baseClasses = `cursor-pointer flex text-sm font-medium rounded-md transition-all duration-200 ${py} ${px}`;
+  const baseClasses = `cursor-pointer flex text-sm font-medium rounded-md transition-all duration-200 ${py} ${px} ${className}`;
   
   const buttonStyle = variant === 'outline' 
     ? {
