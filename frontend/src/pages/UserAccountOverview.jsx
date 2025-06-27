@@ -58,7 +58,7 @@ function UserAccountOverview({user}) {
             <Routes>
               <Route path="myorders" element={<MyOrders />} />
               <Route path="settings" element={<Settings user={user}/>} />
-              <Route path="shipping" element={<ShippingAddress />} />
+              <Route path="shipping" element={<ShippingAddress  user={user}/>} />
               <Route path="quotations" element={<Quotations />} />
               <Route path="help" element={<HelpCenter />} />
               <Route index element={<MyOrders />} />
