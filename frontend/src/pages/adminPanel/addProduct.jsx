@@ -305,10 +305,6 @@ const addProduct = () => {
       );
 
       if (error.response) {
-        console.error("Response data:", error.response.data);
-        console.error("Response status:", error.response.status);
-        console.error("Response headers:", error.response.headers);
-
         if (error.response.data && typeof error.response.data === "string") {
           alert(`Error: ${error.response.data}`);
         } else {
