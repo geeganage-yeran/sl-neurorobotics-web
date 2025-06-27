@@ -4,6 +4,8 @@ import SecondaryButton from "../../components/SecondaryButton";
 import DeleteModal from "../../components/confirmDialog";
 import api from "../../services/api";
 import Alert from "../../components/Alert";
+import { useNavigate } from "react-router-dom";
+import { handleSignOut } from '../../services/logout';
 
 function Settings({ user }) {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -11,9 +13,8 @@ function Settings({ user }) {
   const [isUpdating, setIsUpdating] = useState(false);
   const [isUpdatingPassword, setIsUpdatingPassword] = useState(false);
   const [error, setError] = useState(null);
-  const [passwordError, setPasswordError] = useState(null);
-  const [passwordSuccess, setPasswordSuccess] = useState(false);
   const fetchedRef = useRef(false);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   const [alert, setAlert] = useState({
     open: false,
@@ -21,6 +22,8 @@ function Settings({ user }) {
     type: "success",
     position: "top-right",
   });
+
+  const navigate = useNavigate();
 
   {
     /* Handling alerts section */
@@ -33,8 +36,29 @@ function Settings({ user }) {
     setAlert((prev) => ({ ...prev, open: false }));
   };
 
-  const handleDeleteAccount = () => {
-    console.log("Account deleted!");
+  const handleSignOutClick = async () => {
+    if (isLoggingOut) return;
+    try {
+      await handleSignOut(navigate);
+    } catch (error) {
+      console.error("Logout error:", error);
+    } finally {
+      setIsLoggingOut(false);
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    try {
+      const response = await api.put(`/user/toggleUserStatus/${user.id}`, {
+        withCredentials: true,
+      });
+      // showAlert(response.data);
+      await handleSignOutClick();
+    } catch (error) {
+      if (error.response) {
+        showAlert(error.response.data, "error");
+      }
+    }
   };
 
   useEffect(() => {
@@ -47,7 +71,6 @@ function Settings({ user }) {
       try {
         const response = await api.get(`/user/settings/${user.id}`, {
           withCredentials: true,
-          timeout: 10000,
         });
 
         setFormData((prevData) => ({
@@ -80,14 +103,12 @@ function Settings({ user }) {
 
   const [formData, setFormData] = useState(defaultFormData);
 
-  
   const [passwordData, setPasswordData] = useState({
     oldPassword: "",
     newPassword: "",
     confirmPassword: "",
   });
 
-  
   const [showPasswords, setShowPasswords] = useState({
     oldPassword: false,
     newPassword: false,
@@ -157,7 +178,7 @@ function Settings({ user }) {
 
       showAlert("Profile Updated Successfully");
     } catch (err) {
-      showAlert("Failed to update profile","error");
+      showAlert("Failed to update profile", "error");
     } finally {
       setIsUpdating(false);
     }

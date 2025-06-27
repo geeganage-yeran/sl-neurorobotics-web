@@ -1,11 +1,18 @@
 package com.slneurorobotics.backend.service;
 
+import com.slneurorobotics.backend.dto.request.ShippingAddressRequestDTO;
 import com.slneurorobotics.backend.dto.request.PasswordChangeDTO;
 import com.slneurorobotics.backend.dto.request.UserRegistrationDTO;
+import com.slneurorobotics.backend.dto.response.FaqResponseDTO;
+import com.slneurorobotics.backend.dto.response.ShippingAddressResponseDTO;
 import com.slneurorobotics.backend.dto.response.UserResponseDTO;
 import com.slneurorobotics.backend.dto.response.UserSettingResponseDTO;
 import com.slneurorobotics.backend.dto.request.UserSettingUpdateDTO;
+import com.slneurorobotics.backend.entity.FAQ;
+import com.slneurorobotics.backend.entity.Shipping_address;
 import com.slneurorobotics.backend.entity.User;
+import com.slneurorobotics.backend.repository.FaqRepository;
+import com.slneurorobotics.backend.repository.ShippingAddressRepository;
 import com.slneurorobotics.backend.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
@@ -25,6 +32,8 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final FaqRepository faqRepository;
+    private final ShippingAddressRepository shippingAddressRepository;
 
     public void registerUser(UserRegistrationDTO registrationDTO) {
         // Check if user already exists
@@ -183,6 +192,68 @@ public class UserService {
         userRepository.save(user);
         return true;
     }
+
+    public void accountDeactivate(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+        user.setIsActive(false);
+        userRepository.save(user);
+    }
+
+    public List<FaqResponseDTO> getAllFaqs() {
+        List<FAQ> faqs = faqRepository.findAll();
+        return faqs.stream()
+                .map(this::convertToResponseDTO)
+                .collect(Collectors.toList());
+    }
+
+    public FaqResponseDTO convertToResponseDTO(FAQ faq) {
+        FaqResponseDTO dto = new FaqResponseDTO();
+        dto.setQuestion(faq.getQuestion());
+        dto.setAnswer(faq.getAnswer());
+        return dto;
+    }
+
+    public void saveShippingAddress(ShippingAddressRequestDTO shippingAddressRequestDTO){
+
+        Shipping_address shippingAddress = new Shipping_address();
+        shippingAddress.setFull_name(shippingAddressRequestDTO.getName());
+        shippingAddress.setStreet_address(shippingAddressRequestDTO.getStreetAddress());
+        shippingAddress.setCity(shippingAddressRequestDTO.getCity());
+        shippingAddress.setState(shippingAddressRequestDTO.getState());
+        shippingAddress.setZipcode(shippingAddressRequestDTO.getZipCode());
+        shippingAddress.setDefault(shippingAddressRequestDTO.isDefault());
+        shippingAddress.setCreatedBy(shippingAddressRequestDTO.getCreatedBy());
+        shippingAddress.setUpdatedBy(shippingAddressRequestDTO.getCreatedBy());
+        shippingAddressRepository.save(shippingAddress);
+    }
+
+    public List<ShippingAddressResponseDTO> getAllAddress() {
+        List<Shipping_address> shippingAddresses = shippingAddressRepository.findAll();
+        return shippingAddresses.stream()
+                .map(this::convertToResponseDTO)
+                .collect(Collectors.toList());
+    }
+
+    public ShippingAddressResponseDTO convertToResponseDTO(Shipping_address shippingAddress) {
+        ShippingAddressResponseDTO dto = new ShippingAddressResponseDTO();
+        dto.setId(shippingAddress.getId());
+        dto.setName(shippingAddress.getFull_name());
+        dto.setStreetAddress(shippingAddress.getStreet_address());
+        dto.setCity(shippingAddress.getCity());
+        dto.setState(shippingAddress.getState());
+        dto.setZipCode(shippingAddress.getZipcode());
+        dto.setDefault(shippingAddress.isDefault());
+        return dto;
+    }
+
+    public void deleteAddress(Long id) {
+        if (!shippingAddressRepository.existsById(id)) {
+            throw new RuntimeException("Shipping address not found with id: " + id);
+        }
+        shippingAddressRepository.deleteById(id);
+    }
+
 
 
 

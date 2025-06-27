@@ -169,7 +169,7 @@ public class ProductService {
         List<Product> productList = productRepository.findAllWithImages();
 
         return productList.stream()
-                .filter(Product::getEnabled) // Only return enabled products
+                .filter(Product::getEnabled)
                 .map(this::convertToResponseDTO)
                 .collect(Collectors.toList());
     }
@@ -186,7 +186,7 @@ public class ProductService {
         dto.setEnabled(product.getEnabled());
         dto.setSpecifications(product.getSpecifications());
 
-        // Convert images
+
         List<ProductImageResponseDTO> imageDTOs = product.getImages().stream()
                 .map(this::convertToImageResponseDTO)
                 .sorted(Comparator.comparing(ProductImageResponseDTO::getDisplayOrder))
@@ -214,8 +214,6 @@ public class ProductService {
         }
 
         Product product = productOptional.get();
-
-        // Check if product is enabled
         if (!product.getEnabled()) {
             return Optional.empty();
         }
