@@ -205,9 +205,19 @@ export default function Shipping() {
   const fetchAddresses = async () => {
     setLoading(true);
     try {
+<<<<<<< Updated upstream
       const response = await api.get("/user/getAddress");
       console.log(response.data);
       setAddresses(response.data);
+=======
+      // Check if user is available for real API call
+      if (user) {
+        const response = await api.get("/user/getAddress");
+        console.log(response.data);
+        setAddresses(response.data);
+      } else {
+      }
+>>>>>>> Stashed changes
     } catch (error) {
       console.error("Error fetching addresses:", error);
       showAlert("Failed to fetch addresses", "error");
@@ -295,6 +305,7 @@ export default function Shipping() {
   // Currently using mock update - replace with actual API call
   const updateAddress = async (addressId, addressData) => {
     try {
+<<<<<<< Updated upstream
       // TODO: Uncomment and implement actual edit API call
       // const response = await api.put(`/user/updateAddress/${addressId}`, addressData, {
       //   headers: {
@@ -326,6 +337,23 @@ export default function Shipping() {
         )
       );
       showAlert("Address updated successfully");
+=======
+        
+        const response = await api.put(`/user/updateAddress/${addressId}`, addressData, {
+          headers: {
+            "Content-Type": "application/json",
+          },
+          withCredentials: true,
+        });
+        
+        if (response.status === 200) {
+          showAlert("Address updated successfully");
+          await fetchAddresses();
+          return response.data;
+        } else {
+          showAlert("Failed to update address", "error");
+        }
+>>>>>>> Stashed changes
       return { id: addressId, ...addressData };
     } catch (error) {
       console.error("Error updating address:", error);

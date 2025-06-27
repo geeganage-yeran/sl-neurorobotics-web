@@ -1,13 +1,10 @@
 package com.slneurorobotics.backend.service;
 
-import com.slneurorobotics.backend.dto.request.ShippingAddressRequestDTO;
-import com.slneurorobotics.backend.dto.request.PasswordChangeDTO;
-import com.slneurorobotics.backend.dto.request.UserRegistrationDTO;
+import com.slneurorobotics.backend.dto.request.*;
 import com.slneurorobotics.backend.dto.response.FaqResponseDTO;
 import com.slneurorobotics.backend.dto.response.ShippingAddressResponseDTO;
 import com.slneurorobotics.backend.dto.response.UserResponseDTO;
 import com.slneurorobotics.backend.dto.response.UserSettingResponseDTO;
-import com.slneurorobotics.backend.dto.request.UserSettingUpdateDTO;
 import com.slneurorobotics.backend.entity.FAQ;
 import com.slneurorobotics.backend.entity.Shipping_address;
 import com.slneurorobotics.backend.entity.User;
@@ -254,6 +251,19 @@ public class UserService {
         shippingAddressRepository.deleteById(id);
     }
 
+    public Shipping_address updateAddress(Long id, ShippingAddressRequestDTO shippingAddressRequestDTO) {
+        Shipping_address shippingAddress = shippingAddressRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Shipping addresss not found with id: " + id));
+        shippingAddress.setFull_name(shippingAddressRequestDTO.getName());
+        shippingAddress.setStreet_address(shippingAddressRequestDTO.getStreetAddress());
+        shippingAddress.setCity(shippingAddressRequestDTO.getCity());
+        shippingAddress.setState(shippingAddressRequestDTO.getState());
+        shippingAddress.setZipcode(shippingAddressRequestDTO.getZipCode());
+        shippingAddress.setDefault(shippingAddressRequestDTO.isDefault());
+        shippingAddress.setCreatedBy(shippingAddressRequestDTO.getCreatedBy());
+        shippingAddress.setUpdatedBy(shippingAddressRequestDTO.getCreatedBy());
+        return shippingAddressRepository.save(shippingAddress);
+    }
 
 
 
