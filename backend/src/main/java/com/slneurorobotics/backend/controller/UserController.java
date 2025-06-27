@@ -86,7 +86,6 @@ public class UserController {
         }
     }
 
-    @Autowired
     private PasswordService passwordService;
 
     @PutMapping("/password/{userid}")

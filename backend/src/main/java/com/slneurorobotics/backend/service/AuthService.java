@@ -30,6 +30,10 @@ public class AuthService {
                 .orElseThrow(() -> new UsernameNotFoundException("User not found: " + email));
     }
 
+    public User saveUser(User user) {
+        return userRepository.save(user);
+    }
+
     public static class RefreshResult {
         public final String accessToken;
         public final String refreshToken;

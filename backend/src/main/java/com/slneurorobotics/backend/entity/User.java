@@ -52,6 +52,20 @@ public class User implements UserDetails {
     @Column(name = "last_login")
     private LocalDateTime lastLogin;
 
+    @Column(name = "created_by")
+    private Long createdById;
+
+    @Column(name = "updated_by")
+    private Long updatedById;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "created_by", insertable = false, updatable = false)
+    private User createdBy;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "updated_by", insertable = false, updatable = false)
+    private User updatedBy;
+
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 
@@ -61,7 +75,6 @@ public class User implements UserDetails {
     public void updateLastLogin() {
         this.lastLogin = LocalDateTime.now();
     }
-
 
     @PrePersist
     protected void onCreate() {

@@ -1,5 +1,6 @@
 package com.slneurorobotics.backend.service;
 
+import com.slneurorobotics.backend.dto.request.PasswordChangeDTO;
 import com.slneurorobotics.backend.dto.request.UserRegistrationDTO;
 import com.slneurorobotics.backend.dto.response.UserResponseDTO;
 import com.slneurorobotics.backend.dto.response.UserSettingResponseDTO;
@@ -8,6 +9,9 @@ import com.slneurorobotics.backend.entity.User;
 import com.slneurorobotics.backend.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -21,7 +25,6 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
-    private ModelMapper modelMapper;
 
     public void registerUser(UserRegistrationDTO registrationDTO) {
         // Check if user already exists
@@ -29,7 +32,8 @@ public class UserService {
             throw new IllegalArgumentException("User with this email already exists");
         }
 
-        // Create new user
+        Long currentUserId = getCurrentUserId();
+
         User user = new User();
         user.setFirstName(registrationDTO.getFirstName());
         user.setLastName(registrationDTO.getLastName());
@@ -37,9 +41,31 @@ public class UserService {
         user.setContact(registrationDTO.getContact());
         user.setPassword(passwordEncoder.encode(registrationDTO.getPassword()));
         user.setCountry(registrationDTO.getCountry());
-        // role defaults to USER from entity
+
+        user.setCreatedById(currentUserId);
+        user.setUpdatedById(currentUserId);
 
         userRepository.save(user);
+    }
+
+    private Long getCurrentUserId() {
+        try {
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            if (authentication != null && authentication.isAuthenticated() &&
+                    !authentication.getPrincipal().equals("anonymousUser")) {
+
+                if (authentication.getPrincipal() instanceof UserDetails) {
+                    UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+                    if (userDetails instanceof User) {
+                        return ((User) userDetails).getId();
+                    }
+                }
+            }
+        } catch (Exception e) {
+            // Log the exception if needed
+            System.out.println("Could not get current user ID: " + e.getMessage());
+        }
+        return null; // For self-registration or system operations
     }
 
     public List<UserResponseDTO> getAllUsers() {
@@ -90,6 +116,7 @@ public class UserService {
 
     public boolean updateUserSettings(Long userId, UserSettingUpdateDTO updateDTO) {
         Optional<User> userOptional = userRepository.findById(userId);
+
         if (userOptional.isEmpty()) {
             return false;
         }
@@ -123,9 +150,40 @@ public class UserService {
             user.setCountry(updateDTO.getCountry().trim());
         }
 
+        user.setUpdatedById(getCurrentUserId());
+        user.setCreatedById(getCurrentUserId());
+
         userRepository.save(user);
         return true;
     }
+
+    public boolean updatePassword(Long userId, PasswordChangeDTO passwordChangeDTO) {
+        if (!passwordChangeDTO.isPasswordConfirmed()) {
+            throw new IllegalArgumentException("New password and confirm password do not match");
+        }
+
+        Optional<User> userOptional = userRepository.findById(userId);
+        if (userOptional.isEmpty()) {
+            throw new IllegalArgumentException("User not found with id: " + userId);
+        }
+
+        User user = userOptional.get();
+
+        if (!passwordEncoder.matches(passwordChangeDTO.getOldPassword(), user.getPassword())) {
+            throw new IllegalArgumentException("Current password is incorrect");
+        }
+
+        if (passwordEncoder.matches(passwordChangeDTO.getNewPassword(), user.getPassword())) {
+            throw new IllegalArgumentException("New password must be different from current password");
+        }
+
+        user.setPassword(passwordEncoder.encode(passwordChangeDTO.getNewPassword()));
+        user.setUpdatedById(getCurrentUserId());
+
+        userRepository.save(user);
+        return true;
+    }
+
 
 
 

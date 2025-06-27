@@ -1,32 +1,195 @@
-import React, { useState, Fragment } from "react";
-import { Plus, Home, X } from "lucide-react";
-import { Dialog, Transition } from "@headlessui/react";
-import ButtonPrimary from "../../components/Button";
-import SecondaryButton from "../../components/SecondaryButton";
+import React, { useState, useEffect } from "react";
+import { Plus, Home, X, Trash2 } from "lucide-react";
+
+// Validation utility functions
+const validateAddress = (formData) => {
+  const errors = {};
+
+  // Name validation
+  if (!formData.name?.trim()) {
+    errors.name = "Full name is required";
+  } else if (formData.name.trim().length < 2) {
+    errors.name = "Name must be at least 2 characters";
+  } else if (!/^[a-zA-Z\s]+$/.test(formData.name.trim())) {
+    errors.name = "Name can only contain letters and spaces";
+  }
+
+  // Street address validation
+  if (!formData.streetAddress?.trim()) {
+    errors.streetAddress = "Street address is required";
+  } else if (formData.streetAddress.trim().length < 5) {
+    errors.streetAddress = "Street address must be at least 5 characters";
+  }
+
+  // City validation
+  if (!formData.city?.trim()) {
+    errors.city = "City is required";
+  } else if (formData.city.trim().length < 2) {
+    errors.city = "City must be at least 2 characters";
+  } else if (!/^[a-zA-Z\s]+$/.test(formData.city.trim())) {
+    errors.city = "City can only contain letters and spaces";
+  }
+
+  // State validation
+  if (!formData.state?.trim()) {
+    errors.state = "State is required";
+  } else if (!/^[A-Z]{2}$/.test(formData.state.trim().toUpperCase())) {
+    errors.state = "State must be 2 letters (e.g., CA)";
+  }
+
+  // ZIP code validation
+  if (!formData.zipCode?.trim()) {
+    errors.zipCode = "ZIP code is required";
+  } else if (!/^\d{5}(-\d{4})?$/.test(formData.zipCode.trim())) {
+    errors.zipCode =
+      "ZIP code must be 5 digits or 5-4 format (e.g., 12345 or 12345-6789)";
+  }
+
+  return errors;
+};
+
+// Sanitization utility
+const sanitizeFormData = (formData) => {
+  return {
+    name: formData.name?.trim() || "",
+    streetAddress: formData.streetAddress?.trim() || "",
+    city: formData.city?.trim() || "",
+    state: formData.state?.trim().toUpperCase() || "",
+    zipCode: formData.zipCode?.trim() || "",
+    isDefault: formData.isDefault || false,
+  };
+};
+
+const Modal = ({ isOpen, onClose, children }) => {
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 z-50 overflow-y-auto">
+      <div
+        className="fixed inset-0  bg-opacity-50 backdrop-blur-sm"
+        onClick={onClose}
+      ></div>
+      <div className="flex min-h-full items-center justify-center p-4">
+        <div className="relative w-full max-w-md transform overflow-hidden rounded-2xl bg-white p-6 shadow-xl transition-all">
+          {children}
+        </div>
+      </div>
+    </div>
+  );
+};
 
 export default function Shipping() {
+  const [addresses, setAddresses] = useState([]);
   const [isNewAddressOpen, setIsNewAddressOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editingAddress, setEditingAddress] = useState(null);
+  const [loading, setLoading] = useState(false);
 
-  const addresses = [
-    {
-      id: 1,
-      name: "Sophia Clark",
-      address: "123 Maple Street, Anytown, CA, 91234",
-      isDefault: true,
-    },
-    {
-      id: 2,
-      name: "Liam Carter",
-      address: "456 Oak Avenue, Anytown, CA, 91234",
-      isDefault: false,
-    },
-  ];
+  // Fetch addresses on component mount
+  useEffect(() => {
+    fetchAddresses();
+  }, []);
+
+  // TODO: Replace with actual API call using axios
+  // Example: const response = await axios.get('/api/addresses');
+  const fetchAddresses = async () => {
+    setLoading(true);
+    try {
+      // const response = await axios.get('/api/addresses');
+      // setAddresses(response.data);
+
+      // Mock data for demo
+      const mockAddresses = [
+        {
+          id: 1,
+          name: "Sophia Clark",
+          streetAddress: "123 Maple Street",
+          city: "Anytown",
+          state: "CA",
+          zipCode: "91234",
+          isDefault: true,
+        },
+        {
+          id: 2,
+          name: "Liam Carter",
+          streetAddress: "456 Oak Avenue",
+          city: "Anytown",
+          state: "CA",
+          zipCode: "91234",
+          isDefault: false,
+        },
+      ];
+      setAddresses(mockAddresses);
+    } catch (error) {
+      console.error("Error fetching addresses:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // TODO: Replace with actual API call using axios
+  // Example: const response = await axios.post('/api/addresses', addressData);
+  const addNewAddress = async (addressData) => {
+    try {
+      // const response = await axios.post('/api/addresses', addressData);
+      // const newAddress = response.data;
+
+      // Mock response for demo
+      const newAddress = {
+        id: Date.now(),
+        ...addressData,
+      };
+      setAddresses((prev) => [...prev, newAddress]);
+      return newAddress;
+    } catch (error) {
+      console.error("Error adding address:", error);
+      throw error;
+    }
+  };
+
+  // TODO: Replace with actual API call using axios
+  // Example: const response = await axios.put(`/api/addresses/${addressId}`, addressData);
+  const updateAddress = async (addressId, addressData) => {
+    try {
+      // const response = await axios.put(`/api/addresses/${addressId}`, addressData);
+      // const updatedAddress = response.data;
+
+      // Mock update for demo
+      setAddresses((prev) =>
+        prev.map((addr) =>
+          addr.id === addressId ? { ...addr, ...addressData } : addr
+        )
+      );
+      return { id: addressId, ...addressData };
+    } catch (error) {
+      console.error("Error updating address:", error);
+      throw error;
+    }
+  };
+
+  // TODO: Replace with actual API call using axios
+  // Example: await axios.delete(`/api/addresses/${addressId}`);
+  const deleteAddress = async (addressId) => {
+    try {
+      // await axios.delete(`/api/addresses/${addressId}`);
+
+      // Mock delete for demo
+      setAddresses((prev) => prev.filter((addr) => addr.id !== addressId));
+    } catch (error) {
+      console.error("Error deleting address:", error);
+      throw error;
+    }
+  };
 
   const handleEditClick = (address) => {
     setEditingAddress(address);
     setIsEditModalOpen(true);
+  };
+
+  const handleDeleteClick = async (addressId) => {
+    if (window.confirm("Are you sure you want to delete this address?")) {
+      await deleteAddress(addressId);
+    }
   };
 
   const closeModals = () => {
@@ -35,86 +198,245 @@ export default function Shipping() {
     setEditingAddress(null);
   };
 
-  const AddressForm = ({ address = null, isEdit = false }) => (
-    <form className="space-y-4">
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          Full Name
-        </label>
-        <input
-          type="text"
-          defaultValue={address?.name || ""}
-          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-[#003554] focus:border-transparent"
-          placeholder="Enter full name"
-        />
-      </div>
+  const AddressModal = ({
+    isEdit = false,
+    address = null,
+    isOpen,
+    onClose,
+    title,
+  }) => {
+    const [formData, setFormData] = useState({
+      name: address?.name || "",
+      streetAddress: address?.streetAddress || "",
+      city: address?.city || "",
+      state: address?.state || "",
+      zipCode: address?.zipCode || "",
+      isDefault: address?.isDefault || false,
+    });
+    const [errors, setErrors] = useState({});
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          Street Address
-        </label>
-        <input
-          type="text"
-          defaultValue={address?.address.split(",")[0] || ""}
-          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-[#003554] focus:border-transparent"
-          placeholder="Enter street address"
-        />
-      </div>
+    // Reset form data when address changes
+    useEffect(() => {
+      if (isOpen) {
+        setFormData({
+          name: address?.name || "",
+          streetAddress: address?.streetAddress || "",
+          city: address?.city || "",
+          state: address?.state || "",
+          zipCode: address?.zipCode || "",
+          isDefault: address?.isDefault || false,
+        });
+        setErrors({});
+      }
+    }, [address, isOpen]);
 
-      <div className="grid grid-cols-2 gap-4">
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            City
-          </label>
-          <input
-            type="text"
-            defaultValue={address?.address.split(",")[1] || ""}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-[#003554] focus:border-transparent"
-            placeholder="Enter city"
-          />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            State
-          </label>
-          <input
-            type="text"
-            defaultValue={address?.address.split(",")[2] || ""}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-[#003554] focus:border-transparent"
-            placeholder="State"
-          />
-        </div>
-      </div>
+    const handleInputChange = (field, value) => {
+      setFormData((prev) => ({ ...prev, [field]: value }));
 
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          ZIP Code
-        </label>
-        <input
-          type="text"
-          defaultValue={address?.address.split(",")[3] || ""}
-          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-[#003554] focus:border-transparent"
-          placeholder="Enter ZIP code"
-        />
-      </div>
+      // Real-time validation
+      const tempFormData = { ...formData, [field]: value };
+      const sanitizedData = sanitizeFormData(tempFormData);
+      const fieldErrors = validateAddress(sanitizedData);
 
-      {isEdit && (
-        <div className="flex items-center">
-          <input
-            type="checkbox"
-            id="setDefault"
-            className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-          />
-          <label
-            htmlFor="setDefault"
-            className="ml-2 block text-sm text-gray-700"
+      if (fieldErrors[field]) {
+        setErrors((prev) => ({ ...prev, [field]: fieldErrors[field] }));
+      } else {
+        setErrors((prev) => ({ ...prev, [field]: "" }));
+      }
+    };
+
+    const handleSubmit = async (e) => {
+      e.preventDefault();
+
+      const sanitizedData = sanitizeFormData(formData);
+      const validationErrors = validateAddress(sanitizedData);
+
+      if (Object.keys(validationErrors).length > 0) {
+        setErrors(validationErrors);
+        return;
+      }
+
+      setIsSubmitting(true);
+      try {
+        if (isEdit) {
+          await updateAddress(address.id, sanitizedData);
+        } else {
+          await addNewAddress(sanitizedData);
+        }
+        onClose();
+        // Reset form
+        setFormData({
+          name: "",
+          streetAddress: "",
+          city: "",
+          state: "",
+          zipCode: "",
+          isDefault: false,
+        });
+        setErrors({});
+      } catch (error) {
+        console.error("Error saving address:", error);
+        // You can set a general error state here if needed
+      } finally {
+        setIsSubmitting(false);
+      }
+    };
+
+    return (
+      <Modal isOpen={isOpen} onClose={onClose}>
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-lg font-semibold text-gray-900">{title}</h3>
+          <button
+            onClick={onClose}
+            className="text-gray-400 cursor-pointer hover:text-gray-600 transition-colors"
           >
-            Set as default address
-          </label>
+            <X size={20} />
+          </button>
         </div>
-      )}
-    </form>
-  );
+
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Full Name *
+            </label>
+            <input
+              type="text"
+              value={formData.name}
+              onChange={(e) => handleInputChange("name", e.target.value)}
+              className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-1 focus:ring-[#003554] focus:border-transparent ${
+                errors.name ? "border-red-500" : "border-gray-300"
+              }`}
+              placeholder="Enter full name"
+            />
+            {errors.name && (
+              <p className="mt-1 text-sm text-red-600">{errors.name}</p>
+            )}
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Street Address *
+            </label>
+            <input
+              type="text"
+              value={formData.streetAddress}
+              onChange={(e) =>
+                handleInputChange("streetAddress", e.target.value)
+              }
+              className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-1 focus:ring-[#003554] focus:border-transparent ${
+                errors.streetAddress ? "border-red-500" : "border-gray-300"
+              }`}
+              placeholder="Enter street address"
+            />
+            {errors.streetAddress && (
+              <p className="mt-1 text-sm text-red-600">
+                {errors.streetAddress}
+              </p>
+            )}
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                City *
+              </label>
+              <input
+                type="text"
+                value={formData.city}
+                onChange={(e) => handleInputChange("city", e.target.value)}
+                className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-1 focus:ring-[#003554] focus:border-transparent ${
+                  errors.city ? "border-red-500" : "border-gray-300"
+                }`}
+                placeholder="Enter city"
+              />
+              {errors.city && (
+                <p className="mt-1 text-sm text-red-600">{errors.city}</p>
+              )}
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                State *
+              </label>
+              <input
+                type="text"
+                value={formData.state}
+                onChange={(e) => handleInputChange("state", e.target.value)}
+                className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-1 focus:ring-[#003554] focus:border-transparent ${
+                  errors.state ? "border-red-500" : "border-gray-300"
+                }`}
+                placeholder="CA"
+                maxLength="2"
+              />
+              {errors.state && (
+                <p className="mt-1 text-sm text-red-600">{errors.state}</p>
+              )}
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              ZIP Code *
+            </label>
+            <input
+              type="text"
+              value={formData.zipCode}
+              onChange={(e) => handleInputChange("zipCode", e.target.value)}
+              className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-1 focus:ring-[#003554] focus:border-transparent ${
+                errors.zipCode ? "border-red-500" : "border-gray-300"
+              }`}
+              placeholder="12345"
+            />
+            {errors.zipCode && (
+              <p className="mt-1 text-sm text-red-600">{errors.zipCode}</p>
+            )}
+          </div>
+
+          {isEdit && (
+            <div className="flex items-center">
+              <input
+                type="checkbox"
+                id="setDefault"
+                checked={formData.isDefault}
+                onChange={(e) =>
+                  handleInputChange("isDefault", e.target.checked)
+                }
+                className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+              />
+              <label
+                htmlFor="setDefault"
+                className="ml-2 block text-sm text-gray-700"
+              >
+                Set as default address
+              </label>
+            </div>
+          )}
+
+          <div className="flex gap-3 mt-6">
+            <button
+              type="button"
+              onClick={onClose}
+              className="flex-1 px-4 cursor-pointer py-3 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              onClick={handleSubmit}
+              disabled={isSubmitting}
+              className="flex-1 px-4 py-3 bg-[#003554] cursor-pointer text-white rounded-md hover:bg-[#002744] transition-colors disabled:opacity-50"
+            >
+              {isSubmitting
+                ? "Saving..."
+                : isEdit
+                ? "Update Address"
+                : "Save Address"}
+            </button>
+          </div>
+        </div>
+      </Modal>
+    );
+  };
 
   return (
     <div className="max-w-4xl lg:ml-25 mx-auto bg-[#F5F5F5] min-h-screen">
@@ -122,6 +444,7 @@ export default function Shipping() {
         <h1 className="text-2xl font-semibold text-[#003554]">Saved Address</h1>
         <h3 className="text-gray-600">Manage your shipping addresses</h3>
       </div>
+
       <div className="bg-white rounded-lg shadow-sm p-6">
         {/* New Address Button */}
         <button
@@ -133,156 +456,73 @@ export default function Shipping() {
         </button>
 
         {/* Address List */}
-        <div className="space-y-4">
-          {addresses.map((address) => (
-            <div
-              key={address.id}
-              className="flex items-start gap-4 p-4 bg-gray-50 rounded-lg"
-            >
-              <div className="p-2 bg-white rounded-md shadow-sm">
-                <Home size={20} className="text-gray-600" />
-              </div>
-              <div className="flex-1">
-                <h3 className="font-semibold text-gray-900 mb-1">
-                  {address.name}
-                </h3>
-                <span className="inline-block px-2 py-1 bg-gray-200 text-gray-700 text-xs rounded-full mb-2">
-                  {address.isDefault ? "Default" : "Not Default"}
-                </span>
-                <p className="text-gray-600">{address.address}</p>
-              </div>
-              <button
-                onClick={() => handleEditClick(address)}
-                className="text-blue-600 hover:text-blue-800 font-medium"
+        {loading ? (
+          <div className="text-center py-8">
+            <p className="text-gray-500">Loading addresses...</p>
+          </div>
+        ) : addresses.length === 0 ? (
+          <div className="text-center py-8">
+            <p className="text-gray-500">
+              No addresses found. Add your first address above.
+            </p>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {addresses.map((address) => (
+              <div
+                key={address.id}
+                className="flex items-start gap-4 p-4 bg-gray-50 rounded-lg"
               >
-                Edit
-              </button>
-            </div>
-          ))}
-        </div>
+                <div className="p-2 bg-white rounded-md shadow-sm">
+                  <Home size={20} className="text-gray-600" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="font-semibold text-gray-900 mb-1">
+                    {address.name}
+                  </h3>
+                  <span className="inline-block px-2 py-1 bg-gray-200 text-gray-700 text-xs rounded-full mb-2">
+                    {address.isDefault ? "Default" : "Not Default"}
+                  </span>
+                  <p className="text-gray-600">
+                    {`${address.streetAddress}, ${address.city}, ${address.state} ${address.zipCode}`}
+                  </p>
+                </div>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => handleEditClick(address)}
+                    className="text-blue-600 hover:text-blue-800 font-medium"
+                  >
+                    Edit
+                  </button>
+                  <button
+                    onClick={() => handleDeleteClick(address.id)}
+                    className="text-red-600 hover:text-red-800"
+                  >
+                    <Trash2 size={16} />
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
-      {/* New Address Modal */}
-      <Transition appear show={isNewAddressOpen} as={Fragment}>
-        <Dialog as="div" className="relative z-50" onClose={closeModals}>
-          <Transition.Child
-            as={Fragment}
-            enter="ease-out duration-300"
-            enterFrom="opacity-0"
-            enterTo="opacity-100"
-            leave="ease-in duration-200"
-            leaveFrom="opacity-100"
-            leaveTo="opacity-0"
-          >
-            <div className="fixed inset-0 bg-[#0808097e] backdrop-blur-sm" />
-          </Transition.Child>
-
-          <div className="fixed inset-0 overflow-y-auto">
-            <div className="flex min-h-full items-center justify-center p-4 text-center">
-              <Transition.Child
-                as={Fragment}
-                enter="ease-out duration-300"
-                enterFrom="opacity-0 scale-95"
-                enterTo="opacity-100 scale-100"
-                leave="ease-in duration-200"
-                leaveFrom="opacity-100 scale-100"
-                leaveTo="opacity-0 scale-95"
-              >
-                <Dialog.Panel className="w-full max-w-md transform overflow-hidden rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all">
-                  <div className="flex items-center justify-between mb-4">
-                    <Dialog.Title
-                      as="h3"
-                      className="text-lg font-semibold text-gray-900"
-                    >
-                      Add New Address
-                    </Dialog.Title>
-                    <button
-                      onClick={closeModals}
-                      className="text-gray-400 cursor-pointer hover:text-gray-600 transition-colors"
-                    >
-                      <X size={20} />
-                    </button>
-                  </div>
-
-                  <AddressForm />
-
-                  <div className="flex gap-3 mt-6">
-                    <SecondaryButton
-                      text="Cancel"
-                      py="py-3"
-                      px="px-17"
-                      variant="outline"
-                      onClick={closeModals}
-                    />
-                    <SecondaryButton text="Save Address" py="py-3" px="px-13" />
-                  </div>
-                </Dialog.Panel>
-              </Transition.Child>
-            </div>
-          </div>
-        </Dialog>
-      </Transition>
+      {/* Add New Address Modal */}
+      <AddressModal
+        isOpen={isNewAddressOpen}
+        onClose={closeModals}
+        isEdit={false}
+        title="Add New Address"
+      />
 
       {/* Edit Address Modal */}
-      <Transition appear show={isEditModalOpen} as={Fragment}>
-        <Dialog as="div" className="relative z-50" onClose={closeModals}>
-          <Transition.Child
-            as={Fragment}
-            enter="ease-out duration-300"
-            enterFrom="opacity-0"
-            enterTo="opacity-100"
-            leave="ease-in duration-200"
-            leaveFrom="opacity-100"
-            leaveTo="opacity-0"
-          >
-            <div className="fixed inset-0 bg-[#0808097e] backdrop-blur-sm" />
-          </Transition.Child>
-
-          <div className="fixed inset-0 overflow-y-auto">
-            <div className="flex min-h-full items-center justify-center p-4 text-center">
-              <Transition.Child
-                as={Fragment}
-                enter="ease-out duration-300"
-                enterFrom="opacity-0 scale-95"
-                enterTo="opacity-100 scale-100"
-                leave="ease-in duration-200"
-                leaveFrom="opacity-100 scale-100"
-                leaveTo="opacity-0 scale-95"
-              >
-                <Dialog.Panel className="w-full max-w-md transform overflow-hidden rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all">
-                  <div className="flex items-center justify-between mb-4">
-                    <Dialog.Title
-                      as="h3"
-                      className="text-lg font-semibold text-gray-900"
-                    >
-                      Edit Address
-                    </Dialog.Title>
-                    <button
-                      onClick={closeModals}
-                      className="text-gray-400 cursor-pointer hover:text-gray-600 transition-colors"
-                    >
-                      <X size={20} />
-                    </button>
-                  </div>
-
-                  <AddressForm address={editingAddress} isEdit={true} />
-
-                  <div className="flex gap-2 mt-6">
-                    <SecondaryButton
-                      text="Cancel"
-                      py="py-3"
-                      px="px-14"
-                      variant="outline"
-                      onClick={closeModals}
-                    />
-                    <SecondaryButton text="Update Address" py="py-3" px="px-14" />
-                  </div>
-                </Dialog.Panel>
-              </Transition.Child>
-            </div>
-          </div>
-        </Dialog>
-      </Transition>
+      <AddressModal
+        isOpen={isEditModalOpen}
+        onClose={closeModals}
+        isEdit={true}
+        address={editingAddress}
+        title="Edit Address"
+      />
     </div>
   );
 }
