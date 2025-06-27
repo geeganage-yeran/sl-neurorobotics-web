@@ -36,8 +36,8 @@ const validateAddress = (formData) => {
   // State validation
   if (!formData.state?.trim()) {
     errors.state = "State is required";
-  } else if (formData.state.trim().length < 2) {
-    errors.state = "State must be at least 2 characters";
+  } else if (!/^[A-Z]/.test(formData.state.trim().toUpperCase())) {
+    errors.state = "State must be 2 letters (e.g., CA)";
   }
 
   // ZIP code validation
@@ -82,85 +82,6 @@ const Modal = ({ isOpen, onClose, children }) => {
 };
 
 export default function Shipping({ user }) {
-
-// Validation utility functions
-const validateAddress = (formData) => {
-  const errors = {};
-
-  // Name validation
-  if (!formData.name?.trim()) {
-    errors.name = "Full name is required";
-  } else if (formData.name.trim().length < 2) {
-    errors.name = "Name must be at least 2 characters";
-  } else if (!/^[a-zA-Z\s]+$/.test(formData.name.trim())) {
-    errors.name = "Name can only contain letters and spaces";
-  }
-
-  // Street address validation
-  if (!formData.streetAddress?.trim()) {
-    errors.streetAddress = "Street address is required";
-  } else if (formData.streetAddress.trim().length < 5) {
-    errors.streetAddress = "Street address must be at least 5 characters";
-  }
-
-  // City validation
-  if (!formData.city?.trim()) {
-    errors.city = "City is required";
-  } else if (formData.city.trim().length < 2) {
-    errors.city = "City must be at least 2 characters";
-  } else if (!/^[a-zA-Z\s]+$/.test(formData.city.trim())) {
-    errors.city = "City can only contain letters and spaces";
-  }
-
-  // State validation
-  if (!formData.state?.trim()) {
-    errors.state = "State is required";
-  } else if (!/^[A-Z]{2}$/.test(formData.state.trim().toUpperCase())) {
-    errors.state = "State must be 2 letters (e.g., CA)";
-  }
-
-  // ZIP code validation
-  if (!formData.zipCode?.trim()) {
-    errors.zipCode = "ZIP code is required";
-  } else if (!/^\d{5}(-\d{4})?$/.test(formData.zipCode.trim())) {
-    errors.zipCode =
-      "ZIP code must be 5 digits or 5-4 format (e.g., 12345 or 12345-6789)";
-  }
-
-  return errors;
-};
-
-// Sanitization utility
-const sanitizeFormData = (formData) => {
-  return {
-    name: formData.name?.trim() || "",
-    streetAddress: formData.streetAddress?.trim() || "",
-    city: formData.city?.trim() || "",
-    state: formData.state?.trim().toUpperCase() || "",
-    zipCode: formData.zipCode?.trim() || "",
-    isDefault: formData.isDefault || false,
-  };
-};
-
-const Modal = ({ isOpen, onClose, children }) => {
-  if (!isOpen) return null;
-
-  return (
-    <div className="fixed inset-0 z-50 overflow-y-auto">
-      <div
-        className="fixed inset-0  bg-opacity-50 backdrop-blur-sm"
-        onClick={onClose}
-      ></div>
-      <div className="flex min-h-full items-center justify-center p-4">
-        <div className="relative w-full max-w-md transform overflow-hidden rounded-2xl bg-white p-6 shadow-xl transition-all">
-          {children}
-        </div>
-      </div>
-    </div>
-  );
-};
-
-export default function Shipping() {
   const [addresses, setAddresses] = useState([]);
   const [isNewAddressOpen, setIsNewAddressOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -170,22 +91,6 @@ export default function Shipping() {
     isOpen: false,
     addressToDelete: null,
   });
-
-
-
-  // Fetch addresses on component mount
-  useEffect(() => {
-    fetchAddresses();
-  }, []);
-
-
-  // Fixed closeConfirmDialog function
-  const closeConfirmDialog = () => {
-    setConfirmDialog({
-      isOpen: false,
-      addressToDelete: null,
-    });
-  };
 
   const [alert, setAlert] = useState({
     open: false,
@@ -202,47 +107,54 @@ export default function Shipping() {
     setAlert((prev) => ({ ...prev, open: false }));
   };
 
+  // Fixed closeConfirmDialog function
+  const closeConfirmDialog = () => {
+    setConfirmDialog({
+      isOpen: false,
+      addressToDelete: null,
+    });
+  };
+
+  // Fetch addresses on component mount
+  useEffect(() => {
+    fetchAddresses();
+  }, []);
+
   const fetchAddresses = async () => {
     setLoading(true);
     try {
-      const response = await api.get("/user/getAddress");
-      console.log(response.data);
-      setAddresses(response.data);
+      // Check if user is available for real API call
+      if (user) {
+        const response = await api.get("/user/getAddress");
+        console.log(response.data);
+        setAddresses(response.data);
+      } else {
+        // Mock data for demo when user is not available
+        const mockAddresses = [
+          {
+            id: 1,
+            name: "Sophia Clark",
+            streetAddress: "123 Maple Street",
+            city: "Anytown",
+            state: "CA",
+            zipCode: "91234",
+            isDefault: true,
+          },
+          {
+            id: 2,
+            name: "Liam Carter",
+            streetAddress: "456 Oak Avenue",
+            city: "Anytown",
+            state: "CA",
+            zipCode: "91234",
+            isDefault: false,
+          },
+        ];
+        setAddresses(mockAddresses);
+      }
     } catch (error) {
       console.error("Error fetching addresses:", error);
       showAlert("Failed to fetch addresses", "error");
-  // TODO: Replace with actual API call using axios
-  // Example: const response = await axios.get('/api/addresses');
-  const fetchAddresses = async () => {
-    setLoading(true);
-    try {
-      // const response = await axios.get('/api/addresses');
-      // setAddresses(response.data);
-
-      // Mock data for demo
-      const mockAddresses = [
-        {
-          id: 1,
-          name: "Sophia Clark",
-          streetAddress: "123 Maple Street",
-          city: "Anytown",
-          state: "CA",
-          zipCode: "91234",
-          isDefault: true,
-        },
-        {
-          id: 2,
-          name: "Liam Carter",
-          streetAddress: "456 Oak Avenue",
-          city: "Anytown",
-          state: "CA",
-          zipCode: "91234",
-          isDefault: false,
-        },
-      ];
-      setAddresses(mockAddresses);
-    } catch (error) {
-      console.error("Error fetching addresses:", error);
     } finally {
       setLoading(false);
     }
@@ -250,89 +162,80 @@ export default function Shipping() {
 
   const addNewAddress = async (addressData) => {
     try {
-      const dataToSend = {
-        ...addressData,
-        createdBy: user.id,
-      };
-      const response = await api.post(`/user/addAddress`, dataToSend, {
-        headers: {
-          "Content-Type": "application/json",
-        },
-        withCredentials: true,
-      });
-      
-      if (response.status === 200 || response.status === 201) {
-        showAlert("Shipping address added successfully");
-        // Refresh addresses list after successful addition
-        await fetchAddresses();
+      if (user) {
+        // Real API call
+        const dataToSend = {
+          ...addressData,
+          createdBy: user.id,
+        };
+        const response = await api.post(`/user/addAddress`, dataToSend, {
+          headers: {
+            "Content-Type": "application/json",
+          },
+          withCredentials: true,
+        });
+        
+        if (response.status === 200 || response.status === 201) {
+          showAlert("Shipping address added successfully");
+          // Refresh addresses list after successful addition
+          await fetchAddresses();
+        } else {
+          showAlert("Unexpected error occurred, please try again", "error");
+        }
       } else {
-        showAlert("Unexpected error occurred, please try again", "error");
+        // Mock response for demo
+        const newAddress = {
+          id: Date.now(),
+          ...addressData,
+        };
+        setAddresses((prev) => [...prev, newAddress]);
+        showAlert("Shipping address added successfully");
       }
     } catch (error) {
       console.error("Error adding address:", error);
       showAlert("Failed to add address", "error");
-  // TODO: Replace with actual API call using axios
-  // Example: const response = await axios.post('/api/addresses', addressData);
-  const addNewAddress = async (addressData) => {
-    try {
-      // const response = await axios.post('/api/addresses', addressData);
-      // const newAddress = response.data;
-
-      // Mock response for demo
-      const newAddress = {
-        id: Date.now(),
-        ...addressData,
-      };
-      setAddresses((prev) => [...prev, newAddress]);
-      return newAddress;
-    } catch (error) {
-      console.error("Error adding address:", error);
-      throw error;
     }
   };
 
-  // TODO: Implement edit request to backend
-  // Currently using mock update - replace with actual API call
   const updateAddress = async (addressId, addressData) => {
     try {
-      // TODO: Uncomment and implement actual edit API call
-      // const response = await api.put(`/user/updateAddress/${addressId}`, addressData, {
-      //   headers: {
-      //     "Content-Type": "application/json",
-      //   },
-      //   withCredentials: true,
-      // });
-      
-      // if (response.status === 200) {
-      //   showAlert("Address updated successfully");
-      //   await fetchAddresses(); // Refresh from backend
-      //   return response.data;
-      // } else {
-      //   showAlert("Failed to update address", "error");
-      // }
+      if (user) {
+        // TODO: Implement actual edit API call when backend is ready
+        // const response = await api.put(`/user/updateAddress/${addressId}`, addressData, {
+        //   headers: {
+        //     "Content-Type": "application/json",
+        //   },
+        //   withCredentials: true,
+        // });
+        // 
+        // if (response.status === 200) {
+        //   showAlert("Address updated successfully");
+        //   await fetchAddresses(); // Refresh from backend
+        //   return response.data;
+        // } else {
+        //   showAlert("Failed to update address", "error");
+        // }
 
-      // Mock update for demo - REMOVE THIS WHEN IMPLEMENTING BACKEND
-  // TODO: Replace with actual API call using axios
-  // Example: const response = await axios.put(`/api/addresses/${addressId}`, addressData);
-  const updateAddress = async (addressId, addressData) => {
-    try {
-      // const response = await axios.put(`/api/addresses/${addressId}`, addressData);
-      // const updatedAddress = response.data;
-
-      // Mock update for demo
-      setAddresses((prev) =>
-        prev.map((addr) =>
-          addr.id === addressId ? { ...addr, ...addressData } : addr
-        )
-      );
-      showAlert("Address updated successfully");
+        // Mock update for demo - REMOVE THIS WHEN IMPLEMENTING BACKEND
+        setAddresses((prev) =>
+          prev.map((addr) =>
+            addr.id === addressId ? { ...addr, ...addressData } : addr
+          )
+        );
+        showAlert("Address updated successfully");
+      } else {
+        // Mock update for demo
+        setAddresses((prev) =>
+          prev.map((addr) =>
+            addr.id === addressId ? { ...addr, ...addressData } : addr
+          )
+        );
+        showAlert("Address updated successfully");
+      }
       return { id: addressId, ...addressData };
     } catch (error) {
       console.error("Error updating address:", error);
       showAlert("Failed to update address", "error");
-      return { id: addressId, ...addressData };
-    } catch (error) {
-      console.error("Error updating address:", error);
       throw error;
     }
   };
@@ -342,16 +245,22 @@ export default function Shipping() {
     
     setLoading(true);
     try {
-      const response = await api.delete(
-        `/user/deleteAddress/${confirmDialog.addressToDelete}`
-      );
-      
-      if (response.status === 200) {
-        showAlert("Address deleted successfully");
-        // Refresh addresses list from backend after successful deletion
-        await fetchAddresses();
+      if (user) {
+        const response = await api.delete(
+          `/user/deleteAddress/${confirmDialog.addressToDelete}`
+        );
+        
+        if (response.status === 200) {
+          showAlert("Address deleted successfully");
+          // Refresh addresses list from backend after successful deletion
+          await fetchAddresses();
+        } else {
+          showAlert("Failed to delete address", "error");
+        }
       } else {
-        showAlert("Failed to delete address", "error");
+        // Mock delete for demo
+        setAddresses((prev) => prev.filter((addr) => addr.id !== confirmDialog.addressToDelete));
+        showAlert("Address deleted successfully");
       }
     } catch (error) {
       console.error("Error deleting address:", error);
@@ -359,17 +268,6 @@ export default function Shipping() {
     } finally {
       setLoading(false);
       closeConfirmDialog();
-  // TODO: Replace with actual API call using axios
-  // Example: await axios.delete(`/api/addresses/${addressId}`);
-  const deleteAddress = async (addressId) => {
-    try {
-      // await axios.delete(`/api/addresses/${addressId}`);
-
-      // Mock delete for demo
-      setAddresses((prev) => prev.filter((addr) => addr.id !== addressId));
-    } catch (error) {
-      console.error("Error deleting address:", error);
-      throw error;
     }
   };
 
@@ -380,11 +278,6 @@ export default function Shipping() {
 
   const handleDeleteClick = (addressId) => {
     setConfirmDialog({ isOpen: true, addressToDelete: addressId });
-
-  const handleDeleteClick = async (addressId) => {
-    if (window.confirm("Are you sure you want to delete this address?")) {
-      await deleteAddress(addressId);
-    }
   };
 
   const closeModals = () => {
@@ -479,44 +372,6 @@ export default function Shipping() {
       }
     };
 
-
-    const handleSubmit = async (e) => {
-      e.preventDefault();
-
-      const sanitizedData = sanitizeFormData(formData);
-      const validationErrors = validateAddress(sanitizedData);
-
-      if (Object.keys(validationErrors).length > 0) {
-        setErrors(validationErrors);
-        return;
-      }
-
-      setIsSubmitting(true);
-      try {
-        if (isEdit) {
-          await updateAddress(address.id, sanitizedData);
-        } else {
-          await addNewAddress(sanitizedData);
-        }
-        onClose();
-        // Reset form
-        setFormData({
-          name: "",
-          streetAddress: "",
-          city: "",
-          state: "",
-          zipCode: "",
-          isDefault: false,
-        });
-        setErrors({});
-      } catch (error) {
-        console.error("Error saving address:", error);
-        // You can set a general error state here if needed
-      } finally {
-        setIsSubmitting(false);
-      }
-    };
-
     return (
       <Modal isOpen={isOpen} onClose={onClose}>
         <div className="flex items-center justify-between mb-4">
@@ -530,9 +385,6 @@ export default function Shipping() {
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
-
-
-        <div className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Full Name *
@@ -603,11 +455,7 @@ export default function Shipping() {
                   errors.state ? "border-red-500" : "border-gray-300"
                 }`}
                 placeholder="CA"
-
                 maxLength="10"
-
-                maxLength="2"
-
               />
               {errors.state && (
                 <p className="mt-1 text-sm text-red-600">{errors.state}</p>
@@ -633,7 +481,6 @@ export default function Shipping() {
             )}
           </div>
 
-
           <div className="flex items-center">
             <input
               type="checkbox"
@@ -651,25 +498,6 @@ export default function Shipping() {
               Set as default address
             </label>
           </div>
-          {isEdit && (
-            <div className="flex items-center">
-              <input
-                type="checkbox"
-                id="setDefault"
-                checked={formData.isDefault}
-                onChange={(e) =>
-                  handleInputChange("isDefault", e.target.checked)
-                }
-                className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-              />
-              <label
-                htmlFor="setDefault"
-                className="ml-2 block text-sm text-gray-700"
-              >
-                Set as default address
-              </label>
-            </div>
-          )}
 
           <div className="flex gap-3 mt-6">
             <button
@@ -680,12 +508,7 @@ export default function Shipping() {
               Cancel
             </button>
             <button
-
               type="submit"
-
-              type="button"
-              onClick={handleSubmit}
-
               disabled={isSubmitting}
               className="flex-1 px-4 py-3 bg-[#003554] cursor-pointer text-white rounded-md hover:bg-[#002744] transition-colors disabled:opacity-50"
             >
@@ -696,11 +519,7 @@ export default function Shipping() {
                 : "Save Address"}
             </button>
           </div>
-
         </form>
-
-        </div>
-
       </Modal>
     );
   };
@@ -791,7 +610,6 @@ export default function Shipping() {
         title="Edit Address"
       />
 
-      
       <Alert
         open={alert.open}
         onClose={closeAlert}
