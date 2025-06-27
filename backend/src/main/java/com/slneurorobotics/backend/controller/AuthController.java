@@ -97,6 +97,8 @@ public class AuthController {
             UserDetails userDetails = (UserDetails) authentication.getPrincipal();
             User user = authService.getUserByEmail(loginRequest.getEmail());
 
+            user.updateLastLogin();
+            authService.saveUser(user);
             // Generate tokens
             String accessToken = jwtUtil.generateToken(userDetails);
             String refreshToken = jwtUtil.generateRefreshToken(userDetails);

@@ -2,6 +2,7 @@ package com.slneurorobotics.backend.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.slneurorobotics.backend.dto.request.FaqRequestDTO;
+import com.slneurorobotics.backend.dto.request.PasswordChangeDTO;
 import com.slneurorobotics.backend.dto.request.ProductRequestDTO;
 import com.slneurorobotics.backend.dto.request.UserSettingUpdateDTO;
 import com.slneurorobotics.backend.dto.response.FaqResponseDTO;
@@ -9,15 +10,19 @@ import com.slneurorobotics.backend.dto.response.UserResponseDTO;
 import com.slneurorobotics.backend.dto.response.UserSettingResponseDTO;
 import com.slneurorobotics.backend.entity.FAQ;
 import com.slneurorobotics.backend.service.FaqService;
+import com.slneurorobotics.backend.service.PasswordService;
 import com.slneurorobotics.backend.service.ProductService;
 import com.slneurorobotics.backend.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("api/admin")
@@ -27,6 +32,7 @@ public class AdminController {
     private final ProductService productService;
     private final ObjectMapper objectMapper;
     private final UserService userService;
+    private PasswordService passwordService;
     private final FaqService faqService;
 
     @PostMapping("/addProduct")
@@ -125,6 +131,38 @@ public class AdminController {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
+
+    @PutMapping("/updatePassword/{userid}")
+    public ResponseEntity<?> updatePassword(
+            @PathVariable("userid") Long userId,
+            @Valid @RequestBody PasswordChangeDTO passwordChangeDTO) {
+
+        try {
+            boolean success = userService.updatePassword(userId, passwordChangeDTO);
+            if (success) {
+                return ResponseEntity.ok().body(Map.of(
+                        "message", "Password updated successfully",
+                        "success", true
+                ));
+            } else {
+                return ResponseEntity.badRequest().body(Map.of(
+                        "message", "Failed to update password",
+                        "success", false
+                ));
+            }
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of(
+                    "message", e.getMessage(),
+                    "success", false
+            ));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of(
+                    "message", "An error occurred while updating password",
+                    "success", false
+            ));
+        }
+    }
+
 
 
 

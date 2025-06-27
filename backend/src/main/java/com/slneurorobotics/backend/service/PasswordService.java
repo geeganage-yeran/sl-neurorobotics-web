@@ -11,10 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 public class PasswordService {
 
-    @Autowired
     private UserRepository userRepository;
-
-    @Autowired
     private PasswordEncoder passwordEncoder;
 
     @Transactional
@@ -47,7 +44,7 @@ public class PasswordService {
 
         // Update last password change timestamp (optional)
 //        user.setPasswordLastChanged(java.time.LocalDateTime.now());
-
+        user.setUpdatedById(userId);
         userRepository.save(user);
         return true;
     }

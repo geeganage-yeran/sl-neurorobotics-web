@@ -1,10 +1,8 @@
 import React, { useEffect, useState, useRef } from "react";
 import { Eye, EyeOff } from "lucide-react";
 import SecondaryButton from "../../components/SecondaryButton";
-import DeleteModal from "../../components/confirmDialog";
 import Alert from "../../components/Alert";
 import api from "../../services/api";
-// Import your existing validation functions
 import {
   validateFirstName,
   validateLastName,
@@ -14,15 +12,18 @@ import {
   sanitizeInput,
   sanitizeEmail,
   sanitizePhone,
-} from "../../utils/SignupValidation"; // Adjust path to your validation file
+  validatePassword,
+  validateConfirmPassword,
+} from "../../utils/SignupValidation";
 
 function Settings({ user }) {
   // State management
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
   const [isUpdatingPassword, setIsUpdatingPassword] = useState(false);
   const fetchedRef = useRef(false);
+  const [passwordErrors, setPasswordErrors] = useState({});
+  const [passwordTouched, setPasswordTouched] = useState({});
 
   const [originalData, setOriginalData] = useState({
     firstName: "",
@@ -75,14 +76,16 @@ function Settings({ user }) {
     setAlert((prev) => ({ ...prev, open: false }));
   };
 
-  // Input class helper
+  // Input class helpers
   const getInputClassName = (fieldName) => {
-    const baseClass =
-      "w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-[#003554] focus:border-[#003554]";
-    const errorClass =
-      touched[fieldName] && errors[fieldName]
-        ? "border-red-500"
-        : "border-gray-300";
+    const baseClass = "w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-[#003554] focus:border-[#003554]";
+    const errorClass = touched[fieldName] && errors[fieldName] ? "border-red-500" : "border-gray-300";
+    return `${baseClass} ${errorClass}`;
+  };
+
+  const getPasswordInputClassName = (fieldName) => {
+    const baseClass = "w-full px-3 py-2 pr-10 border rounded-lg focus:ring-2 focus:ring-[#003554] focus:border-[#003554]";
+    const errorClass = passwordTouched[fieldName] && passwordErrors[fieldName] ? "border-red-500" : "border-gray-300";
     return `${baseClass} ${errorClass}`;
   };
 
@@ -152,6 +155,14 @@ function Settings({ user }) {
       ...prev,
       [name]: value,
     }));
+
+    // Clear error when user starts typing
+    if (passwordErrors[name]) {
+      setPasswordErrors((prev) => ({
+        ...prev,
+        [name]: "",
+      }));
+    }
   };
 
   // Validation on blur
@@ -189,6 +200,34 @@ function Settings({ user }) {
     }));
   };
 
+  const handlePasswordBlur = (e) => {
+    const { name } = e.target;
+    setPasswordTouched((prev) => ({
+      ...prev,
+      [name]: true,
+    }));
+
+    let error = "";
+    switch (name) {
+      case "oldPassword":
+        error = !passwordData.oldPassword ? "Current password is required" : "";
+        break;
+      case "newPassword":
+        error = validatePassword(passwordData.newPassword);
+        break;
+      case "confirmPassword":
+        error = validateConfirmPassword(passwordData.newPassword, passwordData.confirmPassword);
+        break;
+      default:
+        break;
+    }
+
+    setPasswordErrors((prev) => ({
+      ...prev,
+      [name]: error,
+    }));
+  };
+
   // Form reset handlers
   const resetProfileForm = () => {
     setFormData({ ...originalData });
@@ -202,6 +241,8 @@ function Settings({ user }) {
       newPassword: "",
       confirmPassword: "",
     });
+    setPasswordErrors({});
+    setPasswordTouched({});
   };
 
   // Password visibility toggle
@@ -273,29 +314,6 @@ function Settings({ user }) {
     return !hasErrors;
   };
 
-  // Validate entire form (for cases where we need full validation)
-  const validateAllFields = () => {
-    const newErrors = {};
-
-    newErrors.firstName = validateFirstName(formData.firstName);
-    newErrors.lastName = validateLastName(formData.lastName);
-    newErrors.email = validateEmail(formData.email);
-    newErrors.contact = validateContact(formData.contact);
-    newErrors.country = validateCountry(formData.country);
-
-    setErrors(newErrors);
-    setTouched({
-      firstName: true,
-      lastName: true,
-      email: true,
-      contact: true,
-      country: true,
-    });
-
-    // Return true if no errors
-    return !Object.values(newErrors).some((error) => error !== "");
-  };
-
   // Form submission handlers
   const handleProfileUpdate = async (e) => {
     e.preventDefault();
@@ -339,7 +357,7 @@ function Settings({ user }) {
       showAlert("Profile updated successfully");
     } catch (err) {
       if (err.response && err.response.status === 400) {
-        showAlert(err.response.data,"error");
+        showAlert(err.response.data, "error");
       }
     } finally {
       setIsUpdating(false);
@@ -349,59 +367,70 @@ function Settings({ user }) {
   const handlePasswordUpdate = async (e) => {
     e.preventDefault();
 
-    // Basic password validation
-    if (
-      !passwordData.oldPassword ||
-      !passwordData.newPassword ||
-      !passwordData.confirmPassword
-    ) {
-      showAlert("Please fill in all password fields", "error");
-      return;
+    // Validate all password fields
+    const newPasswordErrors = {};
+    
+    if (!passwordData.oldPassword) {
+      newPasswordErrors.oldPassword = "Current password is required";
     }
+    
+    newPasswordErrors.newPassword = validatePassword(passwordData.newPassword);
+    newPasswordErrors.confirmPassword = validateConfirmPassword(
+      passwordData.newPassword, 
+      passwordData.confirmPassword
+    );
 
-    if (passwordData.newPassword !== passwordData.confirmPassword) {
-      showAlert("New passwords do not match", "error");
-      return;
-    }
+    // Set all fields as touched
+    setPasswordTouched({
+      oldPassword: true,
+      newPassword: true,
+      confirmPassword: true,
+    });
 
-    if (passwordData.newPassword.length < 8) {
-      showAlert("New password must be at least 8 characters long", "error");
+    setPasswordErrors(newPasswordErrors);
+
+    // Check if there are any errors
+    const hasValidationErrors = Object.values(newPasswordErrors).some(error => error !== "");
+    
+    if (hasValidationErrors) {
+      showAlert("Please fix the errors in the password form", "error");
       return;
     }
 
     setIsUpdatingPassword(true);
 
     try {
-      await api.put(
-        `/admin/updatePassword/${user.id}`, // Updated endpoint
+      const response = await api.put(
+        `/admin/updatePassword/${user.id}`,
         {
           oldPassword: passwordData.oldPassword,
           newPassword: passwordData.newPassword,
           confirmPassword: passwordData.confirmPassword,
         },
-        { withCredentials: true }
+        { 
+          withCredentials: true,
+          timeout: 10000
+        }
       );
 
+      // Clear form and errors on success
       resetPasswordForm();
       showAlert("Password updated successfully");
+      
     } catch (err) {
       let errorMessage = "Failed to update password";
       if (err.response?.status === 400) {
-        errorMessage =
-          err.response.data?.message || "Current password is incorrect";
+        errorMessage = err.response.data?.message || "Current password is incorrect";
       } else if (err.response?.status === 404) {
         errorMessage = "User not found";
+      } else if (err.response?.status === 422) {
+        errorMessage = "Password validation failed on server";
       }
       showAlert(errorMessage, "error");
     } finally {
       setIsUpdatingPassword(false);
     }
   };
-
-  // const handleDeleteAccount = () => {
-  //   console.log("Account deletion requested");
-  //   setDeleteDialogOpen(false);
-  // };
 
   if (isLoading) {
     return (
@@ -587,27 +616,24 @@ function Settings({ user }) {
                     Update Password
                   </h3>
                   <form onSubmit={handlePasswordUpdate}>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="grid gap-6">
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">
                           Current Password *
                         </label>
                         <div className="relative">
                           <input
-                            type={
-                              showPasswords.oldPassword ? "text" : "password"
-                            }
+                            type={showPasswords.oldPassword ? "text" : "password"}
                             name="oldPassword"
                             value={passwordData.oldPassword}
                             onChange={handlePasswordChange}
-                            className="w-full px-3 py-2 pr-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#003554] focus:border-[#003554]"
+                            onBlur={handlePasswordBlur}
+                            className={getPasswordInputClassName("oldPassword")}
                             placeholder="••••••••"
                           />
                           <button
                             type="button"
-                            onClick={() =>
-                              togglePasswordVisibility("oldPassword")
-                            }
+                            onClick={() => togglePasswordVisibility("oldPassword")}
                             className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600"
                           >
                             {showPasswords.oldPassword ? (
@@ -617,6 +643,9 @@ function Settings({ user }) {
                             )}
                           </button>
                         </div>
+                        {passwordTouched.oldPassword && passwordErrors.oldPassword && (
+                          <p className="mt-1 text-sm text-red-600">{passwordErrors.oldPassword}</p>
+                        )}
                       </div>
 
                       <div>
@@ -625,20 +654,17 @@ function Settings({ user }) {
                         </label>
                         <div className="relative">
                           <input
-                            type={
-                              showPasswords.newPassword ? "text" : "password"
-                            }
+                            type={showPasswords.newPassword ? "text" : "password"}
                             name="newPassword"
                             value={passwordData.newPassword}
                             onChange={handlePasswordChange}
-                            className="w-full px-3 py-2 pr-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#003554] focus:border-[#003554]"
+                            onBlur={handlePasswordBlur}
+                            className={getPasswordInputClassName("newPassword")}
                             placeholder="••••••••"
                           />
                           <button
                             type="button"
-                            onClick={() =>
-                              togglePasswordVisibility("newPassword")
-                            }
+                            onClick={() => togglePasswordVisibility("newPassword")}
                             className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600"
                           >
                             {showPasswords.newPassword ? (
@@ -648,30 +674,28 @@ function Settings({ user }) {
                             )}
                           </button>
                         </div>
+                        {passwordTouched.newPassword && passwordErrors.newPassword && (
+                          <p className="mt-1 text-sm text-red-600">{passwordErrors.newPassword}</p>
+                        )}
                       </div>
 
-                      <div className="md:col-span-2">
+                      <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">
                           Confirm New Password *
                         </label>
                         <div className="relative">
                           <input
-                            type={
-                              showPasswords.confirmPassword
-                                ? "text"
-                                : "password"
-                            }
+                            type={showPasswords.confirmPassword ? "text" : "password"}
                             name="confirmPassword"
                             value={passwordData.confirmPassword}
                             onChange={handlePasswordChange}
-                            className="w-full px-3 py-2 pr-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#003554] focus:border-[#003554]"
+                            onBlur={handlePasswordBlur}
+                            className={getPasswordInputClassName("confirmPassword")}
                             placeholder="••••••••"
                           />
                           <button
                             type="button"
-                            onClick={() =>
-                              togglePasswordVisibility("confirmPassword")
-                            }
+                            onClick={() => togglePasswordVisibility("confirmPassword")}
                             className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600"
                           >
                             {showPasswords.confirmPassword ? (
@@ -681,6 +705,9 @@ function Settings({ user }) {
                             )}
                           </button>
                         </div>
+                        {passwordTouched.confirmPassword && passwordErrors.confirmPassword && (
+                          <p className="mt-1 text-sm text-red-600">{passwordErrors.confirmPassword}</p>
+                        )}
                       </div>
                     </div>
 
@@ -699,9 +726,7 @@ function Settings({ user }) {
                         type="submit"
                         variant="filled"
                         color="#051923"
-                        text={
-                          isUpdatingPassword ? "Updating..." : "Update Password"
-                        }
+                        text={isUpdatingPassword ? "Updating..." : "Update Password"}
                         py="py-2"
                         px="px-6"
                         disabled={isUpdatingPassword}
@@ -726,7 +751,6 @@ function Settings({ user }) {
                     hoverColor="#FF1A1A"
                     py="py-2"
                     px="px-6"
-                    // onClick={() => setDeleteDialogOpen(true)}
                   />
                 </div>
               </div>
@@ -734,17 +758,6 @@ function Settings({ user }) {
           </div>
         </div>
       </div>
-
-      {/* Delete Account Modal */}
-      {/* <DeleteModal
-        isOpen={deleteDialogOpen}
-        onClose={() => setDeleteDialogOpen(false)}
-        onConfirm={handleDeleteAccount}
-        title="Delete Account"
-        message="Are you sure you want to delete your account? All of your data will be permanently removed. This action cannot be undone."
-        confirmText="Delete Account"
-        cancelText="Cancel"
-      /> */}
 
       {/* Alert Component */}
       <Alert
