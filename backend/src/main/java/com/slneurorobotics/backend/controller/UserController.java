@@ -1,9 +1,12 @@
 package com.slneurorobotics.backend.controller;
 
+import com.slneurorobotics.backend.dto.request.FaqRequestDTO;
 import com.slneurorobotics.backend.dto.request.PasswordChangeDTO;
 import com.slneurorobotics.backend.dto.request.ShippingAddressRequestDTO;
 import com.slneurorobotics.backend.dto.request.UserSettingUpdateDTO;
 import com.slneurorobotics.backend.dto.response.*;
+import com.slneurorobotics.backend.entity.FAQ;
+import com.slneurorobotics.backend.entity.Shipping_address;
 import com.slneurorobotics.backend.entity.User;
 import com.slneurorobotics.backend.service.AuthService;
 import com.slneurorobotics.backend.service.FaqService;
@@ -175,6 +178,18 @@ public class UserController {
         }
     }
 
+    @PutMapping("/updateAddress/{id}")
+    public ResponseEntity<?> updateAddress(@PathVariable Long id, @RequestBody @Valid ShippingAddressRequestDTO shippingAddressRequestDTO) {
+        try {
+            Shipping_address updatedAddress = userService.updateAddress(id, shippingAddressRequestDTO);
+            return ResponseEntity.ok(updatedAddress);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Failed to update Shipping Address: " + e.getMessage());
+        }
+    }
+
+
+
     @PutMapping("/deactivateAccount/{id}")
     public ResponseEntity<?> deactivateAccount(@PathVariable Long id){
         try {
@@ -186,6 +201,7 @@ public class UserController {
         }
 
     }
+
 
 
 }

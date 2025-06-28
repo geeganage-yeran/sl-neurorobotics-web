@@ -123,12 +123,17 @@ export default function Shipping({ user }) {
   const fetchAddresses = async () => {
     setLoading(true);
     try {
+      const response = await api.get("/user/getAddress");
+      console.log(response.data);
+      setAddresses(response.data);
       // Check if user is available for real API call
       if (user) {
         const response = await api.get("/user/getAddress");
         console.log(response.data);
         setAddresses(response.data);
       } else {
+      }
+
         // Mock data for demo when user is not available
         const mockAddresses = [
           {
@@ -152,6 +157,7 @@ export default function Shipping({ user }) {
         ];
         setAddresses(mockAddresses);
       }
+
     } catch (error) {
       console.error("Error fetching addresses:", error);
       showAlert("Failed to fetch addresses", "error");
@@ -162,6 +168,21 @@ export default function Shipping({ user }) {
 
   const addNewAddress = async (addressData) => {
     try {
+      const dataToSend = {
+        ...addressData,
+        createdBy: user.id,
+      };
+      const response = await api.post(`/user/addAddress`, dataToSend, {
+        headers: {
+          "Content-Type": "application/json",
+        },
+        withCredentials: true,
+      });
+      
+      if (response.status === 200 || response.status === 201) {
+        showAlert("Shipping address added successfully");
+        // Refresh addresses list after successful addition
+        await fetchAddresses();
       if (user) {
         // Real API call
         const dataToSend = {
@@ -194,6 +215,78 @@ export default function Shipping({ user }) {
     } catch (error) {
       console.error("Error adding address:", error);
       showAlert("Failed to add address", "error");
+    }
+  };
+
+  const updateAddress = async (addressId, addressData) => {
+    try {
+      // TODO: Uncomment and implement actual edit API call
+      // const response = await api.put(`/user/updateAddress/${addressId}`, addressData, {
+      //   headers: {
+      //     "Content-Type": "application/json",
+      //   },
+      //   withCredentials: true,
+      // });
+      
+      // if (response.status === 200) {
+      //   showAlert("Address updated successfully");
+      //   await fetchAddresses(); // Refresh from backend
+      //   return response.data;
+      // } else {
+      //   showAlert("Failed to update address", "error");
+      // }
+
+      // Mock update for demo - REMOVE THIS WHEN IMPLEMENTING BACKEND
+  // TODO: Replace with actual API call using axios
+  // Example: const response = await axios.put(`/api/addresses/${addressId}`, addressData);
+  const updateAddress = async (addressId, addressData) => {
+    try {
+      // const response = await axios.put(`/api/addresses/${addressId}`, addressData);
+      // const updatedAddress = response.data;
+
+      // Mock update for demo
+      setAddresses((prev) =>
+        prev.map((addr) =>
+          addr.id === addressId ? { ...addr, ...addressData } : addr
+        )
+      );
+      showAlert("Address updated successfully");
+
+        
+        const response = await api.put(`/user/updateAddress/${addressId}`, addressData, {
+
+      if (user) {
+        const dataToSend = {
+          ...addressData,
+          createdBy: user.id,
+        };
+        const response = await api.post(`/user/addAddress`, dataToSend, {
+
+          headers: {
+            "Content-Type": "application/json",
+          },
+          withCredentials: true,
+        });
+        
+        if (response.status === 200) {
+          showAlert("Address updated successfully");
+          await fetchAddresses();
+          return response.data;
+        } else {
+          showAlert("Failed to update address", "error");
+        }
+      } else {
+        // Mock response for demo
+        const newAddress = {
+          id: Date.now(),
+          ...addressData,
+        };
+        setAddresses((prev) => [...prev, newAddress]);
+        showAlert("Shipping address added successfully");
+      }
+    } catch (error) {
+      console.error("Error adding address:", error);
+      showAlert("Address already added", "error");
     }
   };
 
