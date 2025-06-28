@@ -211,7 +211,18 @@ public class UserService {
         return dto;
     }
 
-    public void saveShippingAddress(ShippingAddressRequestDTO shippingAddressRequestDTO){
+    public void saveShippingAddress(ShippingAddressRequestDTO shippingAddressRequestDTO) {
+
+        List<Shipping_address> existingAddresses = shippingAddressRepository.findByAddressFields(
+                shippingAddressRequestDTO.getStreetAddress(),
+                shippingAddressRequestDTO.getCity(),
+                shippingAddressRequestDTO.getState(),
+                shippingAddressRequestDTO.getZipCode()
+        );
+
+        if (!existingAddresses.isEmpty()) {
+            throw new RuntimeException("Shipping address already exists");
+        }
 
         Shipping_address shippingAddress = new Shipping_address();
         shippingAddress.setFull_name(shippingAddressRequestDTO.getName());

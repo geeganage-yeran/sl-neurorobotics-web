@@ -260,6 +260,7 @@ export default function Shipping() {
 
   const addNewAddress = async (addressData) => {
     try {
+<<<<<<< Updated upstream
       const dataToSend = {
         ...addressData,
         createdBy: user.id,
@@ -340,6 +341,14 @@ export default function Shipping() {
 =======
         
         const response = await api.put(`/user/updateAddress/${addressId}`, addressData, {
+=======
+      if (user) {
+        const dataToSend = {
+          ...addressData,
+          createdBy: user.id,
+        };
+        const response = await api.post(`/user/addAddress`, dataToSend, {
+>>>>>>> Stashed changes
           headers: {
             "Content-Type": "application/json",
           },
@@ -353,6 +362,59 @@ export default function Shipping() {
         } else {
           showAlert("Failed to update address", "error");
         }
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+      } else {
+        // Mock response for demo
+        const newAddress = {
+          id: Date.now(),
+          ...addressData,
+        };
+        setAddresses((prev) => [...prev, newAddress]);
+        showAlert("Shipping address added successfully");
+      }
+    } catch (error) {
+      console.error("Error adding address:", error);
+      showAlert("Address already added", "error");
+    }
+  };
+
+  const updateAddress = async (addressId, addressData) => {
+    try {
+      if (user) {
+        // TODO: Implement actual edit API call when backend is ready
+        // const response = await api.put(`/user/updateAddress/${addressId}`, addressData, {
+        //   headers: {
+        //     "Content-Type": "application/json",
+        //   },
+        //   withCredentials: true,
+        // });
+        // 
+        // if (response.status === 200) {
+        //   showAlert("Address updated successfully");
+        //   await fetchAddresses(); // Refresh from backend
+        //   return response.data;
+        // } else {
+        //   showAlert("Failed to update address", "error");
+        // }
+
+        // Mock update for demo - REMOVE THIS WHEN IMPLEMENTING BACKEND
+        setAddresses((prev) =>
+          prev.map((addr) =>
+            addr.id === addressId ? { ...addr, ...addressData } : addr
+          )
+        );
+        showAlert("Address updated successfully");
+      } else {
+        // Mock update for demo
+        setAddresses((prev) =>
+          prev.map((addr) =>
+            addr.id === addressId ? { ...addr, ...addressData } : addr
+          )
+        );
+        showAlert("Address updated successfully");
+      }
 >>>>>>> Stashed changes
       return { id: addressId, ...addressData };
     } catch (error) {

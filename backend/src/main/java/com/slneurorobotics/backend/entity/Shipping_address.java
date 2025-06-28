@@ -21,7 +21,7 @@ public class Shipping_address {
     @Column(nullable = false,name = "full_name")
     private String full_name;
 
-    @Column(nullable = false,name = "Street_address")
+    @Column(nullable = false,name = "street_address")
     private String street_address;
 
     @Column(nullable = false)
