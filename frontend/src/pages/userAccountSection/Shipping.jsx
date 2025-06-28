@@ -107,7 +107,6 @@ export default function Shipping({ user }) {
     setAlert((prev) => ({ ...prev, open: false }));
   };
 
-  // Fixed closeConfirmDialog function
   const closeConfirmDialog = () => {
     setConfirmDialog({
       isOpen: false,
@@ -123,17 +122,11 @@ export default function Shipping({ user }) {
   const fetchAddresses = async () => {
     setLoading(true);
     try {
-      const response = await api.get("/user/getAddress");
-      console.log(response.data);
-      setAddresses(response.data);
-      // Check if user is available for real API call
       if (user) {
         const response = await api.get("/user/getAddress");
         console.log(response.data);
         setAddresses(response.data);
       } else {
-      }
-
         // Mock data for demo when user is not available
         const mockAddresses = [
           {
@@ -157,7 +150,6 @@ export default function Shipping({ user }) {
         ];
         setAddresses(mockAddresses);
       }
-
     } catch (error) {
       console.error("Error fetching addresses:", error);
       showAlert("Failed to fetch addresses", "error");
@@ -168,23 +160,7 @@ export default function Shipping({ user }) {
 
   const addNewAddress = async (addressData) => {
     try {
-      const dataToSend = {
-        ...addressData,
-        createdBy: user.id,
-      };
-      const response = await api.post(`/user/addAddress`, dataToSend, {
-        headers: {
-          "Content-Type": "application/json",
-        },
-        withCredentials: true,
-      });
-      
-      if (response.status === 200 || response.status === 201) {
-        showAlert("Shipping address added successfully");
-        // Refresh addresses list after successful addition
-        await fetchAddresses();
       if (user) {
-        // Real API call
         const dataToSend = {
           ...addressData,
           createdBy: user.id,
@@ -198,7 +174,6 @@ export default function Shipping({ user }) {
         
         if (response.status === 200 || response.status === 201) {
           showAlert("Shipping address added successfully");
-          // Refresh addresses list after successful addition
           await fetchAddresses();
         } else {
           showAlert("Unexpected error occurred, please try again", "error");
@@ -220,48 +195,8 @@ export default function Shipping({ user }) {
 
   const updateAddress = async (addressId, addressData) => {
     try {
-      // TODO: Uncomment and implement actual edit API call
-      // const response = await api.put(`/user/updateAddress/${addressId}`, addressData, {
-      //   headers: {
-      //     "Content-Type": "application/json",
-      //   },
-      //   withCredentials: true,
-      // });
-      
-      // if (response.status === 200) {
-      //   showAlert("Address updated successfully");
-      //   await fetchAddresses(); // Refresh from backend
-      //   return response.data;
-      // } else {
-      //   showAlert("Failed to update address", "error");
-      // }
-
-      // Mock update for demo - REMOVE THIS WHEN IMPLEMENTING BACKEND
-  // TODO: Replace with actual API call using axios
-  // Example: const response = await axios.put(`/api/addresses/${addressId}`, addressData);
-  const updateAddress = async (addressId, addressData) => {
-    try {
-      // const response = await axios.put(`/api/addresses/${addressId}`, addressData);
-      // const updatedAddress = response.data;
-
-      // Mock update for demo
-      setAddresses((prev) =>
-        prev.map((addr) =>
-          addr.id === addressId ? { ...addr, ...addressData } : addr
-        )
-      );
-      showAlert("Address updated successfully");
-
-        
-        const response = await api.put(`/user/updateAddress/${addressId}`, addressData, {
-
       if (user) {
-        const dataToSend = {
-          ...addressData,
-          createdBy: user.id,
-        };
-        const response = await api.post(`/user/addAddress`, dataToSend, {
-
+        const response = await api.put(`/user/updateAddress/${addressId}`, addressData, {
           headers: {
             "Content-Type": "application/json",
           },
@@ -276,47 +211,6 @@ export default function Shipping({ user }) {
           showAlert("Failed to update address", "error");
         }
       } else {
-        // Mock response for demo
-        const newAddress = {
-          id: Date.now(),
-          ...addressData,
-        };
-        setAddresses((prev) => [...prev, newAddress]);
-        showAlert("Shipping address added successfully");
-      }
-    } catch (error) {
-      console.error("Error adding address:", error);
-      showAlert("Address already added", "error");
-    }
-  };
-
-  const updateAddress = async (addressId, addressData) => {
-    try {
-      if (user) {
-        // TODO: Implement actual edit API call when backend is ready
-        // const response = await api.put(`/user/updateAddress/${addressId}`, addressData, {
-        //   headers: {
-        //     "Content-Type": "application/json",
-        //   },
-        //   withCredentials: true,
-        // });
-        // 
-        // if (response.status === 200) {
-        //   showAlert("Address updated successfully");
-        //   await fetchAddresses(); // Refresh from backend
-        //   return response.data;
-        // } else {
-        //   showAlert("Failed to update address", "error");
-        // }
-
-        // Mock update for demo - REMOVE THIS WHEN IMPLEMENTING BACKEND
-        setAddresses((prev) =>
-          prev.map((addr) =>
-            addr.id === addressId ? { ...addr, ...addressData } : addr
-          )
-        );
-        showAlert("Address updated successfully");
-      } else {
         // Mock update for demo
         setAddresses((prev) =>
           prev.map((addr) =>
@@ -325,11 +219,9 @@ export default function Shipping({ user }) {
         );
         showAlert("Address updated successfully");
       }
-      return { id: addressId, ...addressData };
     } catch (error) {
       console.error("Error updating address:", error);
       showAlert("Failed to update address", "error");
-      throw error;
     }
   };
 
@@ -345,7 +237,6 @@ export default function Shipping({ user }) {
         
         if (response.status === 200) {
           showAlert("Address deleted successfully");
-          // Refresh addresses list from backend after successful deletion
           await fetchAddresses();
         } else {
           showAlert("Failed to delete address", "error");
@@ -459,7 +350,6 @@ export default function Shipping({ user }) {
         setErrors({});
       } catch (error) {
         console.error("Error saving address:", error);
-        // Error is already handled in the respective functions
       } finally {
         setIsSubmitting(false);
       }
