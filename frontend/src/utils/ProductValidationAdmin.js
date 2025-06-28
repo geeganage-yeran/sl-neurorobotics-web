@@ -265,25 +265,6 @@ export const validateForm = (formData, specifications = [], images = []) => {
   };
 };
 
-export const createRateLimiter = (maxAttempts = 5, windowMs = 60000) => {
-  const attempts = new Map();
-  
-  return (identifier = 'default') => {
-    const now = Date.now();
-    const userAttempts = attempts.get(identifier) || [];
-    
-    const recentAttempts = userAttempts.filter(time => now - time < windowMs);
-    
-    if (recentAttempts.length >= maxAttempts) {
-      return false;
-    }
-    
-    recentAttempts.push(now);
-    attempts.set(identifier, recentAttempts);
-    return true; // Allowed
-  };
-};
-
 export const getFieldError = (errors, fieldName) => {
   if (!errors || !errors[fieldName]) return null;
   return Array.isArray(errors[fieldName]) ? errors[fieldName][0] : errors[fieldName];
