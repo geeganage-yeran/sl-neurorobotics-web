@@ -78,14 +78,22 @@ function Settings({ user }) {
 
   // Input class helpers
   const getInputClassName = (fieldName) => {
-    const baseClass = "w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-[#003554] focus:border-[#003554]";
-    const errorClass = touched[fieldName] && errors[fieldName] ? "border-red-500" : "border-gray-300";
+    const baseClass =
+      "w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-[#003554] focus:border-[#003554]";
+    const errorClass =
+      touched[fieldName] && errors[fieldName]
+        ? "border-red-500"
+        : "border-gray-300";
     return `${baseClass} ${errorClass}`;
   };
 
   const getPasswordInputClassName = (fieldName) => {
-    const baseClass = "w-full px-3 py-2 pr-10 border rounded-lg focus:ring-2 focus:ring-[#003554] focus:border-[#003554]";
-    const errorClass = passwordTouched[fieldName] && passwordErrors[fieldName] ? "border-red-500" : "border-gray-300";
+    const baseClass =
+      "w-full px-3 py-2 pr-10 border rounded-lg focus:ring-2 focus:ring-[#003554] focus:border-[#003554]";
+    const errorClass =
+      passwordTouched[fieldName] && passwordErrors[fieldName]
+        ? "border-red-500"
+        : "border-gray-300";
     return `${baseClass} ${errorClass}`;
   };
 
@@ -216,7 +224,10 @@ function Settings({ user }) {
         error = validatePassword(passwordData.newPassword);
         break;
       case "confirmPassword":
-        error = validateConfirmPassword(passwordData.newPassword, passwordData.confirmPassword);
+        error = validateConfirmPassword(
+          passwordData.newPassword,
+          passwordData.confirmPassword
+        );
         break;
       default:
         break;
@@ -348,13 +359,11 @@ function Settings({ user }) {
         { withCredentials: true }
       );
 
-      // Update original data to reflect the new saved state
-      setOriginalData({ ...formData });
-
-      // Clear touched state since data is now saved
-      setTouched({});
-
-      showAlert("Profile updated successfully");
+      if (response.status === 200 || response.status === 201) {
+        setOriginalData({ ...formData });
+        setTouched({});
+        showAlert("Profile updated successfully");
+      }
     } catch (err) {
       if (err.response && err.response.status === 400) {
         showAlert(err.response.data, "error");
@@ -369,14 +378,14 @@ function Settings({ user }) {
 
     // Validate all password fields
     const newPasswordErrors = {};
-    
+
     if (!passwordData.oldPassword) {
       newPasswordErrors.oldPassword = "Current password is required";
     }
-    
+
     newPasswordErrors.newPassword = validatePassword(passwordData.newPassword);
     newPasswordErrors.confirmPassword = validateConfirmPassword(
-      passwordData.newPassword, 
+      passwordData.newPassword,
       passwordData.confirmPassword
     );
 
@@ -390,8 +399,10 @@ function Settings({ user }) {
     setPasswordErrors(newPasswordErrors);
 
     // Check if there are any errors
-    const hasValidationErrors = Object.values(newPasswordErrors).some(error => error !== "");
-    
+    const hasValidationErrors = Object.values(newPasswordErrors).some(
+      (error) => error !== ""
+    );
+
     if (hasValidationErrors) {
       showAlert("Please fix the errors in the password form", "error");
       return;
@@ -407,20 +418,20 @@ function Settings({ user }) {
           newPassword: passwordData.newPassword,
           confirmPassword: passwordData.confirmPassword,
         },
-        { 
+        {
           withCredentials: true,
-          timeout: 10000
+          timeout: 10000,
         }
       );
 
       // Clear form and errors on success
       resetPasswordForm();
       showAlert("Password updated successfully");
-      
     } catch (err) {
       let errorMessage = "Failed to update password";
       if (err.response?.status === 400) {
-        errorMessage = err.response.data?.message || "Current password is incorrect";
+        errorMessage =
+          err.response.data?.message || "Current password is incorrect";
       } else if (err.response?.status === 404) {
         errorMessage = "User not found";
       } else if (err.response?.status === 422) {
@@ -623,7 +634,9 @@ function Settings({ user }) {
                         </label>
                         <div className="relative">
                           <input
-                            type={showPasswords.oldPassword ? "text" : "password"}
+                            type={
+                              showPasswords.oldPassword ? "text" : "password"
+                            }
                             name="oldPassword"
                             value={passwordData.oldPassword}
                             onChange={handlePasswordChange}
@@ -633,7 +646,9 @@ function Settings({ user }) {
                           />
                           <button
                             type="button"
-                            onClick={() => togglePasswordVisibility("oldPassword")}
+                            onClick={() =>
+                              togglePasswordVisibility("oldPassword")
+                            }
                             className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600"
                           >
                             {showPasswords.oldPassword ? (
@@ -643,9 +658,12 @@ function Settings({ user }) {
                             )}
                           </button>
                         </div>
-                        {passwordTouched.oldPassword && passwordErrors.oldPassword && (
-                          <p className="mt-1 text-sm text-red-600">{passwordErrors.oldPassword}</p>
-                        )}
+                        {passwordTouched.oldPassword &&
+                          passwordErrors.oldPassword && (
+                            <p className="mt-1 text-sm text-red-600">
+                              {passwordErrors.oldPassword}
+                            </p>
+                          )}
                       </div>
 
                       <div>
@@ -654,7 +672,9 @@ function Settings({ user }) {
                         </label>
                         <div className="relative">
                           <input
-                            type={showPasswords.newPassword ? "text" : "password"}
+                            type={
+                              showPasswords.newPassword ? "text" : "password"
+                            }
                             name="newPassword"
                             value={passwordData.newPassword}
                             onChange={handlePasswordChange}
@@ -664,7 +684,9 @@ function Settings({ user }) {
                           />
                           <button
                             type="button"
-                            onClick={() => togglePasswordVisibility("newPassword")}
+                            onClick={() =>
+                              togglePasswordVisibility("newPassword")
+                            }
                             className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600"
                           >
                             {showPasswords.newPassword ? (
@@ -674,9 +696,12 @@ function Settings({ user }) {
                             )}
                           </button>
                         </div>
-                        {passwordTouched.newPassword && passwordErrors.newPassword && (
-                          <p className="mt-1 text-sm text-red-600">{passwordErrors.newPassword}</p>
-                        )}
+                        {passwordTouched.newPassword &&
+                          passwordErrors.newPassword && (
+                            <p className="mt-1 text-sm text-red-600">
+                              {passwordErrors.newPassword}
+                            </p>
+                          )}
                       </div>
 
                       <div>
@@ -685,17 +710,25 @@ function Settings({ user }) {
                         </label>
                         <div className="relative">
                           <input
-                            type={showPasswords.confirmPassword ? "text" : "password"}
+                            type={
+                              showPasswords.confirmPassword
+                                ? "text"
+                                : "password"
+                            }
                             name="confirmPassword"
                             value={passwordData.confirmPassword}
                             onChange={handlePasswordChange}
                             onBlur={handlePasswordBlur}
-                            className={getPasswordInputClassName("confirmPassword")}
+                            className={getPasswordInputClassName(
+                              "confirmPassword"
+                            )}
                             placeholder="••••••••"
                           />
                           <button
                             type="button"
-                            onClick={() => togglePasswordVisibility("confirmPassword")}
+                            onClick={() =>
+                              togglePasswordVisibility("confirmPassword")
+                            }
                             className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600"
                           >
                             {showPasswords.confirmPassword ? (
@@ -705,9 +738,12 @@ function Settings({ user }) {
                             )}
                           </button>
                         </div>
-                        {passwordTouched.confirmPassword && passwordErrors.confirmPassword && (
-                          <p className="mt-1 text-sm text-red-600">{passwordErrors.confirmPassword}</p>
-                        )}
+                        {passwordTouched.confirmPassword &&
+                          passwordErrors.confirmPassword && (
+                            <p className="mt-1 text-sm text-red-600">
+                              {passwordErrors.confirmPassword}
+                            </p>
+                          )}
                       </div>
                     </div>
 
@@ -726,7 +762,9 @@ function Settings({ user }) {
                         type="submit"
                         variant="filled"
                         color="#051923"
-                        text={isUpdatingPassword ? "Updating..." : "Update Password"}
+                        text={
+                          isUpdatingPassword ? "Updating..." : "Update Password"
+                        }
                         py="py-2"
                         px="px-6"
                         disabled={isUpdatingPassword}
@@ -734,31 +772,11 @@ function Settings({ user }) {
                     </div>
                   </form>
                 </div>
-
-                {/* Delete Account Section */}
-                <div>
-                  <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                    Delete Account
-                  </h3>
-                  <p className="text-sm text-gray-600 mb-4">
-                    Permanently delete your account and all associated data.
-                    This action cannot be undone.
-                  </p>
-                  <SecondaryButton
-                    variant="filled"
-                    color="#FF4D4D"
-                    text="Delete Account"
-                    hoverColor="#FF1A1A"
-                    py="py-2"
-                    px="px-6"
-                  />
-                </div>
               </div>
             </div>
           </div>
         </div>
       </div>
-
       {/* Alert Component */}
       <Alert
         open={alert.open}

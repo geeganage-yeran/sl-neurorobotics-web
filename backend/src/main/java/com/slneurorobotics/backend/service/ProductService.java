@@ -34,9 +34,6 @@ public class ProductService {
     private final ProductRepository productRepository;
     private final ProductImageRepository productImageRepository;
 
-    @Autowired
-    private ModelMapper modelMapper;
-
     @Value("${product.image.upload.dir}")
     private String productImageUploadDir;
 
@@ -220,8 +217,5 @@ public class ProductService {
 
         return Optional.of(convertToResponseDTO(product));
     }
-
-
-
 
 }

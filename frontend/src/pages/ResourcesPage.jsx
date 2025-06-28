@@ -1,13 +1,12 @@
-import React from "react";
 import { Play, Download, ChevronRight } from "lucide-react";
-import Header from "../components/Header";
 import Footer from "../components/Footer";
 import Button from "../components/Button";
+import DynamicHeader from "../components/DynamicHeader";
 
 const ResourcesPage = () => {
   return (
     <div className="min-h-screen pt-20 bg-gray-50">
-      <Header />
+      <DynamicHeader/>
       {/* Hero Section */}
       <section className="py-12 bg-gradient-to-r from-gray-100 to-gray-200 lg:py-20">
         <div className="px-6 mx-auto lg:px-6 xl:px-0 md:px-6 max-w-7xl">

@@ -31,7 +31,6 @@ function FQApage({ user }) {
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
 
-  // Add state for the confirm dialog
   const [confirmDialog, setConfirmDialog] = useState({
     isOpen: false,
     faqToDelete: null,
