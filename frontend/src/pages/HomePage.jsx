@@ -1,10 +1,10 @@
 import React, { useState } from "react";
-import Header from "../components/Header";
 import Footer from "../components/Footer";
 import Button from "../components/Button";
 import product1 from "../assets/landing.png";
 import product2 from "../assets/chairbed.png";
 import Alert from "../components/Alert";
+import DynamicHeader from "../components/DynamicHeader"
 
 export default function HomePage() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -43,7 +43,7 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen bg-white">
-      <Header />
+      <DynamicHeader/>
       <div className="relative w-full h-screen">
         {/* Background Video */}
         <video

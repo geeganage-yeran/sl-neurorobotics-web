@@ -1,8 +1,10 @@
-import React, { useEffect, useState } from 'react';
-import { Star, ShoppingCart, Heart, Share2, Shield, Truck, RotateCcw, Headphones } from 'lucide-react';
-import { useParams } from 'react-router-dom';
-import axios from 'axios';
-import Header from '../components/Header';
+import React, { useEffect, useState } from "react";
+import { Info, ChevronLeft, ChevronRight } from "lucide-react";
+import { useParams } from "react-router-dom";
+import axios from "axios";
+import Footer from "../components/Footer";
+import ar from "../assets/ar.gif";
+import DynamicHeader from "../components/DynamicHeader";
 
 export default function ProductViewPage() {
   const [selectedImage, setSelectedImage] = useState(0);
@@ -17,9 +19,11 @@ export default function ProductViewPage() {
     const fetchProduct = async () => {
       try {
         setLoading(true);
-        const response = await axios.get(`http://localhost:8080/api/public/getProduct/${id}`);
+        const response = await axios.get(
+          `http://localhost:8080/api/public/getProduct/${id}`
+        );
         setProduct(response.data);
-        
+
         // Parse specifications from the response
         if (response.data.specifications) {
           try {
@@ -28,15 +32,15 @@ export default function ProductViewPage() {
               setSpecifications(parsedSpecs);
             }
           } catch (e) {
-            console.error('Error parsing specifications:', e);
+            console.error("Error parsing specifications:", e);
           }
         }
-        
+
         console.log(response.data);
         setError(null);
       } catch (error) {
-        console.error('Error fetching product:', error);
-        setError('Failed to load product details');
+        console.error("Error fetching product:", error);
+        setError("Failed to load product details");
       } finally {
         setLoading(false);
       }
@@ -46,70 +50,6 @@ export default function ProductViewPage() {
       fetchProduct();
     }
   }, [id]);
-
-  
-
-  // Function to get icon based on specification name
-  const getSpecificationIcon = (specName) => {
-    const lowerName = specName.toLowerCase();
-    if (lowerName.includes('wireless') || lowerName.includes('bluetooth')) {
-      return <Headphones className="w-6 h-6" />;
-    } else if (lowerName.includes('grade') || lowerName.includes('quality')) {
-      return <Star className="w-6 h-6" />;
-    } else if (lowerName.includes('feedback') || lowerName.includes('real-time')) {
-      return <RotateCcw className="w-6 h-6" />;
-    } else if (lowerName.includes('battery') || lowerName.includes('life')) {
-      return <Truck className="w-6 h-6" />;
-    } else if (lowerName.includes('design') || lowerName.includes('comfort')) {
-      return <Shield className="w-6 h-6" />;
-    }
-    return <Shield className="w-6 h-6" />; // default icon
-  };
-
-  
-
-  // Simple Footer component
-  const Footer = () => (
-    <footer className="bg-gray-900 text-white py-12 mt-16">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-          <div>
-            <h3 className="text-lg font-semibold mb-4">SL Neurorobotics</h3>
-            <p className="text-gray-400">
-              Leading provider of advanced EEG technology and neurofeedback solutions.
-            </p>
-          </div>
-          <div>
-            <h4 className="font-semibold mb-4">Products</h4>
-            <ul className="space-y-2 text-gray-400">
-              <li>EEG Headsets</li>
-              <li>Software Solutions</li>
-              <li>Research Tools</li>
-            </ul>
-          </div>
-          <div>
-            <h4 className="font-semibold mb-4">Support</h4>
-            <ul className="space-y-2 text-gray-400">
-              <li>Documentation</li>
-              <li>Contact Us</li>
-              <li>FAQ</li>
-            </ul>
-          </div>
-          <div>
-            <h4 className="font-semibold mb-4">Company</h4>
-            <ul className="space-y-2 text-gray-400">
-              <li>About Us</li>
-              <li>Careers</li>
-              <li>Privacy Policy</li>
-            </ul>
-          </div>
-        </div>
-        <div className="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400">
-          <p>&copy; 2025 SL Neurorobotics. All rights reserved.</p>
-        </div>
-      </div>
-    </footer>
-  );
 
   // Loading state
   if (loading) {
@@ -128,9 +68,9 @@ export default function ProductViewPage() {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <p className="text-red-600 text-lg">{error || 'Product not found'}</p>
-          <button 
-            onClick={() => window.history.back()} 
+          <p className="text-red-600 text-lg">{error || "Product not found"}</p>
+          <button
+            onClick={() => window.history.back()}
             className="mt-4 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
           >
             Go Back
@@ -141,48 +81,78 @@ export default function ProductViewPage() {
   }
 
   // Get product images with proper URL construction
-  const productImages = product.images && product.images.length > 0 
-    ? product.images.map(img => `http://localhost:8080/uploads/productImages/${product.id}/${img.imageName}`)
-    : [`http://localhost:8080/uploads/productImages/default/default-product.jpg`]; // fallback image
+  const productImages =
+    product.images && product.images.length > 0
+      ? product.images.map(
+          (img) =>
+            `http://localhost:8080/uploads/productImages/${product.id}/${img.imageName}`
+        )
+      : [
+          `http://localhost:8080/uploads/productImages/default/default-product.jpg`,
+        ]; // fallback image
 
-  // Determine which specifications to use
-  const displaySpecifications = specifications.length > 0 
-    ? specifications.map(spec => ({
-        icon: getSpecificationIcon(spec.name),
-        title: spec.name,
-        description: spec.description
-      }))
-    : null;
+  // Navigation functions for images
+  const nextImage = () => {
+    setSelectedImage((prev) => (prev + 1) % productImages.length);
+  };
+
+  const prevImage = () => {
+    setSelectedImage(
+      (prev) => (prev - 1 + productImages.length) % productImages.length
+    );
+  };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Header/>
+    <div className="min-h-screen bg-white">
+      <DynamicHeader />
 
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 mt-20">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-16">
           {/* Product Images */}
           <div className="space-y-4">
-            <div className="aspect-square bg-white rounded-2xl shadow-lg overflow-hidden">
+            {/* Main Image - 16:10 aspect ratio with navigation arrows */}
+            <div className="relative aspect-[16/10] bg-gray-100 rounded-xl overflow-hidden">
               <img
                 src={productImages[selectedImage]}
                 alt={product.name}
-                className="w-full h-full object-cover"
+                className="w-full h-full object-contain"
                 onError={(e) => {
-                  e.target.src = 'https://via.placeholder.com/400x400?text=No+Image';
+                  e.target.src =
+                    "https://via.placeholder.com/800x500?text=No+Image";
                 }}
               />
+
+              {/* Navigation Arrows */}
+              {productImages.length > 1 && (
+                <>
+                  <button
+                    onClick={prevImage}
+                    className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-white bg-opacity-80 hover:bg-opacity-100 rounded-full p-2 shadow-lg transition-all"
+                  >
+                    <ChevronLeft className="w-6 h-6 text-gray-700 cursor-pointer" />
+                  </button>
+                  <button
+                    onClick={nextImage}
+                    className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-white bg-opacity-80 hover:bg-opacity-100 rounded-full p-2 shadow-lg transition-all"
+                  >
+                    <ChevronRight className="w-6 h-6 text-gray-700 cursor-pointer" />
+                  </button>
+                </>
+              )}
             </div>
+
+            {/* Thumbnail Images */}
             {productImages.length > 1 && (
-              <div className="grid grid-cols-4 gap-3">
+              <div className="flex gap-3 overflow-x-auto pb-2 pl-2 pt-2">
                 {productImages.map((image, index) => (
                   <button
                     key={index}
                     onClick={() => setSelectedImage(index)}
-                    className={`aspect-square rounded-lg overflow-hidden border-2 transition-colors ${
+                    className={`flex-shrink-0 w-20 h-12 rounded-lg overflow-hidden transition-all ${
                       selectedImage === index
-                        ? 'border-blue-600'
-                        : 'border-gray-200 hover:border-gray-300'
+                        ? "ring-2 ring-[#006494] ring-offset-2"
+                        : "hover:ring-2 hover:ring-gray-300 hover:ring-offset-1"
                     }`}
                   >
                     <img
@@ -190,7 +160,8 @@ export default function ProductViewPage() {
                       alt={`${product.name} view ${index + 1}`}
                       className="w-full h-full object-cover"
                       onError={(e) => {
-                        e.target.src = 'https://via.placeholder.com/100x100?text=No+Image';
+                        e.target.src =
+                          "https://via.placeholder.com/80x50?text=No+Image";
                       }}
                     />
                   </button>
@@ -200,106 +171,155 @@ export default function ProductViewPage() {
           </div>
 
           {/* Product Info */}
-          <div className="space-y-6">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900 mb-2">
-                {product.name}
-              </h1>
-              
-              <div className="text-4xl font-bold text-gray-900 mb-2">
-                ${product.price}
+          <div className="flex flex-col justify-between h-full">
+            <div className="space-y-6">
+              <div>
+                <div className="flex items-center gap-3 mb-4">
+                  <h1 className="text-3xl lg:text-4xl font-bold text-[#006494] leading-tight">
+                    {product.name}
+                  </h1>
+
+                  {/* AR Icon */}
+                  <a
+                    href=""
+                    className="flex items-center gap-2 group/ar flex-shrink-0 bg-[#00355412] hover:bg-[#00355420] px-3 py-2 rounded-xl border border-[#00355420] hover:border-[#00355440] transition-all"
+                  >
+                    <img src={ar} className="w-7 h-7" alt="AR View" />
+                    <span className="text-sm font-medium text-[#003554]">
+                      View in AR
+                    </span>
+                  </a>
+                </div>
+
+                <div className="text-3xl font-bold text-gray-500 mb-6">
+                  ${product.price}
+                </div>
+
+                <div className="text-sm text-gray-500 mb-2">
+                  Shipping calculated at checkout.
+                </div>
+
+                <p className="text-gray-700 leading-relaxed text-lg">
+                  {product.summary}
+                </p>
               </div>
-              <p className="text-gray-600">
-                {product.summary || product.description}
-              </p>
             </div>
 
-            {/* Quantity and Actions */}
-            <div className="space-y-4">
+            <div className="mt-8 space-y-4">
+              {/* Quantity Selector */}
               <div className="flex items-center space-x-4">
-                <label className="text-sm font-medium text-gray-700">Quantity:</label>
+                <span className="text-gray-700 font-medium">Quantity:</span>
                 <div className="flex items-center border border-gray-300 rounded-lg">
                   <button
                     onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                    className="px-3 py-2 text-gray-600 hover:text-gray-800"
+                    className="px-3 py-2 text-gray-600 cursor-pointer hover:text-[#006494] hover:bg-gray-50 transition-colors rounded-l-lg"
+                    disabled={quantity <= 1}
                   >
-                    -
+                    <span className="text-xl font-semibold">−</span>
                   </button>
-                  <span className="px-4 py-2 border-x border-gray-300">{quantity}</span>
+                  <span className="px-4 py-2 min-w-[3rem] text-center font-medium border-l border-r border-gray-300">
+                    {quantity}
+                  </span>
                   <button
                     onClick={() => setQuantity(quantity + 1)}
-                    className="px-3 py-2 text-gray-600 hover:text-gray-800"
+                    className="px-3 py-2 cursor-pointer text-gray-600 hover:text-[#006494] hover:bg-gray-50 transition-colors rounded-r-lg"
                   >
-                    +
+                    <span className="text-xl font-semibold">+</span>
                   </button>
                 </div>
               </div>
-              <div className="flex space-x-4">
-                <button className="flex-1 bg-blue-600 text-white py-3 px-6 rounded-lg hover:bg-blue-700 transition-colors font-medium">
-                  Buy Now
-                </button>
-                <button className="flex-1 border border-gray-300 text-gray-700 py-3 px-6 rounded-lg hover:bg-gray-50 transition-colors font-medium">
-                  Add to Cart
-                </button>
-              </div>
-            </div>
 
-            
+              {/* Buy Now Button */}
+              <button className="w-full bg-[#006494] hover:bg-[#003554] text-white py-4 px-6 rounded-xl font-semibold text-lg transition-colors">
+                BUY NOW
+              </button>
+            </div>
           </div>
         </div>
 
         {/* Product Overview */}
         {product.overview && (
-          <div className="mt-16">
-            <h2 className="text-2xl font-bold text-gray-900 mb-8">Product Overview</h2>
-            <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-              <p className="text-gray-600 leading-relaxed">{product.overview}</p>
+          <div data-aos="fade-up" className="mt-20">
+            <h2 className="text-3xl font-semibold text-[#006494] mb-8">
+              Product Overview
+            </h2>
+            <div className="bg-gray-50 p-8 rounded-2xl">
+              <p className="text-gray-700 leading-relaxed text-lg max-w-4xl text-justify">
+                {product.overview}
+              </p>
             </div>
           </div>
         )}
 
-        {/* Specifications Section */}
-        <div className="mt-16">
-          <h2 className="text-2xl font-bold text-gray-900 mb-8">Specifications</h2>
-          {displaySpecifications ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {displaySpecifications.map((spec, index) => (
-              <div key={index} className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-                <div className="text-blue-600 mb-3">
-                  {spec.icon}
-                </div>
-                <h3 className="font-semibold text-gray-900 mb-2">{spec.title}</h3>
-                <p className="text-gray-600 text-sm">{spec.description}</p>
-              </div>
-            ))}
-          </div>
-        ) : (
-          <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 text-center">
-            <p className="text-gray-500">No specifications have been specified for this product.</p>
+        {/* Product Description */}
+        {product.description && (
+          <div data-aos="fade-up" className="mt-20">
+            <h2 className="text-3xl font-semibold text-[#006494] mb-8">
+              Product Description
+            </h2>
+            <div className="bg-gray-50 p-8 rounded-2xl">
+              <p className="text-gray-700 leading-relaxed text-lg max-w-4xl text-justify">
+                {product.overview}
+              </p>
+            </div>
           </div>
         )}
+
+        {/* Specifications - Grid Layout */}
+        <div data-aos="fade-up" className="mt-20">
+          <h2 className="text-3xl font-semibold text-[#006494] mb-8">
+            Specifications
+          </h2>
+          {specifications.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {specifications.map((spec, index) => (
+                <div
+                  key={index}
+                  className="bg-white border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow"
+                >
+                  <h3 className="font-semibold text-gray-900 mb-2 text-lg">
+                    {spec.name}
+                  </h3>
+                  <p className="text-gray-600 leading-relaxed">
+                    {spec.description}
+                  </p>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="bg-gray-50 border border-gray-200 rounded-lg p-8">
+              <p className="text-gray-500">
+                No specifications have been specified for this product.
+              </p>
+            </div>
+          )}
         </div>
 
-        {/* Tutorial Link */}
+        {/* Setup Tutorial Section */}
         {product.tutorialLink && (
-          <div className="mt-16 bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl p-8 text-white text-center">
-            <h3 className="text-2xl font-bold mb-4">Want to learn more about this product?</h3>
-            <p className="text-blue-100 mb-6">
-              Check out our comprehensive tutorial and documentation
-            </p>
-            <a 
-              href={product.tutorialLink} 
-              target="_blank" 
-              rel="noopener noreferrer"
-              className="bg-white text-blue-600 px-8 py-3 rounded-lg font-medium hover:bg-gray-100 transition-colors inline-block"
-            >
-              View Tutorial
-            </a>
-          </div>
+          <section data-aos="fade-up" className="py-16 bg-white lg:py-24">
+            <div className="px-6 mx-auto lg:px-6 xl:px-0 md:px-6 max-w-7xl">
+              <h2 className="mb-12 text-2xl font-semibold text-[#006494] md:text-3xl lg:text-4xl">
+                {product.name} Setup Tutorial
+              </h2>
+              <div className="relative w-full max-w-7xl">
+                <div className="overflow-hidden shadow-2xl aspect-video rounded-xl">
+                  <iframe
+                    width="100%"
+                    height="100%"
+                    src={product.tutorialLink}
+                    title={`${product.name} Setup Tutorial`}
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                    allowFullScreen
+                    className="w-full h-full"
+                  ></iframe>
+                </div>
+              </div>
+            </div>
+          </section>
         )}
       </div>
 
-      {/* Footer */}
       <Footer />
     </div>
   );

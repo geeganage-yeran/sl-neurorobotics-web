@@ -4,24 +4,12 @@ import { FaSearch, FaBars, FaTimes } from "react-icons/fa";
 import { Link, useNavigate } from "react-router-dom";
 
 const Header = () => {
-  const [isSearchOpen, setIsSearchOpen] = useState(false);
-  const [searchTerm, setSearchTerm] = useState("");
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-  const navigate=useNavigate();
+  const navigate = useNavigate();
 
-  const handleAccountClick=()=>{
+  const handleAccountClick = () => {
     navigate("/login");
-  }
-
-  // Function to toggle the search box
-  const handleSearchToggle = () => {
-    setIsSearchOpen(!isSearchOpen);
-  };
-
-  // Function handle changes in search input
-  const handleSearchChange = (event) => {
-    setSearchTerm(event.target.value);
   };
 
   // Function toggle mobile menu
@@ -79,38 +67,14 @@ const Header = () => {
 
         <div className="items-center hidden space-x-4 lg:flex">
           <button
-            onClick={handleSearchToggle}
-            className="text-gray-700 hover:text-[#006494] transition-colors p-2 cursor-pointer"
-            aria-label="Toggle search"
+            className="px-5 py-2 bg-[#006494] text-white rounded-md hover:bg-[#003554] font-semibold transition-all duration-300 ease-in-out cursor-pointer"
+            onClick={handleAccountClick}
           >
-            <FaSearch />
-          </button>
-
-          {isSearchOpen && (
-            <input
-              type="text"
-              value={searchTerm}
-              onChange={handleSearchChange}
-              placeholder="Search..."
-              className="px-8 py-2 bg-white text-[#003554] rounded-md focus:outline-none focus:ring-2 focus:ring-[#006494] transition-all"
-              autoFocus
-            />
-          )}
-
-          <button className="px-5 py-2 bg-[#006494] text-white rounded-md hover:bg-[#003554] font-semibold transition-all duration-300 ease-in-out cursor-pointer" onClick={handleAccountClick}>
             Account
           </button>
         </div>
 
         <div className="flex items-center space-x-4 lg:hidden">
-          <button
-            onClick={handleSearchToggle}
-            className="text-gray-700 hover:text-[#006494] transition-colors p-2"
-            aria-label="Toggle search"
-          >
-            <FaSearch />
-          </button>
-
           {/* Hamburger Menu */}
           <button
             onClick={handleMobileMenuToggle}
@@ -121,19 +85,6 @@ const Header = () => {
           </button>
         </div>
       </div>
-
-      {isSearchOpen && (
-        <div className="max-w-6xl px-6 mx-auto mt-4 lg:hidden">
-          <input
-            type="text"
-            value={searchTerm}
-            onChange={handleSearchChange}
-            placeholder="Search..."
-            className="w-full px-4 py-2 bg-white text-[#003554] rounded-md focus:outline-none focus:ring-2 focus:ring-[#006494]"
-            autoFocus
-          />
-        </div>
-      )}
 
       {isMobileMenuOpen && (
         <div className="absolute left-0 right-0 z-50 bg-white border-t shadow-lg lg:hidden top-full">
@@ -153,7 +104,7 @@ const Header = () => {
               Resources
             </a>
             <a
-              href="#"
+              href="/shop"
               className="px-6 py-3 font-medium text-[#003554] hover:text-[#006494] hover:bg-gray-100 transition-colors border-b border-gray-100"
               onClick={handleLinkClick}
             >

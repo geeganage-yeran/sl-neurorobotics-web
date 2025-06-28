@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import LeftImage from "../assets/image1.jpg";
-import axios from "axios";
+import {ChevronLeft } from 'lucide-react';
 import Alert from "../components/Alert";
 import {
   validateForm,
@@ -11,6 +11,7 @@ import {
 } from "../utils/SigninValidation";
 import { useNavigate } from "react-router-dom";
 import api from "../services/api";
+
 
 export default function LoginPage() {
   const [formData, setFormData] = useState({
@@ -187,6 +188,15 @@ export default function LoginPage() {
       {/* Left side - Form */}
       <div className="w-full lg:w-1/2 flex justify-center p-4 sm:p-6 lg:p-8 bg-[#F5F5F5]">
         <div className="w-full max-w-lg">
+          <div className="mb-4">
+            <button
+              onClick={() => navigate("/")}
+              className="flex cursor-pointer items-center text-gray-600 hover:text-[#003554] transition-colors duration-200 group"
+            >
+              <ChevronLeft size={20} />
+              Back
+            </button>
+          </div>
           {/* Header */}
           <div className="text-center mb-8">
             <h2 className="text-3xl font-bold text-[#003554] mb-2">

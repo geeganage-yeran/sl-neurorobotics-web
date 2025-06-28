@@ -102,7 +102,6 @@ public class UserService {
         return dto;
     }
 
-
     public UserSettingResponseDTO getUserDetails(Long id) {
         Optional<User> userOptional = userRepository.findById(id);
 
@@ -196,7 +195,7 @@ public class UserService {
     public void accountDeactivate(Long userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
-        user.setIsActive(false);
+        user.setIsActive(!user.getIsActive());
         userRepository.save(user);
     }
 

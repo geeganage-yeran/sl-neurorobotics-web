@@ -3,6 +3,7 @@ import LeftImage from "../assets/image1.jpg";
 import { useNavigate } from "react-router-dom";
 import Alert from "../components/Alert";
 import api from "../services/api";
+import { ChevronLeft } from "lucide-react";
 import {
   validateForm,
   hasErrors,
@@ -248,7 +249,6 @@ export default function RegistrationPage() {
 
   return (
     <div className="min-h-screen bg-[#F5F5F5] flex overflow-hidden">
-      
       {/* Left side -Image */}
       <div
         data-aos="fade-right"
@@ -264,6 +264,15 @@ export default function RegistrationPage() {
       {/* Right side - Form */}
       <div className="w-full lg:w-1/2 lg:ml-auto flex justify-center p-4 sm:p-6 lg:p-8 bg-[#F5F5F5]">
         <div className="w-full max-w-lg">
+          <div className="mb-4">
+            <button
+              onClick={() => navigate("/")}
+              className="flex cursor-pointer items-center text-gray-600 hover:text-[#003554] transition-colors duration-200 group"
+            >
+              <ChevronLeft size={20} />
+              Back
+            </button>
+          </div>
           {/* Header */}
           <div className="text-center mb-8">
             <h2 className="text-3xl font-bold text-[#003554] mb-2">

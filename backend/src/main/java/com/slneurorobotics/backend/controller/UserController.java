@@ -19,6 +19,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 
 @Slf4j
@@ -72,12 +73,12 @@ public class UserController {
         }
     }
 
-    @GetMapping("/settings/{userid}")
+    @GetMapping("/getProfile/{userid}")
     public UserSettingResponseDTO getUserDetails(@PathVariable Long userid){
         return userService.getUserDetails(userid);
     }
 
-    @PutMapping("/settings/{userId}")
+    @PutMapping("/updateProfile/{userId}")
     public ResponseEntity<?> updateUserSettings(
             @PathVariable Long userId,
             @RequestBody UserSettingUpdateDTO updateDTO) {
@@ -93,19 +94,34 @@ public class UserController {
         }
     }
 
-    @PutMapping("/password/{userid}")
+    @PutMapping("/updatePassword/{userid}")
     public ResponseEntity<?> updatePassword(
-            @PathVariable Long userid,
-            @RequestBody PasswordChangeDTO passwordChangeDTO) {
+            @PathVariable("userid") Long userId,
+            @Valid @RequestBody PasswordChangeDTO passwordChangeDTO) {
+
         try {
-            boolean updated = passwordService.changePassword(userid,passwordChangeDTO);
-            if (updated) {
-                return ResponseEntity.ok().build();
+            boolean success = userService.updatePassword(userId, passwordChangeDTO);
+            if (success) {
+                return ResponseEntity.ok().body(Map.of(
+                        "message", "Password updated successfully",
+                        "success", true
+                ));
             } else {
-                return ResponseEntity.notFound().build();
+                return ResponseEntity.badRequest().body(Map.of(
+                        "message", "Failed to update password",
+                        "success", false
+                ));
             }
         } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+            return ResponseEntity.badRequest().body(Map.of(
+                    "message", e.getMessage(),
+                    "success", false
+            ));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of(
+                    "message", "An error occurred while updating password",
+                    "success", false
+            ));
         }
     }
 
@@ -119,8 +135,8 @@ public class UserController {
         }
     }
 
-  @GetMapping("/getFaq")
-  public ResponseEntity<?> getAllFaqs(){
+    @GetMapping("/getFaq")
+    public ResponseEntity<?> getAllFaqs(){
         try{
             List<FaqResponseDTO> faqs = faqService.getAllFaqs();
             return ResponseEntity.ok(faqs);
@@ -129,8 +145,8 @@ public class UserController {
         }
   }
 
-  @PostMapping("/addAddress")
-  public ResponseEntity<?> addShippingAddress(@RequestBody @Valid ShippingAddressRequestDTO shippingAddressRequestDTO){
+    @PostMapping("/addAddress")
+    public ResponseEntity<?> addShippingAddress(@RequestBody @Valid ShippingAddressRequestDTO shippingAddressRequestDTO){
         try {
             userService.saveShippingAddress(shippingAddressRequestDTO);
             return ResponseEntity.ok("Shipping Address Add Successfully");
@@ -157,6 +173,18 @@ public class UserController {
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Failed to delete Shipping address: " + e.getMessage());
         }
+    }
+
+    @PutMapping("/deactivateAccount/{id}")
+    public ResponseEntity<?> deactivateAccount(@PathVariable Long id){
+        try {
+            System.out.println("heloooooooooooooooooooooooo");
+            userService.accountDeactivate(id);
+            return ResponseEntity.ok("success");
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+
     }
 
 

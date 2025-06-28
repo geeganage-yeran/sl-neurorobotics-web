@@ -1,10 +1,10 @@
 import React, { useState,useEffect } from "react";
 import { Mail, Phone, MapPin, Globe } from "lucide-react";
-import Header from "../components/Header";
 import Footer from "../components/Footer";
 import image1 from "../assets/image5.png";
 import image2 from "../assets/aboutus.jpg";
 import Alert from "../components/Alert";
+import DynamicHeader from "../components/DynamicHeader";
 
 export default function AboutPage() {
   const [alert, setAlert] = useState({
@@ -122,7 +122,7 @@ export default function AboutPage() {
 
   return (
     <div className="min-h-screen bg-white">
-      <Header />
+      <DynamicHeader/>
 
       {/* Top Bar with Company Name and Brain Logo */}
       <div className="py-8 mt-16 text-white bg-slate-800">

@@ -3,8 +3,8 @@ import { Routes, Route, useNavigate } from "react-router-dom";
 import HeaderV2 from "../components/HeaderV2";
 import Product from "./Product";
 import UserAccountOverview from "./UserAccountOverview";
-import axios from "axios";
 import api from "../services/api"
+import DynamicHeader from "../components/DynamicHeader"
 
 function UserDashboard() {
   const [user, setUser] = useState(null);
@@ -42,7 +42,7 @@ function UserDashboard() {
 
   return (
     <>
-      <HeaderV2 />
+      <DynamicHeader/>
       <Routes>
         <Route path="/" element={<Product />} />
         <Route path="account/*" element={<UserAccountOverview user={user}/>} />
