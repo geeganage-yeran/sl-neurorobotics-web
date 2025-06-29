@@ -21,5 +21,5 @@ public class ShippingAddressResponseDTO {
 
     private String zipCode;
 
-    private boolean isDefault;
+    private boolean defaultAddress;
 }
