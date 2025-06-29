@@ -116,7 +116,7 @@ public class UserService {
 
             return responseDTO;
         } else {
-            return null; // or throw an exception like throw new UserNotFoundException("User not found with id: " + id);
+            return null;
         }
     }
 
@@ -129,7 +129,7 @@ public class UserService {
 
         User user = userOptional.get();
 
-        // Update fields if they are provided
+
         if (updateDTO.getFirstName() != null && !updateDTO.getFirstName().trim().isEmpty()) {
             user.setFirstName(updateDTO.getFirstName().trim());
         }
@@ -140,7 +140,7 @@ public class UserService {
 
         if (updateDTO.getEmail() != null && !updateDTO.getEmail().trim().isEmpty()) {
             String newEmail = updateDTO.getEmail().trim().toLowerCase();
-            // Check if email is already taken by another user
+
             Optional<User> existingUser = userRepository.findByEmail(newEmail);
             if (existingUser.isPresent() && !existingUser.get().getId().equals(userId)) {
                 throw new IllegalArgumentException("Email is already in use by another account");

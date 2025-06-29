@@ -4,11 +4,34 @@ import Footer from "../components/Footer";
 import { Search } from "lucide-react";
 import axios from "axios";
 import DynamicHeader from "../components/DynamicHeader";
+import useAuth from "../hooks/useAuth";
+import api from "../services/api";
+import { useNavigate } from "react-router-dom";
+import Alert from "../components/Alert";
 
 function Product() {
   const [products, setProducts] = useState([]);
   const [search, setSearch] = useState("");
   const [filteredProducts, setFilteredProducts] = useState([]);
+  const [cartLoading, setCartLoading] = useState({});
+  const { isAuthenticated, user } = useAuth();
+  const Navigate = useNavigate();
+
+
+    const [alert, setAlert] = useState({
+      open: false,
+      message: "",
+      type: "success",
+      position: "top-right",
+    });
+  
+    const showAlert = (message, type = "success", position = "top-right") => {
+      setAlert({ open: true, message, type, position });
+    };
+  
+    const closeAlert = () => {
+      setAlert((prev) => ({ ...prev, open: false }));
+    };
 
   const getAllProducts = async () => {
     try {
@@ -25,6 +48,35 @@ function Product() {
     } catch (error) {
       console.error(error);
     }
+  };
+
+  const addToCart = async (productId, quantity = 1) => {
+    if (!isAuthenticated) {
+      return Navigate("/login");
+    }
+    const userId = user.id;
+    const dataTosend = {
+      userId: userId,
+      productId: productId,
+      quantity: quantity,
+    };
+    try {
+      const response = await api.post(
+        `/cart/add`,dataTosend,
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+          withCredentials:true,
+        }
+      );
+
+      if (response.status === 200) {
+        showAlert("Item added to cart successfully");
+      }
+    } catch (error) {
+      showAlert("Product already in cart", "error");
+    } 
   };
 
   // Search function
@@ -504,12 +556,14 @@ function Product() {
                         >
                           Buy Now
                         </a>
-                        <a
+                        <button
+                          onClick={() => addToCart(product.id)}
+                          disabled={cartLoading[product.id]}
                           href="#"
-                          className="flex-1 bg-white hover:bg-gray-50 text-[#003554] font-semibold py-4 px-6 rounded-xl text-center border-2 border-[#003554] hover:border-[#002a43] transition-all duration-300 transform hover:-translate-y-0.5"
+                          className="cursor-pointer  flex-1 bg-white hover:bg-gray-50 text-[#003554] font-semibold py-4 px-6 rounded-xl text-center border-2 border-[#003554] hover:border-[#002a43] transition-all duration-300 transform hover:-translate-y-0.5"
                         >
                           Add to Cart
-                        </a>
+                        </button>
                       </div>
                     </div>
                   </div>
@@ -546,6 +600,14 @@ function Product() {
           )}
         </div>
       </div>
+      <Alert
+        open={alert.open}
+        onClose={closeAlert}
+        message={alert.message}
+        type={alert.type}
+        position={alert.position}
+        autoHideDuration={3000}
+      />
 
       <Footer />
     </div>
