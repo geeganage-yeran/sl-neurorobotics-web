@@ -54,7 +54,10 @@ public class SecurityConfig {
                                 "/api/public/**",
                                 "/api/auth/refresh",
                                 "/uploads/**",
-                                "/api/auth/logout"
+                                "/api/auth/logout",
+                                "/api/chatbot/ask",
+                                "/api/faq/all",
+                                "/api/products/chatbot"
                         ).permitAll()
 
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")

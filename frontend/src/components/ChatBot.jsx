@@ -1,7 +1,8 @@
 import React, { useState, useRef, useEffect } from "react";
-import { Send, X, Minimize2, Bot } from "lucide-react";
+import { Send, X, Minimize2, Bot, AlertCircle } from "lucide-react";
 import BotIcon from "../assets/bot.json";
 import Lottie from "lottie-react";
+import axios from "axios";
 
 const NeuroLinkChatbot = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -9,7 +10,12 @@ const NeuroLinkChatbot = () => {
   const [messages, setMessages] = useState([]);
   const [inputValue, setInputValue] = useState("");
   const [isTyping, setIsTyping] = useState(false);
+  const [connectionError, setConnectionError] = useState(false);
   const messagesEndRef = useRef(null);
+
+  // Configure your backend URL here
+  const BACKEND_URL = "http://localhost:8080";
+  const CHATBOT_ENDPOINT = "/api/chatbot/ask";
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -32,7 +38,46 @@ const NeuroLinkChatbot = () => {
     }
   }, [isOpen, messages.length]);
 
-  const handleSendMessage = () => {
+  // Function to call the Spring Boot backend using axios
+  const callChatbotAPI = async (question) => {
+    try {
+      setConnectionError(false);
+      
+      const response = await axios.post(`${BACKEND_URL}${CHATBOT_ENDPOINT}`, {
+        question: question
+      }, {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        timeout: 30000, // 30 second timeout
+      });
+
+      console.log('Backend response:', response.data);
+      
+      // Return the response from your ChatbotResponseDTO
+      return response.data.response || "I apologize, but I couldn't process your request at the moment.";
+      
+    } catch (error) {
+      console.error('Error calling chatbot API:', error);
+      setConnectionError(true);
+      
+      // Handle different types of axios errors
+      if (error.code === 'ECONNABORTED') {
+        return "The request timed out. Please try again with a shorter question.";
+      } else if (error.response) {
+        // Server responded with error status
+        return `Server error (${error.response.status}): ${error.response.statusText}. Please try again later.`;
+      } else if (error.request) {
+        // Request was made but no response received
+        return "Unable to connect to the server. Please check your internet connection and try again.";
+      } else {
+        // Something else happened
+        return "An unexpected error occurred. Please try again.";
+      }
+    }
+  };
+
+  const handleSendMessage = async () => {
     if (inputValue.trim()) {
       const newMessage = {
         id: Date.now(),
@@ -42,20 +87,33 @@ const NeuroLinkChatbot = () => {
       };
 
       setMessages((prev) => [...prev, newMessage]);
+      const currentQuestion = inputValue;
       setInputValue("");
       setIsTyping(true);
 
-      // Simulate bot response with typing indicator
-      setTimeout(() => {
+      try {
+        // Call the actual API instead of simulated response
+        const botResponseText = await callChatbotAPI(currentQuestion);
+        
         setIsTyping(false);
         const botResponse = {
           id: Date.now() + 1,
-          text: "Thank you for your message! I'm here to help you with any questions about SL Neurorobotics.",
+          text: botResponseText,
           sender: "bot",
           timestamp: new Date(),
         };
         setMessages((prev) => [...prev, botResponse]);
-      }, 2000);
+        
+      } catch (error) {
+        setIsTyping(false);
+        const errorResponse = {
+          id: Date.now() + 1,
+          text: "I apologize, but I encountered an error while processing your request. Please try again.",
+          sender: "bot",
+          timestamp: new Date(),
+        };
+        setMessages((prev) => [...prev, errorResponse]);
+      }
     }
   };
 
@@ -84,6 +142,7 @@ const NeuroLinkChatbot = () => {
     setIsMinimized(false);
     // Clear messages when closing chat
     setMessages([]);
+    setConnectionError(false);
   };
 
   return (
@@ -134,8 +193,8 @@ const NeuroLinkChatbot = () => {
                   <div>
                     <h3 className="font-bold text-lg">NeuroLink</h3>
                     <p className="text-xs lg:text-sm opacity-90 flex items-center">
-                      <span className="w-2 h-2 bg-green-400 rounded-full mr-2 animate-pulse"></span>
-                      AI Assistant Online
+                      <span className={`w-2 h-2 ${connectionError ? 'bg-red-400' : 'bg-green-400'} rounded-full mr-2 animate-pulse`}></span>
+                      {connectionError ? 'Connection Error' : 'AI Assistant Online'}
                     </p>
                   </div>
                 </div>
@@ -159,6 +218,16 @@ const NeuroLinkChatbot = () => {
             {!isMinimized && (
               <>
                 <div className="flex-1 overflow-y-auto bg-gradient-to-b from-gray-800 to-gray-900 p-4">
+                  {/* Connection Error Banner */}
+                  {connectionError && (
+                    <div className="mb-4 p-3 bg-red-900/50 border border-red-700 rounded-xl flex items-center space-x-2">
+                      <AlertCircle size={16} className="text-red-400" />
+                      <p className="text-red-300 text-sm">
+                        Connection to server failed. Responses may be limited.
+                      </p>
+                    </div>
+                  )}
+
                   {/* Messages */}
                   {messages.map((message) => (
                     <div
@@ -181,7 +250,7 @@ const NeuroLinkChatbot = () => {
                             : "bg-gray-800 border border-gray-600 text-gray-100 rounded-bl-md"
                         }`}
                       >
-                        <p className="text-sm leading-relaxed">
+                        <p className="text-sm leading-relaxed whitespace-pre-wrap">
                           {message.text}
                         </p>
                         <p
@@ -237,11 +306,12 @@ const NeuroLinkChatbot = () => {
                         rows={2}
                         className="w-full px-4 py-4 border border-gray-600 rounded-2xl focus:outline-none focus:ring-2 focus:ring-[#051923] focus:border-transparent text-sm resize-none bg-gray-800 text-gray-100 placeholder-gray-400 hover:bg-gray-750 transition-colors"
                         style={{ minHeight: "60px", maxHeight: "150px" }}
+                        disabled={isTyping}
                       />
                     </div>
                     <button
                       onClick={handleSendMessage}
-                      disabled={!inputValue.trim()}
+                      disabled={!inputValue.trim() || isTyping}
                       className="flex items-center justify-center w-12 h-12 bg-gradient-to-r from-[#051923] to-[#0a2a3a] text-white rounded-2xl hover:from-[#0a2a3a] hover:to-[#051923] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl transform hover:scale-105 active:scale-95"
                     >
                       <Send size={20} />
@@ -257,7 +327,7 @@ const NeuroLinkChatbot = () => {
         </div>
       )}
 
-      <style jsx>{`
+      <style>{`
         @keyframes twinkle {
           0%,
           100% {

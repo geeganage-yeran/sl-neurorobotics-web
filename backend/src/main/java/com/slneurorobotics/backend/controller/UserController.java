@@ -193,7 +193,6 @@ public class UserController {
     @PutMapping("/deactivateAccount/{id}")
     public ResponseEntity<?> deactivateAccount(@PathVariable Long id){
         try {
-            System.out.println("heloooooooooooooooooooooooo");
             userService.accountDeactivate(id);
             return ResponseEntity.ok("success");
         } catch (Exception e) {
