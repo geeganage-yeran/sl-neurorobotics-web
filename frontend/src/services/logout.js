@@ -4,8 +4,9 @@ let isLoggingOut = false;
 let lastActivity = Date.now();
 let inactivityInterval = null;
 
-const INACTIVITY_TIMEOUT = 60 * 60 * 1000; // 1 hour in milliseconds
-const ACTIVITY_EVENTS = ['mousedown', 'mousemove', 'keypress', 'scroll', 'touchstart', 'click'];
+const INACTIVITY_TIMEOUT = 3 * 60 * 60 * 1000;
+const ACTIVITY_EVENTS = ['mousedown', 'mousemove', 'keypress', 'scroll',
+  'touchstart', 'click', 'keydown', 'wheel', 'pointermove'];
 
 export const callLogoutAPI = async () => {
   try {
@@ -36,7 +37,7 @@ const performCleanup = async (navigate = null) => {
   }
 };
 
-// Manual logout (called from button)
+
 export const handleSignOut = async (navigate = null) => {
   if (isLoggingOut) return;
   
@@ -62,7 +63,7 @@ const checkInactivity = async () => {
   if (now - lastActivity > INACTIVITY_TIMEOUT) {
     console.log('User inactive for 1 hour, logging out...');
     await callLogoutAPI();
-    await performCleanup(); // No navigate available for automatic logout
+    await performCleanup();
   }
 };
 
