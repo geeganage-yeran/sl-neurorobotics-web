@@ -196,9 +196,13 @@ export default function Shipping({ user }) {
   };
 
   const updateAddress = async (addressId, addressData) => {
+    const dataToSend={
+      ...addressData,
+      createdBy: user.id,
+    }
     try {
       if (user) {
-        const response = await api.put(`/user/updateAddress/${addressId}`, addressData, {
+        const response = await api.put(`/user/updateAddress/${addressId}`, dataToSend, {
           headers: {
             "Content-Type": "application/json",
           },

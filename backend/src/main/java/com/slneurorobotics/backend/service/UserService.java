@@ -20,6 +20,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.PathVariable;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -224,6 +225,10 @@ public class UserService {
             throw new RuntimeException("Shipping address already exists");
         }
 
+        if (shippingAddressRequestDTO.isDefaultAddress()) {
+            unsetAllDefaultAddresses(shippingAddressRequestDTO.getCreatedBy());
+        }
+
         Shipping_address shippingAddress = new Shipping_address();
         shippingAddress.setFull_name(shippingAddressRequestDTO.getName());
         shippingAddress.setStreet_address(shippingAddressRequestDTO.getStreetAddress());
@@ -265,6 +270,11 @@ public class UserService {
     public Shipping_address updateAddress(Long id, ShippingAddressRequestDTO shippingAddressRequestDTO) {
         Shipping_address shippingAddress = shippingAddressRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Shipping addresss not found with id: " + id));
+
+        if (shippingAddressRequestDTO.isDefaultAddress()) {
+            unsetAllDefaultAddressesExcept(shippingAddressRequestDTO.getCreatedBy(), id);
+        }
+
         shippingAddress.setFull_name(shippingAddressRequestDTO.getName());
         shippingAddress.setStreet_address(shippingAddressRequestDTO.getStreetAddress());
         shippingAddress.setCity(shippingAddressRequestDTO.getCity());
@@ -274,6 +284,24 @@ public class UserService {
         shippingAddress.setCreatedBy(shippingAddressRequestDTO.getCreatedBy());
         shippingAddress.setUpdatedBy(shippingAddressRequestDTO.getCreatedBy());
         return shippingAddressRepository.save(shippingAddress);
+    }
+
+    private void unsetAllDefaultAddresses(Long userId) {
+        List<Shipping_address> defaultAddresses = shippingAddressRepository.findByCreatedByAndIsDefaultTrue(userId);
+        for (Shipping_address address : defaultAddresses) {
+            address.setDefault(false);
+            address.setUpdatedAt(LocalDateTime.now());
+            shippingAddressRepository.save(address);
+        }
+    }
+
+    private void unsetAllDefaultAddressesExcept(Long userId, Long currentAddressId) {
+        List<Shipping_address> defaultAddresses = shippingAddressRepository.findByCreatedByAndIsDefaultTrueAndIdNot(userId, currentAddressId);
+        for (Shipping_address address : defaultAddresses) {
+            address.setDefault(false);
+            address.setUpdatedAt(LocalDateTime.now());
+            shippingAddressRepository.save(address);
+        }
     }
 
 

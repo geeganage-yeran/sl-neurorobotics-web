@@ -3,6 +3,7 @@ package com.slneurorobotics.backend.repository;
 import com.slneurorobotics.backend.entity.Shipping_address;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 
@@ -12,6 +13,12 @@ public interface ShippingAddressRepository extends JpaRepository<Shipping_addres
 
     @Query("SELECT s FROM Shipping_address s WHERE s.createdBy = ?1")
     List<Shipping_address> findByAddress(long userid);
+
+    @Query("SELECT sa FROM Shipping_address sa WHERE sa.createdBy = :userId AND sa.isDefault = true")
+    List<Shipping_address> findByCreatedByAndIsDefaultTrue(@Param("userId") Long userId);
+
+    @Query("SELECT sa FROM Shipping_address sa WHERE sa.createdBy = :userId AND sa.isDefault = true AND sa.id != :currentId")
+    List<Shipping_address> findByCreatedByAndIsDefaultTrueAndIdNot(@Param("userId") Long userId, @Param("currentId") Long currentId);
 }
 
 
