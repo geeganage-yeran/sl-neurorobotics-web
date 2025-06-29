@@ -51,7 +51,7 @@ const validateAddress = (formData) => {
   return errors;
 };
 
-// Sanitization utility
+// Sanitization utility - FIXED: removed undefined 'address' reference
 const sanitizeFormData = (formData) => {
   return {
     name: formData.name?.trim() || "",
@@ -59,7 +59,7 @@ const sanitizeFormData = (formData) => {
     city: formData.city?.trim() || "",
     state: formData.state?.trim().toUpperCase() || "",
     zipCode: formData.zipCode?.trim() || "",
-    isDefault: formData.isDefault || false,
+    defaultAddress: formData.defaultAddress ?? false, // Fixed: use formData instead of undefined 'address'
   };
 };
 
@@ -123,8 +123,9 @@ export default function Shipping({ user }) {
     setLoading(true);
     try {
       if (user) {
-        const response = await api.get("/user/getAddress");
-        console.log(response.data);
+        const response = await api.get(`/user/getAddress/${user.id}`,{
+          withCredentials:true,
+        });
         setAddresses(response.data);
       } else {
         // Mock data for demo when user is not available
@@ -165,13 +166,14 @@ export default function Shipping({ user }) {
           ...addressData,
           createdBy: user.id,
         };
+
         const response = await api.post(`/user/addAddress`, dataToSend, {
           headers: {
             "Content-Type": "application/json",
           },
           withCredentials: true,
         });
-        
+
         if (response.status === 200 || response.status === 201) {
           showAlert("Shipping address added successfully");
           await fetchAddresses();
@@ -202,7 +204,7 @@ export default function Shipping({ user }) {
           },
           withCredentials: true,
         });
-        
+      
         if (response.status === 200) {
           showAlert("Address updated successfully");
           await fetchAddresses();
@@ -227,14 +229,14 @@ export default function Shipping({ user }) {
 
   const deleteAddress = async () => {
     if (!confirmDialog.addressToDelete) return;
-    
+
     setLoading(true);
     try {
       if (user) {
         const response = await api.delete(
           `/user/deleteAddress/${confirmDialog.addressToDelete}`
         );
-        
+
         if (response.status === 200) {
           showAlert("Address deleted successfully");
           await fetchAddresses();
@@ -243,7 +245,9 @@ export default function Shipping({ user }) {
         }
       } else {
         // Mock delete for demo
-        setAddresses((prev) => prev.filter((addr) => addr.id !== confirmDialog.addressToDelete));
+        setAddresses((prev) =>
+          prev.filter((addr) => addr.id !== confirmDialog.addressToDelete)
+        );
         showAlert("Address deleted successfully");
       }
     } catch (error) {
@@ -283,7 +287,7 @@ export default function Shipping({ user }) {
       city: address?.city || "",
       state: address?.state || "",
       zipCode: address?.zipCode || "",
-      isDefault: address?.isDefault || false,
+      defaultAddress: address?.defaultAddress ?? false,
     });
     const [errors, setErrors] = useState({});
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -297,7 +301,7 @@ export default function Shipping({ user }) {
           city: address?.city || "",
           state: address?.state || "",
           zipCode: address?.zipCode || "",
-          isDefault: address?.isDefault || false,
+          defaultAddress: address?.defaultAddress ?? false,
         });
         setErrors({});
       }
@@ -336,7 +340,7 @@ export default function Shipping({ user }) {
         } else {
           await addNewAddress(sanitizedData);
         }
-        
+
         onClose();
         // Reset form
         setFormData({
@@ -345,7 +349,7 @@ export default function Shipping({ user }) {
           city: "",
           state: "",
           zipCode: "",
-          isDefault: false,
+          defaultAddress: false, // Fixed: changed from isDefault to defaultAddress
         });
         setErrors({});
       } catch (error) {
@@ -468,9 +472,9 @@ export default function Shipping({ user }) {
             <input
               type="checkbox"
               id="setDefault"
-              checked={formData.isDefault}
+              checked={formData.defaultAddress}
               onChange={(e) =>
-                handleInputChange("isDefault", e.target.checked)
+                handleInputChange("defaultAddress", e.target.checked)
               }
               className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
             />
@@ -550,7 +554,7 @@ export default function Shipping({ user }) {
                     {address.name}
                   </h3>
                   <span className="inline-block px-2 py-1 bg-gray-200 text-gray-700 text-xs rounded-full mb-2">
-                    {address.isDefault ? "Default" : "Not Default"}
+                    {address.defaultAddress ? "Default" : "Not Default"}
                   </span>
                   <p className="text-gray-600">
                     {`${address.streetAddress}, ${address.city}, ${address.state} ${address.zipCode}`}
@@ -559,13 +563,13 @@ export default function Shipping({ user }) {
                 <div className="flex gap-2">
                   <button
                     onClick={() => handleEditClick(address)}
-                    className="text-blue-600 hover:text-blue-800 font-medium"
+                    className="text-blue-600 hover:text-blue-800 font-medium cursor-pointer"
                   >
                     Edit
                   </button>
                   <button
                     onClick={() => handleDeleteClick(address.id)}
-                    className="text-red-600 hover:text-red-800"
+                    className="text-red-600 hover:text-red-800 cursor-pointer"
                   >
                     <Trash2 size={16} />
                   </button>

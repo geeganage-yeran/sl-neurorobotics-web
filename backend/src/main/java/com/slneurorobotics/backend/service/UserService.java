@@ -18,6 +18,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.PathVariable;
 
 import java.util.List;
 import java.util.Optional;
@@ -115,7 +116,7 @@ public class UserService {
 
             return responseDTO;
         } else {
-            return null; // or throw an exception like throw new UserNotFoundException("User not found with id: " + id);
+            return null;
         }
     }
 
@@ -128,7 +129,7 @@ public class UserService {
 
         User user = userOptional.get();
 
-        // Update fields if they are provided
+
         if (updateDTO.getFirstName() != null && !updateDTO.getFirstName().trim().isEmpty()) {
             user.setFirstName(updateDTO.getFirstName().trim());
         }
@@ -139,7 +140,7 @@ public class UserService {
 
         if (updateDTO.getEmail() != null && !updateDTO.getEmail().trim().isEmpty()) {
             String newEmail = updateDTO.getEmail().trim().toLowerCase();
-            // Check if email is already taken by another user
+
             Optional<User> existingUser = userRepository.findByEmail(newEmail);
             if (existingUser.isPresent() && !existingUser.get().getId().equals(userId)) {
                 throw new IllegalArgumentException("Email is already in use by another account");
@@ -229,14 +230,14 @@ public class UserService {
         shippingAddress.setCity(shippingAddressRequestDTO.getCity());
         shippingAddress.setState(shippingAddressRequestDTO.getState());
         shippingAddress.setZipcode(shippingAddressRequestDTO.getZipCode());
-        shippingAddress.setDefault(shippingAddressRequestDTO.isDefault());
+        shippingAddress.setDefault(shippingAddressRequestDTO.isDefaultAddress());
         shippingAddress.setCreatedBy(shippingAddressRequestDTO.getCreatedBy());
         shippingAddress.setUpdatedBy(shippingAddressRequestDTO.getCreatedBy());
         shippingAddressRepository.save(shippingAddress);
     }
 
-    public List<ShippingAddressResponseDTO> getAllAddress() {
-        List<Shipping_address> shippingAddresses = shippingAddressRepository.findAll();
+    public List<ShippingAddressResponseDTO> getAllAddress(Long userid) {
+        List<Shipping_address> shippingAddresses = shippingAddressRepository.findByAddress(userid);
         return shippingAddresses.stream()
                 .map(this::convertToResponseDTO)
                 .collect(Collectors.toList());
@@ -250,7 +251,7 @@ public class UserService {
         dto.setCity(shippingAddress.getCity());
         dto.setState(shippingAddress.getState());
         dto.setZipCode(shippingAddress.getZipcode());
-        dto.setDefault(shippingAddress.isDefault());
+        dto.setDefaultAddress(shippingAddress.isDefault());
         return dto;
     }
 
@@ -269,7 +270,7 @@ public class UserService {
         shippingAddress.setCity(shippingAddressRequestDTO.getCity());
         shippingAddress.setState(shippingAddressRequestDTO.getState());
         shippingAddress.setZipcode(shippingAddressRequestDTO.getZipCode());
-        shippingAddress.setDefault(shippingAddressRequestDTO.isDefault());
+        shippingAddress.setDefault(shippingAddressRequestDTO.isDefaultAddress());
         shippingAddress.setCreatedBy(shippingAddressRequestDTO.getCreatedBy());
         shippingAddress.setUpdatedBy(shippingAddressRequestDTO.getCreatedBy());
         return shippingAddressRepository.save(shippingAddress);

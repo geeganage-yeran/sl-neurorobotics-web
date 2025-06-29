@@ -12,6 +12,7 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import Page404 from "./pages/404Page";
 import Shop from "./pages/Product";
 import Productview from "./pages/ProductView";
+import AddToCart from "./pages/addtocart";
 
 function App() {
   return (
@@ -50,6 +51,15 @@ function App() {
 
         {/*404 Page catchup */}
         <Route path="*" element={<Page404 />} />
+
+        <Route
+          path="/cart/:userId/*"
+          element={
+            <ProtectedRoute requiredRole="USER">
+              <AddToCart />
+            </ProtectedRoute>
+          }
+        />
       </Routes>
     </BrowserRouter>
   );

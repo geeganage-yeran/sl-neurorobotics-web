@@ -158,10 +158,10 @@ public class UserController {
         }
   }
 
-    @GetMapping("/getAddress")
-    public ResponseEntity<?> getAllAddress(){
+    @GetMapping("/getAddress/{userid}")
+    public ResponseEntity<?> getAllAddress(@PathVariable Long userid){
         try{
-            List<ShippingAddressResponseDTO> shippingAddresses = userService.getAllAddress();
+            List<ShippingAddressResponseDTO> shippingAddresses = userService.getAllAddress(userid);
             return ResponseEntity.ok(shippingAddresses);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Failed to fetch shipping address: "+e.getMessage());

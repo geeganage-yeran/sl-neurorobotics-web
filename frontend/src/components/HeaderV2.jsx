@@ -1,6 +1,7 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import logo from "../assets/image4.png";
-import { handleSignOut } from '../services/logout';
+import { handleSignOut } from "../services/logout";
+import api from "../services/api";
 import {
   FaSearch,
   FaShoppingCart,
@@ -15,8 +16,9 @@ const HeaderV2 = ({ user }) => {
   const [isUserDropdownOpen, setIsUserDropdownOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
-  
-  const navigate = useNavigate(); 
+  const [count,setCount] = useState(0);
+
+  const navigate = useNavigate();
 
   const handleUserDropdownToggle = () => {
     setIsUserDropdownOpen(!isUserDropdownOpen);
@@ -30,9 +32,13 @@ const HeaderV2 = ({ user }) => {
     setIsMobileMenuOpen(false);
   };
 
+  const handleAddToCartPage = () =>{
+    navigate(`/cart/${user.id}`)
+  }
+
   const handleAccountClick = () => {
-    setIsUserDropdownOpen(false); 
-    navigate('/dashboard/account/myorders'); 
+    setIsUserDropdownOpen(false);
+    navigate("/dashboard/account/myorders");
   };
 
   const handleSignOutClick = async () => {
@@ -41,10 +47,27 @@ const HeaderV2 = ({ user }) => {
     try {
       await handleSignOut(navigate);
     } catch (error) {
-      console.error('Logout error:', error);
+      console.error("Logout error:", error);
     } finally {
       setIsLoggingOut(false);
     }
+  };
+
+  useEffect(() => {
+    fetchAddItemCount();
+  }, [user.id]);
+
+  const fetchAddItemCount= async () => {
+    try {
+      if (user) {
+        const response = await api.get(`/cart/count/${user.id}`,{
+          withCredentials:true,
+        });
+         setCount(response.data.count);
+      }
+    } catch (error) {
+      console.error("Error fetching addtocartcount:", error);
+    } 
   };
 
   return (
@@ -93,10 +116,10 @@ const HeaderV2 = ({ user }) => {
         {/* Desktop Right Section */}
         <div className="hidden lg:flex items-center space-x-4">
           {/* Shopping Cart */}
-          <button className="relative p-2 text-gray-700 cursor-pointer hover:text-[#006494] transition-colors">
+          <button className="relative p-2 text-gray-700 cursor-pointer hover:text-[#006494] transition-colors" onClick={()=>handleAddToCartPage()}>
             <FaShoppingCart size={20} />
             <span className="absolute -top-1 -right-1 bg-[#006494] text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
-              0
+              {count}
             </span>
           </button>
 
@@ -118,13 +141,13 @@ const HeaderV2 = ({ user }) => {
             {isUserDropdownOpen && (
               <div className="absolute right-0 mt-2 w-40 bg-white border cursor-pointer border-gray-200 rounded-lg shadow-lg z-50">
                 <div className="py-1">
-                  <button 
+                  <button
                     onClick={handleAccountClick}
                     className="block w-full px-4 py-2 text-left font-semibold cursor-pointer text-gray-700 hover:bg-gray-100 transition-colors"
                   >
                     Account
                   </button>
-                  <button 
+                  <button
                     onClick={handleSignOutClick}
                     disabled={isLoggingOut}
                     className="block w-full px-4 py-2 text-left font-semibold cursor-pointer text-gray-700 hover:bg-gray-100 transition-colors"
@@ -140,10 +163,10 @@ const HeaderV2 = ({ user }) => {
         {/* Mobile Right Section */}
         <div className="flex items-center space-x-2 lg:hidden">
           {/* Mobile Shopping Cart */}
-          <button className="relative p-2 text-gray-700 hover:text-[#006494] transition-colors">
+          <button className="relative p-2 text-gray-700 hover:text-[#006494] transition-colors" onClick={()=>handleAddToCartPage()}>
             <FaShoppingCart size={18} />
             <span className="absolute -top-1 -right-1 bg-[#006494] text-white text-xs rounded-full h-4 w-4 flex items-center justify-center text-[10px]">
-              0
+              {count}
             </span>
           </button>
 
@@ -165,13 +188,13 @@ const HeaderV2 = ({ user }) => {
             {isUserDropdownOpen && (
               <div className="absolute right-0 mt-2 w-32 bg-white border border-gray-200 rounded-lg shadow-lg z-50">
                 <div className="py-1">
-                  <button 
+                  <button
                     onClick={handleAccountClick}
                     className="block w-full px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 transition-colors"
                   >
                     Account
                   </button>
-                  <button 
+                  <button
                     onClick={handleSignOutClick}
                     disabled={isLoggingOut}
                     className="block w-full px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 transition-colors"
