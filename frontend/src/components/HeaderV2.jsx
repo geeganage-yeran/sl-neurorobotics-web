@@ -16,7 +16,7 @@ const HeaderV2 = ({ user }) => {
   const [isUserDropdownOpen, setIsUserDropdownOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
-  const [count,setCount] = useState(0);
+  const [count, setCount] = useState(0);
 
   const navigate = useNavigate();
 
@@ -32,9 +32,9 @@ const HeaderV2 = ({ user }) => {
     setIsMobileMenuOpen(false);
   };
 
-  const handleAddToCartPage = () =>{
-    navigate(`/cart/${user.id}`)
-  }
+  const handleAddToCartPage = () => {
+    navigate(`/cart/${user.id}`);
+  };
 
   const handleAccountClick = () => {
     setIsUserDropdownOpen(false);
@@ -55,19 +55,25 @@ const HeaderV2 = ({ user }) => {
 
   useEffect(() => {
     fetchAddItemCount();
+
+    window.refreshCartCount = fetchAddItemCount;
+
+    return () => {
+      delete window.refreshCartCount;
+    };
   }, [user.id]);
 
-  const fetchAddItemCount= async () => {
+  const fetchAddItemCount = async () => {
     try {
       if (user) {
-        const response = await api.get(`/cart/count/${user.id}`,{
-          withCredentials:true,
+        const response = await api.get(`/cart/count/${user.id}`, {
+          withCredentials: true,
         });
-         setCount(response.data.count);
+        setCount(response.data.count);
       }
     } catch (error) {
       console.error("Error fetching addtocartcount:", error);
-    } 
+    }
   };
 
   return (
@@ -116,7 +122,10 @@ const HeaderV2 = ({ user }) => {
         {/* Desktop Right Section */}
         <div className="hidden lg:flex items-center space-x-4">
           {/* Shopping Cart */}
-          <button className="relative p-2 text-gray-700 cursor-pointer hover:text-[#006494] transition-colors" onClick={()=>handleAddToCartPage()}>
+          <button
+            className="relative p-2 text-gray-700 cursor-pointer hover:text-[#006494] transition-colors"
+            onClick={() => handleAddToCartPage()}
+          >
             <FaShoppingCart size={20} />
             <span className="absolute -top-1 -right-1 bg-[#006494] text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
               {count}
@@ -163,7 +172,10 @@ const HeaderV2 = ({ user }) => {
         {/* Mobile Right Section */}
         <div className="flex items-center space-x-2 lg:hidden">
           {/* Mobile Shopping Cart */}
-          <button className="relative p-2 text-gray-700 hover:text-[#006494] transition-colors" onClick={()=>handleAddToCartPage()}>
+          <button
+            className="relative p-2 text-gray-700 hover:text-[#006494] transition-colors"
+            onClick={() => handleAddToCartPage()}
+          >
             <FaShoppingCart size={18} />
             <span className="absolute -top-1 -right-1 bg-[#006494] text-white text-xs rounded-full h-4 w-4 flex items-center justify-center text-[10px]">
               {count}

@@ -17,21 +17,20 @@ function Product() {
   const { isAuthenticated, user } = useAuth();
   const Navigate = useNavigate();
 
+  const [alert, setAlert] = useState({
+    open: false,
+    message: "",
+    type: "success",
+    position: "top-right",
+  });
 
-    const [alert, setAlert] = useState({
-      open: false,
-      message: "",
-      type: "success",
-      position: "top-right",
-    });
-  
-    const showAlert = (message, type = "success", position = "top-right") => {
-      setAlert({ open: true, message, type, position });
-    };
-  
-    const closeAlert = () => {
-      setAlert((prev) => ({ ...prev, open: false }));
-    };
+  const showAlert = (message, type = "success", position = "top-right") => {
+    setAlert({ open: true, message, type, position });
+  };
+
+  const closeAlert = () => {
+    setAlert((prev) => ({ ...prev, open: false }));
+  };
 
   const getAllProducts = async () => {
     try {
@@ -61,22 +60,22 @@ function Product() {
       quantity: quantity,
     };
     try {
-      const response = await api.post(
-        `/cart/add`,dataTosend,
-        {
-          headers: {
-            "Content-Type": "application/json",
-          },
-          withCredentials:true,
-        }
-      );
+      const response = await api.post(`/cart/add`, dataTosend, {
+        headers: {
+          "Content-Type": "application/json",
+        },
+        withCredentials: true,
+      });
 
       if (response.status === 200) {
+        if (window.refreshCartCount) {
+          window.refreshCartCount();
+        }
         showAlert("Item added to cart successfully");
       }
     } catch (error) {
       showAlert("Product already in cart", "error");
-    } 
+    }
   };
 
   // Search function

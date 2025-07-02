@@ -1,6 +1,7 @@
-import Header from './Header';
-import HeaderV2 from './HeaderV2';
-import useAuth from '../hooks/useAuth';
+import Header from "./Header";
+import HeaderV2 from "./HeaderV2";
+import HeaderV3 from "./HeaderV3";
+import useAuth from "../hooks/useAuth";
 
 const DynamicHeader = () => {
   const { isAuthenticated, loading, user } = useAuth();
@@ -16,7 +17,9 @@ const DynamicHeader = () => {
     );
   }
 
-  // Return appropriate header
+  if (isAuthenticated && user?.role === "ADMIN") {
+    return <HeaderV3 />;
+  }
   return isAuthenticated ? <HeaderV2 user={user} /> : <Header />;
 };
 

@@ -9,7 +9,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "cart_items",
+@Table(name = "cart_item",
         uniqueConstraints = @UniqueConstraint(columnNames = {"cart_id", "product_id"}))
 @Data
 @NoArgsConstructor
@@ -18,7 +18,7 @@ public class CartItem {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "cart_item_id")
+    @Column(name = "id")
     private Long cartItemId;
 
     @Column(name = "cart_id", nullable = false)

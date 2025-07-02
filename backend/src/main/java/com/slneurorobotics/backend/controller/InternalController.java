@@ -28,7 +28,7 @@ public class InternalController {
     }
 
     @GetMapping("/api/faq/all")
-    public ResponseEntity<?> getAllFaqs(@RequestHeader(value = "X-API-Key", required = false) String providedKey) {
+    public ResponseEntity<?> getAllFaqs(@RequestHeader(value = "API-Key", required = false) String providedKey) {
         if (!apiKey.equals(providedKey)) {
             return ResponseEntity.status(401).body("Invalid API Key");
         }
@@ -37,7 +37,7 @@ public class InternalController {
     }
 
     @GetMapping("/api/products/chatbot")
-    public ResponseEntity<?> getProducts(@RequestHeader(value = "X-API-Key", required = false) String providedKey) {
+    public ResponseEntity<?> getProducts(@RequestHeader(value = "API-Key", required = false) String providedKey) {
         if (!apiKey.equals(providedKey)) {
             return ResponseEntity.status(401).body("Invalid API Key");
         }
