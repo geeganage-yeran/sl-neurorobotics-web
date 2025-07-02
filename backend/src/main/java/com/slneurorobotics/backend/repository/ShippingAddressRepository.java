@@ -19,6 +19,9 @@ public interface ShippingAddressRepository extends JpaRepository<Shipping_addres
 
     @Query("SELECT sa FROM Shipping_address sa WHERE sa.createdBy = :userId AND sa.isDefault = true AND sa.id != :currentId")
     List<Shipping_address> findByCreatedByAndIsDefaultTrueAndIdNot(@Param("userId") Long userId, @Param("currentId") Long currentId);
+
+    @Query("SELECT s FROM Shipping_address s WHERE s.createdBy = ?1 AND s.isDefault = true")
+    Shipping_address findByDefaultAddress(long userid);
 }
 
 

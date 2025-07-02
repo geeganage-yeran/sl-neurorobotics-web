@@ -4,6 +4,7 @@ package com.slneurorobotics.backend.controller;
 import com.slneurorobotics.backend.dto.request.AddToCartRequest;
 import com.slneurorobotics.backend.dto.response.CartItemResponse;
 import com.slneurorobotics.backend.dto.response.CartResponse;
+import com.slneurorobotics.backend.dto.response.ShippingAddressResponseDTO;
 import com.slneurorobotics.backend.service.CartService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -80,4 +81,14 @@ public class CartController {
 //            return ResponseEntity.badRequest().build();
 //        }
 //    }
+
+    @GetMapping("/getAddress/{userId}")
+    public ResponseEntity<ShippingAddressResponseDTO> getShippingAddress(@PathVariable Long userId) {
+        try {
+            ShippingAddressResponseDTO addressResponseDTO = cartService.getShippingAddress(userId);
+            return ResponseEntity.ok(addressResponseDTO);
+        } catch (Exception e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
 }

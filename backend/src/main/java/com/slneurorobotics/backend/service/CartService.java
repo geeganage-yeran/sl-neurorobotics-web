@@ -4,11 +4,14 @@ package com.slneurorobotics.backend.service;
 import com.slneurorobotics.backend.dto.request.AddToCartRequest;
 import com.slneurorobotics.backend.dto.response.CartItemResponse;
 import com.slneurorobotics.backend.dto.response.CartResponse;
+import com.slneurorobotics.backend.dto.response.ShippingAddressResponseDTO;
 import com.slneurorobotics.backend.entity.CartItem;
 import com.slneurorobotics.backend.entity.Product;
+import com.slneurorobotics.backend.entity.Shipping_address;
 import com.slneurorobotics.backend.entity.ShoppingCart;
 import com.slneurorobotics.backend.repository.CartItemRepository;
 import com.slneurorobotics.backend.repository.ProductRepository;
+import com.slneurorobotics.backend.repository.ShippingAddressRepository;
 import com.slneurorobotics.backend.repository.ShoppingCartRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -27,6 +30,7 @@ public class CartService {
     private final CartItemRepository cartItemRepository;
     private final ShoppingCartRepository shoppingCartRepository;
     private final ProductRepository productRepository;
+    private final ShippingAddressRepository shippingAddressRepository;
 
     public void addToCart(AddToCartRequest request) {
 
@@ -146,5 +150,26 @@ public class CartService {
 
     public Integer getDistinctItemCount(Long userId) {
         return cartItemRepository.countDistinctItemsByUserId(userId);
+    }
+
+    public ShippingAddressResponseDTO getShippingAddress(Long userId) {
+        try {
+            Shipping_address shippingAddress = shippingAddressRepository.findByDefaultAddress(userId);
+
+            if (shippingAddress == null) {
+                throw new RuntimeException("No default shipping address found for user: " + userId);
+            }
+
+            ShippingAddressResponseDTO shippingAddressResponseDTO = new ShippingAddressResponseDTO();
+            shippingAddressResponseDTO.setName(shippingAddress.getFull_name());
+            shippingAddressResponseDTO.setStreetAddress(shippingAddress.getStreet_address());
+            shippingAddressResponseDTO.setCity(shippingAddress.getCity());
+            shippingAddressResponseDTO.setState(shippingAddress.getState());
+            shippingAddressResponseDTO.setZipCode(shippingAddress.getZipcode());
+            return shippingAddressResponseDTO;
+
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to retrieve shipping address", e);
+        }
     }
 }
