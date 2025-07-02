@@ -4,6 +4,85 @@ import { useParams, useNavigate } from "react-router-dom";
 import api from "../services/api";
 import Alert from "../components/Alert";
 import DynamicHeader from "../components/DynamicHeader";
+            Select Shipping Address
+          </h2>
+          <button
+            onClick={onClose}
+            className="text-gray-500 hover:text-gray-700 transition-colors"
+          >
+            <X className="w-6 h-6" />
+          </button>
+        </div>
+
+        <div className="p-6 space-y-4">
+          {loading ? (
+            <div className="text-center py-8">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto"></div>
+              <p className="mt-2 text-gray-600">Loading addresses...</p>
+            </div>
+          ) : availableAddresses.length === 0 ? (
+            <div className="text-center py-8">
+              <p className="text-gray-600">No addresses found</p>
+            </div>
+          ) : (
+            availableAddresses.map((address) => (
+              <div
+                key={address.id}
+                className={`border rounded-lg p-4 cursor-pointer transition-colors hover:bg-gray-50 ${
+                  shippingAddress?.id === address.id
+                    ? "border-blue-500 bg-blue-50"
+                    : "border-gray-300"
+                }`}
+                onClick={() => handleSelectAddress(address)}
+              >
+                <div className="flex items-start justify-between">
+                  <div className="flex-1">
+                    <div className="flex items-center mb-2">
+                      <p className="font-semibold" style={{ color: "#051923" }}>
+                        {address.name}
+                      </p>
+                      {address.isDefault && (
+                        <span className="ml-2 px-2 py-1 text-xs bg-green-100 text-green-800 rounded-full">
+                          Default
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-sm text-gray-600">
+                      {address.streetAddress}
+                    </p>
+                    <p className="text-sm text-gray-600">
+                      {address.city}, {address.state} {address.zipCode}
+                    </p>
+                    <p className="text-sm text-gray-600">{address.country}</p>
+                  </div>
+                  <div className="ml-4">
+                    {shippingAddress?.id === address.id ? (
+                      <div className="w-5 h-5 bg-blue-500 rounded-full flex items-center justify-center">
+                        <div className="w-2 h-2 bg-white rounded-full"></div>
+                      </div>
+                    ) : (
+                      <div className="w-5 h-5 border-2 border-gray-300 rounded-full"></div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+
+        <div className="flex space-x-3 p-6 border-t">
+          <button
+            type="button"
+            onClick={onClose}
+            className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition-colors"
+          >
+            Cancel
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 const AddToCart = () => {
   const [cartItems, setCartItems] = useState([]);
@@ -12,6 +91,7 @@ const AddToCart = () => {
   const [appliedPromo, setAppliedPromo] = useState("");
   const [discount, setDiscount] = useState(0);
   const [shippingAddress, setShippingAddress] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const { userId } = useParams();
   const navigate = useNavigate();
 
@@ -32,6 +112,22 @@ const AddToCart = () => {
 
   const continueShopping = () => {
     navigate("/shop");
+  };
+
+  const openModal = () => {
+    setIsModalOpen(true);
+  };
+
+  const closeModal = () => {
+    setIsModalOpen(false);
+  };
+
+  // Updated handleSaveAddress - only frontend changes, no API call
+  const handleSaveAddress = (newAddress) => {
+    // Update local state only
+    setShippingAddress(newAddress);
+    setIsModalOpen(false);
+    showAlert("Address change successfully!");
   };
 
   useEffect(() => {
@@ -355,263 +451,167 @@ const AddToCart = () => {
                 <div className="space-y-3 mb-4 sm:mb-6">
                   <div className="flex justify-between">
                     <span className="text-gray-600">Subtotal</span>
-                    <span className="text-gray-600">
-                      ${subtotal.toFixed(2)}
-                    </span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Shipping cost</span>
-                    <span className="text-gray-600">
-                      {shippingCost === 0
-                        ? "FREE"
-                        : `$${shippingCost.toFixed(2)}`}
-                    </span>
-                  </div>
-                  {discount > 0 && (
-                    <div className="flex justify-between text-green-600">
-                      <span>Discount ({discount}%)</span>
-                      <span>-${discountAmount.toFixed(2)}</span>
-                    </div>
-                  )}
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Tax</span>
-                    <span className="text-gray-600">${tax.toFixed(2)}</span>
-                  </div>
-                  <div className="border-t pt-3">
-                    <div
-                      className="flex justify-between text-lg sm:text-xl font-bold"
-                      style={{ color: "#051923" }}
-                    >
-                      <span>Estimated Total</span>
-                      <span>${total.toFixed(2)}</span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Free Shipping Notice */}
-                {subtotal > 0 && subtotal < 50 && (
-                  <div className="mb-4 sm:mb-6 p-3 bg-blue-50 rounded-lg">
-                    <div className="flex items-center text-blue-700">
-                      <Truck className="w-5 h-5 mr-2 flex-shrink-0" />
-                      <span className="text-sm">
-                        You're ${(50 - subtotal).toFixed(2)} away from free
-                        shipping!
-                      </span>
-                    </div>
-                  </div>
-                )}
-
-                {/* Shipping Address */}
-                <div className="mb-4 sm:mb-6">
-                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 space-y-2 sm:space-y-0">
-                    <h3
-                      className="text-lg font-semibold"
-                      style={{ color: "#051923" }}
-                    >
-                      Shipping Address
-                    </h3>
-                  </div>
-
-                  <div className="border border-gray-300 rounded-lg p-4 bg-white">
-                    <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between space-y-3 sm:space-y-0">
-                      <div className="flex-1">
-                        <p
-                          className="font-semibold"
-                          style={{ color: "#051923" }}
+                  {/* Promo Code */}
+                  <div className="mb-4 sm:mb-6">
+                    <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2"></div>
+                    {appliedPromo && (
+                      <div className="mt-2 flex items-center justify-between text-sm text-green-600">
+                        <span>✓ {appliedPromo} applied</span>
+                        <button
+                          onClick={removePromoCode}
+                          className="text-red-600 hover:text-red-800"
                         >
-                          Test user
-                        </p>
-                        <p className="text-sm text-gray-600 mt-1">
-                          123 Main Street
-                        </p>
-                        <p className="text-sm text-gray-600">Apartment 4B</p>
-                        <p className="text-sm text-gray-600">
-                          New York, NY 10001
-                        </p>
-                        <p className="text-sm text-gray-600">United States</p>
-                        <p className="text-sm text-gray-600 mt-2">
-                          (555) 123-4567
-                        </p>
+                          <X className="w-4 h-4" />
+                        </button>
                       </div>
-                      <button className="text-blue-600 hover:text-blue-800 text-sm font-medium self-start sm:self-auto sm:ml-4">
-                        Change
-                      </button>
-                    </div>
+                    )}
                   </div>
 
-                  <div className="mt-4 flex items-start">
-                    <input
-                      type="checkbox"
-                      id="sameBilling"
-                      defaultChecked
-                      className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 mt-0.5"
-                    />
-                    <label
-                      htmlFor="sameBilling"
-                      className="ml-2 text-sm text-gray-600 leading-5"
-                    >
-                      ✓ Billing Address is same as Shipping Address
-                    </label>
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* Order Summary */}
-            <div className="xl:col-span-1">
-              <div className="bg-gray-50 rounded-lg p-4 sm:p-6 sticky top-4 sm:top-24">
-                <h2
-                  className="text-xl font-semibold mb-4 sm:mb-6"
-                  style={{ color: "#051923" }}
-                >
-                  Order Summary
-                </h2>
-
-                {/* Promo Code */}
-                <div className="mb-4 sm:mb-6">
-                  <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2"></div>
-                  {appliedPromo && (
-                    <div className="mt-2 flex items-center justify-between text-sm text-green-600">
-                      <span>✓ {appliedPromo} applied</span>
-                      <button
-                        onClick={removePromoCode}
-                        className="text-red-600 hover:text-red-800"
-                      >
-                        <X className="w-4 h-4" />
-                      </button>
-                    </div>
-                  )}
-                </div>
-
-                {/* Price Breakdown */}
-                <div className="space-y-3 mb-4 sm:mb-6">
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Subtotal</span>
-                    <span className="text-gray-600">
-                      ${subtotal.toFixed(2)}
-                    </span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Shipping cost</span>
-                    <span className="text-gray-600">
-                      {shippingCost === 0
-                        ? "FREE"
-                        : `$${shippingCost.toFixed(2)}`}
-                    </span>
-                  </div>
-                  {discount > 0 && (
-                    <div className="flex justify-between text-green-600">
-                      <span>Discount ({discount}%)</span>
-                      <span>-${discountAmount.toFixed(2)}</span>
-                    </div>
-                  )}
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Tax</span>
-                    <span className="text-gray-600">${tax.toFixed(2)}</span>
-                  </div>
-                  <div className="border-t pt-3">
-                    <div
-                      className="flex justify-between text-lg sm:text-xl font-bold"
-                      style={{ color: "#051923" }}
-                    >
-                      <span>Estimated Total</span>
-                      <span>${total.toFixed(2)}</span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Free Shipping Notice */}
-                {subtotal > 0 && subtotal < 50 && (
-                  <div className="mb-4 sm:mb-6 p-3 bg-blue-50 rounded-lg">
-                    <div className="flex items-center text-blue-700">
-                      <Truck className="w-5 h-5 mr-2 flex-shrink-0" />
-                      <span className="text-sm">
-                        You're ${(50 - subtotal).toFixed(2)} away from free
-                        shipping!
+                  {/* Price Breakdown */}
+                  <div className="space-y-3 mb-4 sm:mb-6">
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Subtotal</span>
+                      <span className="text-gray-600">
+                        ${subtotal.toFixed(2)}
                       </span>
                     </div>
-                  </div>
-                )}
-
-                {/* Shipping Address */}
-                <div className="mb-4 sm:mb-6">
-                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 space-y-2 sm:space-y-0">
-                    <h3
-                      className="text-lg font-semibold"
-                      style={{ color: "#051923" }}
-                    >
-                      Shipping Address
-                    </h3>
-                  </div>
-
-                  <div className="border border-gray-300 rounded-lg p-4 bg-white">
-                    <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between space-y-3 sm:space-y-0">
-                      {shippingAddress ? (
-                        <div className="flex-1">
-                          <p
-                            className="font-semibold"
-                            style={{ color: "#051923" }}
-                          >
-                            {shippingAddress.name}
-                          </p>
-                          <p className="text-sm text-gray-600 mt-1">
-                            {shippingAddress.streetAddress}
-                          </p>
-                          <p className="text-sm text-gray-600">{shippingAddress.city}</p>
-                          <p className="text-sm text-gray-600">
-                            {shippingAddress.state}
-                          </p>
-                          <p className="text-sm text-gray-600">{shippingAddress.zipCode}</p>
-                         
-                        </div>
-                      ) : (
-                        <p className="text-sm text-gray-600">
-                          Loading address...
-                        </p>
-                      )}
-                      <button className="text-blue-600 hover:text-blue-800 text-sm font-medium self-start sm:self-auto sm:ml-4 cursor-pointer">
-                        Change
-                      </button>
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Shipping cost</span>
+                      <span className="text-gray-600">
+                        {shippingCost === 0
+                          ? "FREE"
+                          : `$${shippingCost.toFixed(2)}`}
+                      </span>
+                    </div>
+                    {discount > 0 && (
+                      <div className="flex justify-between text-green-600">
+                        <span>Discount ({discount}%)</span>
+                        <span>-${discountAmount.toFixed(2)}</span>
+                      </div>
+                    )}
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Tax</span>
+                      <span className="text-gray-600">${tax.toFixed(2)}</span>
+                    </div>
+                    <div className="border-t pt-3">
+                      <div
+                        className="flex justify-between text-lg sm:text-xl font-bold"
+                        style={{ color: "#051923" }}
+                      >
+                        <span>Estimated Total</span>
+                        <span>${total.toFixed(2)}</span>
+                      </div>
                     </div>
                   </div>
 
-                  <div className="mt-4 flex items-start">
-                    <input
-                      type="checkbox"
-                      id="sameBilling"
-                      defaultChecked
-                      className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 mt-0.5"
-                    />
-                    <label
-                      htmlFor="sameBilling"
-                      className="ml-2 text-sm text-gray-600 leading-5"
-                    >
-                      ✓ Billing Address is same as Shipping Address
-                    </label>
+                  {/* Free Shipping Notice */}
+                  {subtotal > 0 && subtotal < 50 && (
+                    <div className="mb-4 sm:mb-6 p-3 bg-blue-50 rounded-lg">
+                      <div className="flex items-center text-blue-700">
+                        <Truck className="w-5 h-5 mr-2 flex-shrink-0" />
+                        <span className="text-sm">
+                          You're ${(50 - subtotal).toFixed(2)} away from free
+                          shipping!
+                        </span>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Shipping Address */}
+                  <div className="mb-4 sm:mb-6">
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 space-y-2 sm:space-y-0">
+                      <h3
+                        className="text-lg font-semibold"
+                        style={{ color: "#051923" }}
+                      >
+                        Shipping Address
+                      </h3>
+                    </div>
+
+                    <div className="border border-gray-300 rounded-lg p-4 bg-white">
+                      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between space-y-3 sm:space-y-0">
+                        {shippingAddress ? (
+                          <div className="flex-1">
+                            <p
+                              className="font-semibold"
+                              style={{ color: "#051923" }}
+                            >
+                              {shippingAddress.name}
+                            </p>
+                            <p className="text-sm text-gray-600 mt-1">
+                              {shippingAddress.streetAddress}
+                            </p>
+                            <p className="text-sm text-gray-600">
+                              {shippingAddress.city}
+                            </p>
+                            <p className="text-sm text-gray-600">
+                              {shippingAddress.state}
+                            </p>
+                            <p className="text-sm text-gray-600">
+                              {shippingAddress.zipCode}
+                            </p>
+                          </div>
+                        ) : (
+                          <p className="text-sm text-gray-600">
+                            Loading address...
+                          </p>
+                        )}
+                        <button
+                          onClick={openModal}
+                          className="text-blue-600 hover:text-blue-800 text-sm font-medium self-start sm:self-auto sm:ml-4 cursor-pointer"
+                        >
+                          Change
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="mt-4 flex items-start">
+                      <input
+                        type="checkbox"
+                        id="sameBilling"
+                        defaultChecked
+                        className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 mt-0.5"
+                      />
+                      <label
+                        htmlFor="sameBilling"
+                        className="ml-2 text-sm text-gray-600 leading-5"
+                      >
+                        ✓ Billing Address is same as Shipping Address
+                      </label>
+                    </div>
                   </div>
+
+                  {/* Checkout Button */}
+                  <button
+                    className="w-full py-3 sm:py-4 px-6 rounded-lg font-semibold text-lg transition-colors flex items-center justify-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                    onClick={makePayment}
+                    style={{ backgroundColor: "#051923", color: "white" }}
+                    disabled={cartItems.length === 0}
+                  >
+                    <span>🔒 Checkout</span>
+                  </button>
+
+                  {/* Continue Shopping */}
+                  <button
+                    className="w-full mt-4 py-3 px-6 border-2 border-gray-300 rounded-lg font-semibold hover:border-gray-400 transition-colors cursor-pointer"
+                    onClick={continueShopping}
+                  >
+                    Continue Shopping
+                  </button>
                 </div>
-
-                {/* Checkout Button */}
-                <button
-                  className="w-full py-3 sm:py-4 px-6 rounded-lg font-semibold text-lg transition-colors flex items-center justify-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
-                  style={{ backgroundColor: "#051923", color: "white" }}
-                  disabled={cartItems.length === 0}
-                >
-                  <span>🔒 Checkout</span>
-                </button>
-
-                {/* Continue Shopping */}
-                <button
-                  className="w-full mt-4 py-3 px-6 border-2 border-gray-300 rounded-lg font-semibold hover:border-gray-400 transition-colors cursor-pointer"
-                  onClick={continueShopping}
-                >
-                  Continue Shopping
-                </button>
-              </div>
               </div>
             </div>
           </div>
         </div>
+
+        {/* Shipping Address Modal */}
+        <ShippingAddressModal
+          isOpen={isModalOpen}
+          onClose={closeModal}
+          shippingAddress={shippingAddress}
+          onSave={handleSaveAddress}
+          userId={userId}
+        />
 
         <Alert
           open={alert.open}
