@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Footer from "../components/Footer";
 import Button from "../components/Button";
 import product1 from "../assets/landing.png";
@@ -10,6 +10,7 @@ export default function HomePage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [email, setEmail] = useState("");
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [currentSlide, setCurrentSlide] = useState(0);
   const [alert, setAlert] = useState({
     open: false,
     message: "",
@@ -17,9 +18,29 @@ export default function HomePage() {
     position: "top-right",
   });
 
-  {
-    /* Handling alerts section */
-  }
+  // Background images for carousel
+  const backgroundImages = [
+    'https://images.unsplash.com/photo-1559827260-dc66d52bef19?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80',
+    'https://images.unsplash.com/photo-1507146426996-ef05306b995a?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80',
+    'https://images.unsplash.com/photo-1518709268805-4e9042af2176?ixlib=rb-4.0.3&auto=format&fit=crop&w=2125&q=80',
+    'https://images.unsplash.com/photo-1451187580459-43490279c0fa?ixlib=rb-4.0.3&auto=format&fit=crop&w=2072&q=80',
+    'https://images.unsplash.com/photo-1558618047-3c8c76ca7d13?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80'
+  ];
+
+  // Auto-advance carousel
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentSlide((prev) => (prev + 1) % backgroundImages.length);
+    }, 5000);
+
+    return () => clearInterval(timer);
+  }, [backgroundImages.length]);
+
+  const goToSlide = (index) => {
+    setCurrentSlide(index);
+  };
+
+  {/* Handling alerts section */}
   const showAlert = (message, type = "success", position = "top-right") => {
     setAlert({ open: true, message, type, position });
   };
@@ -44,22 +65,30 @@ export default function HomePage() {
   return (
     <div className="min-h-screen bg-white">
       <DynamicHeader/>
-      <div className="relative w-full h-screen">
-        {/* Background Video */}
-        <video
-          autoPlay
-          loop
-          muted
-          className="absolute top-0 left-0 object-cover w-full h-full"
-        >
-          <source src="../src/assets/1080.mp4 " type="video/mp4" />
-        </video>
+      
+      {/* Hero Section with Image Carousel */}
+      <div className="relative w-full h-screen overflow-hidden">
+        {/* Background Images Carousel */}
+        {backgroundImages.map((image, index) => (
+          <div
+            key={index}
+            className={`absolute top-0 left-0 w-full h-full transition-opacity duration-1000 ${
+              index === currentSlide ? 'opacity-100' : 'opacity-0'
+            }`}
+          >
+            <img
+              src={image}
+              alt={`Background ${index + 1}`}
+              className="w-full h-full object-cover"
+            />
+          </div>
+        ))}
 
         {/* Dark Overlay */}
         <div className="absolute top-0 left-0 w-full h-full bg-black opacity-50"></div>
 
         {/* Content */}
-        <div className="absolute text-2xl text-white transform -translate-x-1/2 -translate-y-1/2 top-1/2 left-1/2">
+        <div className="absolute text-2xl text-white transform -translate-x-1/2 -translate-y-1/2 top-1/2 left-1/2 z-10">
           <div className="text-center">
             <h1 className="mb-8 text-5xl font-bold leading-tight sm:text-6xl lg:text-7xl">
               Powering
@@ -68,11 +97,27 @@ export default function HomePage() {
               <br />
               Brainwaves
             </h1>
-            <a href="/shop"><Button variant="primary" px="px-6" size="large">
-              View All Products
-            </Button>
+            <a href="/shop">
+              <Button variant="primary" px="px-6" size="large">
+                View All Products
+              </Button>
             </a>
           </div>
+        </div>
+
+        {/* Dots Navigation */}
+        <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-20 flex space-x-3">
+          {backgroundImages.map((_, index) => (
+            <button
+              key={index}
+              onClick={() => goToSlide(index)}
+              className={`w-3 h-3 rounded-full transition-all duration-200 ${
+                index === currentSlide 
+                  ? 'bg-white scale-125' 
+                  : 'bg-white bg-opacity-50 hover:bg-opacity-75'
+              }`}
+            />
+          ))}
         </div>
       </div>
 
@@ -137,7 +182,6 @@ export default function HomePage() {
               <div className="p-8 lg:p-12 bg-[#051923] flex items-center justify-center min-h-96">
                 <div className="relative">
                   {/* Container with your image */}
-
                   <img
                     src={product2}
                     alt="product2"
