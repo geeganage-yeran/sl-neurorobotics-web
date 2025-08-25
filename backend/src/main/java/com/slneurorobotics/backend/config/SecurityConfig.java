@@ -57,7 +57,8 @@ public class SecurityConfig {
                                 "/api/auth/logout",
                                 "/api/chatbot/ask",
                                 "/api/faq/all",
-                                "/api/products/chatbot"
+                                "/api/products/chatbot",
+                                "/api/checkout/session"
                         ).permitAll()
 
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")

@@ -125,6 +125,12 @@
             <artifactId>reactor-core</artifactId>
             <version>3.8.0-M4</version>
         </dependency>
+        <dependency>
+            <groupId>com.stripe</groupId>
+            <artifactId>stripe-java</artifactId>
+            <version>29.4.0</version>
+        </dependency>
+
 
     </dependencies>
 

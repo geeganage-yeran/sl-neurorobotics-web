@@ -13,3 +13,4 @@ public interface ShoppingCartRepository extends JpaRepository<ShoppingCart, Long
 
     boolean existsByUserId(Long userId);
 }
+
