@@ -15,6 +15,42 @@ export default function ProductViewPage() {
   const [product, setProduct] = useState(null);
   const [specifications, setSpecifications] = useState([]);
 
+  // useEffect(() => {
+  //   const fetchProduct = async () => {
+  //     try {
+  //       setLoading(true);
+  //       const response = await axios.get(
+  //         `http://localhost:8080/api/public/getProduct/${id}`
+  //       );
+  //       setProduct(response.data);
+
+  //       // Parse specifications from the response
+  //       if (response.data.specifications) {
+  //         try {
+  //           const parsedSpecs = JSON.parse(response.data.specifications);
+  //           if (Array.isArray(parsedSpecs)) {
+  //             setSpecifications(parsedSpecs);
+  //           }
+  //         } catch (e) {
+  //           console.error("Error parsing specifications:", e);
+  //         }
+  //       }
+
+  //       console.log(response.data);
+  //       setError(null);
+  //     } catch (error) {
+  //       console.error("Error fetching product:", error);
+  //       setError("Failed to load product details");
+  //     } finally {
+  //       setLoading(false);
+  //     }
+  //   };
+
+  //   if (id) {
+  //     fetchProduct();
+  //   }
+  // }, [id]);
+
   useEffect(() => {
     const fetchProduct = async () => {
       try {
@@ -24,16 +60,18 @@ export default function ProductViewPage() {
         );
         setProduct(response.data);
 
-        // Parse specifications from the response
+        // Handle specifications - now comes as Map/object from backend
         if (response.data.specifications) {
-          try {
-            const parsedSpecs = JSON.parse(response.data.specifications);
-            if (Array.isArray(parsedSpecs)) {
-              setSpecifications(parsedSpecs);
-            }
-          } catch (e) {
-            console.error("Error parsing specifications:", e);
-          }
+          // Convert Map/object to array format for your existing UI
+          const specsArray = Object.entries(response.data.specifications).map(
+            ([name, description]) => ({
+              name: name,
+              description: description,
+            })
+          );
+          setSpecifications(specsArray);
+        } else {
+          setSpecifications([]);
         }
 
         console.log(response.data);

@@ -6,6 +6,7 @@ import com.slneurorobotics.backend.dto.request.PasswordChangeDTO;
 import com.slneurorobotics.backend.dto.request.ProductRequestDTO;
 import com.slneurorobotics.backend.dto.request.UserSettingUpdateDTO;
 import com.slneurorobotics.backend.dto.response.FaqResponseDTO;
+import com.slneurorobotics.backend.dto.response.ProductResponseDTO;
 import com.slneurorobotics.backend.dto.response.UserResponseDTO;
 import com.slneurorobotics.backend.dto.response.UserSettingResponseDTO;
 import com.slneurorobotics.backend.entity.FAQ;
@@ -13,6 +14,7 @@ import com.slneurorobotics.backend.service.FaqService;
 import com.slneurorobotics.backend.service.PasswordService;
 import com.slneurorobotics.backend.service.ProductService;
 import com.slneurorobotics.backend.service.UserService;
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,6 +25,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("api/admin")
@@ -48,6 +51,57 @@ public class AdminController {
             return ResponseEntity.ok("Product created successfully");
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Failed to create Product: " + e.getMessage());
+        }
+    }
+
+    @GetMapping("/products")
+    public ResponseEntity<List<ProductResponseDTO>> getAllProductsForAdmin() {
+        try {
+            List<ProductResponseDTO> products = productService.getAllProductsForAdmin();
+            return ResponseEntity.ok(products);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    @GetMapping("/products/{id}")
+    public ResponseEntity<ProductResponseDTO> getProductByIdForAdmin(@PathVariable Long id) {
+        try {
+            Optional<ProductResponseDTO> product = productService.getProductByIdForAdmin(id);
+            return product.map(ResponseEntity::ok)
+                    .orElse(ResponseEntity.notFound().build());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    @PutMapping("/products/{id}")
+    public ResponseEntity<?> updateProduct(
+            @PathVariable Long id,
+            @RequestParam("product") String productJson,
+            @RequestParam(value = "images", required = false) List<MultipartFile> images,
+            @RequestParam(value = "imageNames", required = false) List<String> imageNames,
+            @RequestParam(value = "displayOrders", required = false) List<Integer> displayOrders,
+            @RequestParam(value = "keepExistingImages", required = false, defaultValue = "true") boolean keepExistingImages,
+            @RequestParam(value = "removedImageIds", required = false) List<Long> removedImageIds) {
+        try {
+            ProductRequestDTO productRequest = objectMapper.readValue(productJson, ProductRequestDTO.class);
+            productService.updateProduct(id, productRequest, images, imageNames, displayOrders, keepExistingImages, removedImageIds);
+            return ResponseEntity.ok("Product updated successfully");
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Failed to update Product: " + e.getMessage());
+        }
+    }
+
+    @DeleteMapping("/products/{id}")
+    public ResponseEntity<?> deleteProduct(@PathVariable Long id) {
+        try {
+            productService.deleteProduct(id);
+            return ResponseEntity.ok("Product deleted successfully");
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.notFound().build();
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to delete Product: " + e.getMessage());
         }
     }
 

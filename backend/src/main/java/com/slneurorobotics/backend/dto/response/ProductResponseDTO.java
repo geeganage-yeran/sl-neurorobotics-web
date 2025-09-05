@@ -5,6 +5,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
 
 @Data
 @NoArgsConstructor
@@ -19,5 +20,6 @@ public class ProductResponseDTO {
     private BigDecimal price;
     private Boolean enabled;
     private List<ProductImageResponseDTO> images;
-    private String specifications; // JSON string
+  //  private String specifications; // JSON string
+    private Map<String, String> specifications;
 }

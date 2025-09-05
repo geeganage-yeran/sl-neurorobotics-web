@@ -5,6 +5,8 @@ import product1 from "../assets/landing.png";
 import product2 from "../assets/chairbed.png";
 import Alert from "../components/Alert";
 import DynamicHeader from "../components/DynamicHeader"
+import carsol1 from "../assets/carsol1.jpg"
+import carsol2 from "../assets/carsol2.jpg"
 
 export default function HomePage() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -20,11 +22,8 @@ export default function HomePage() {
 
   // Background images for carousel
   const backgroundImages = [
-    'https://images.unsplash.com/photo-1559827260-dc66d52bef19?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80',
-    'https://images.unsplash.com/photo-1507146426996-ef05306b995a?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80',
-    'https://images.unsplash.com/photo-1518709268805-4e9042af2176?ixlib=rb-4.0.3&auto=format&fit=crop&w=2125&q=80',
-    'https://images.unsplash.com/photo-1451187580459-43490279c0fa?ixlib=rb-4.0.3&auto=format&fit=crop&w=2072&q=80',
-    'https://images.unsplash.com/photo-1558618047-3c8c76ca7d13?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80'
+    carsol1,
+    carsol2,
   ];
 
   // Auto-advance carousel
