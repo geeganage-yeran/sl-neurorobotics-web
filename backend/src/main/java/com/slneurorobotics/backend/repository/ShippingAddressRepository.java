@@ -8,8 +8,8 @@ import org.springframework.data.repository.query.Param;
 import java.util.List;
 
 public interface ShippingAddressRepository extends JpaRepository<Shipping_address,Long> {
-    @Query("SELECT sa FROM Shipping_address sa WHERE sa.street_address = ?1 AND sa.city = ?2 AND sa.state = ?3 AND sa.zipcode = ?4")
-    List<Shipping_address> findByAddressFields(String streetAddress, String city, String state, String zipcode);
+    @Query("SELECT sa FROM Shipping_address sa WHERE sa.street_address = ?1 AND sa.city = ?2 AND sa.state = ?3 AND sa.zipcode = ?4 AND sa.country= ?5")
+    List<Shipping_address> findByAddressFields(String streetAddress, String city, String state, String zipcode, String country);
 
     @Query("SELECT s FROM Shipping_address s WHERE s.createdBy = ?1")
     List<Shipping_address> findByAddress(long userid);

@@ -16,7 +16,7 @@ public class CheckoutService {
                 .setCurrency("usd")  // Currency
                 .setProductData(  // Inline product data
                         PriceCreateParams.ProductData.builder()
-                                .setName("Custom Product")  // Name of your product
+                                .setName("SL NeuroRobotics")  // Name of your product
                                 .build()
                 )
                 .build();
@@ -33,8 +33,8 @@ public class CheckoutService {
                                 .setQuantity(1L)
                                 .build()
                 )
-                .setSuccessUrl("http://localhost:5173/success?session_id={CHECKOUT_SESSION_ID}")
-                .setCancelUrl("http://localhost:5173/cancel")
+                .setSuccessUrl("http://localhost:5173/payment-success?session_id={CHECKOUT_SESSION_ID}")
+                .setCancelUrl("http://localhost:5173/payment-failed?session_id={CHECKOUT_SESSION_ID}")
                 .build();
 
         // Create and return the session

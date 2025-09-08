@@ -218,7 +218,8 @@ public class UserService {
                 shippingAddressRequestDTO.getStreetAddress(),
                 shippingAddressRequestDTO.getCity(),
                 shippingAddressRequestDTO.getState(),
-                shippingAddressRequestDTO.getZipCode()
+                shippingAddressRequestDTO.getZipCode(),
+                shippingAddressRequestDTO.getCountry()
         );
 
         if (!existingAddresses.isEmpty()) {
@@ -235,6 +236,7 @@ public class UserService {
         shippingAddress.setCity(shippingAddressRequestDTO.getCity());
         shippingAddress.setState(shippingAddressRequestDTO.getState());
         shippingAddress.setZipcode(shippingAddressRequestDTO.getZipCode());
+        shippingAddress.setCountry(shippingAddressRequestDTO.getCountry());
         shippingAddress.setDefault(shippingAddressRequestDTO.isDefaultAddress());
         shippingAddress.setCreatedBy(shippingAddressRequestDTO.getCreatedBy());
         shippingAddress.setUpdatedBy(shippingAddressRequestDTO.getCreatedBy());
@@ -256,6 +258,7 @@ public class UserService {
         dto.setCity(shippingAddress.getCity());
         dto.setState(shippingAddress.getState());
         dto.setZipCode(shippingAddress.getZipcode());
+        dto.setCountry(shippingAddress.getCountry());
         dto.setDefaultAddress(shippingAddress.isDefault());
         return dto;
     }
@@ -280,6 +283,7 @@ public class UserService {
         shippingAddress.setCity(shippingAddressRequestDTO.getCity());
         shippingAddress.setState(shippingAddressRequestDTO.getState());
         shippingAddress.setZipcode(shippingAddressRequestDTO.getZipCode());
+        shippingAddress.setCountry(shippingAddressRequestDTO.getCountry());
         shippingAddress.setDefault(shippingAddressRequestDTO.isDefaultAddress());
         shippingAddress.setCreatedBy(shippingAddressRequestDTO.getCreatedBy());
         shippingAddress.setUpdatedBy(shippingAddressRequestDTO.getCreatedBy());

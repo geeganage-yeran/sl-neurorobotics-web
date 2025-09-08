@@ -12,6 +12,7 @@ import {
   Loader,
 } from "lucide-react";
 import api from "../../services/api";
+import Alert from "../../components/Alert";
 
 function ManageProducts() {
   const [products, setProducts] = useState([]);
@@ -40,6 +41,23 @@ function ManageProducts() {
   const [newSpecValue, setNewSpecValue] = useState("");
   const [errors, setErrors] = useState({});
   const fileInputRef = useRef(null);
+
+  // Alert state
+  const [alert, setAlert] = useState({
+    open: false,
+    message: "",
+    type: "success",
+    position: "top-right",
+  });
+
+  // Alert handlers
+  const showAlert = (message, type = "success", position = "top-right") => {
+    setAlert({ open: true, message, type, position });
+  };
+
+  const closeAlert = () => {
+    setAlert((prev) => ({ ...prev, open: false }));
+  };
 
   useEffect(() => {
     fetchProducts();
@@ -282,22 +300,23 @@ function ManageProducts() {
         );
 
         if (response.data) {
+          showAlert("Updated successfully");
           await fetchProducts(); // Refresh the product list
           closeModal();
           // Reset removed image IDs for next operation
           setRemovedImageIds([]);
         } else {
           console.error("Failed to update product:", response.data);
-          alert("Failed to update product. Please try again.");
+          showAlert("Failed to update product. Please try again", "error");
         }
       } else {
         // Creating new product
-        const response = await api.post("/admin/addProduct", formDataToSend, {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-          withCredentials: true,
-        });
+        // const response = await api.post("/admin/addProduct", formDataToSend, {
+        //   headers: {
+        //     "Content-Type": "multipart/form-data",
+        //   },
+        //   withCredentials: true,
+        // });
 
         if (response.data) {
           await fetchProducts(); // Refresh the product list
@@ -374,7 +393,7 @@ function ManageProducts() {
                 placeholder="Search products..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent w-60"
+                className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#003554]focus:border-transparent w-60"
               />
             </div>
           </div>
@@ -422,7 +441,7 @@ function ManageProducts() {
                 </p>
 
                 <div className="flex items-center justify-between mb-3">
-                  <span className="text-lg font-bold text-blue-600">
+                  <span className="text-lg font-bold text-[#003554]">
                     ${product.price}
                   </span>
                   <span className="text-xs text-gray-500">
@@ -433,14 +452,14 @@ function ManageProducts() {
                 <div className="flex gap-2">
                   <button
                     onClick={() => openModal(product)}
-                    className="flex-1 bg-blue-50 hover:bg-blue-100 text-blue-700 px-3 py-2 rounded-md text-sm font-medium transition-colors flex items-center justify-center gap-1"
+                    className="flex-1 bg-blue-50 hover:bg-blue-100 text-[#003554] cursor-pointer px-3 py-2 rounded-md text-sm font-medium transition-colors flex items-center justify-center gap-1"
                   >
                     <Edit className="w-4 h-4" />
                     Edit
                   </button>
                   <button
                     onClick={() => confirmDelete(product.id)}
-                    className="flex-1 bg-red-50 hover:bg-red-100 text-red-700 px-3 py-2 rounded-md text-sm font-medium transition-colors flex items-center justify-center gap-1"
+                    className="flex-1 bg-red-50 hover:bg-red-100 text-red-700 cursor-pointer px-3 py-2 rounded-md text-sm font-medium transition-colors flex items-center justify-center gap-1"
                   >
                     <Trash2 className="w-4 h-4" />
                     Delete
@@ -488,7 +507,7 @@ function ManageProducts() {
                     name="name"
                     value={formData.name}
                     onChange={handleInputChange}
-                    className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                    className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-[#003554]focus:border-transparent ${
                       errors.name ? "border-red-300" : "border-gray-300"
                     }`}
                     placeholder="Enter product name"
@@ -510,7 +529,7 @@ function ManageProducts() {
                     onChange={handleInputChange}
                     step="0.01"
                     min="0"
-                    className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                    className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-[#003554]focus:border-transparent ${
                       errors.price ? "border-red-300" : "border-gray-300"
                     }`}
                     placeholder="0.00"
@@ -531,7 +550,7 @@ function ManageProducts() {
                   name="summary"
                   value={formData.summary}
                   onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#003554]focus:border-transparent"
                   placeholder="Brief summary of the product"
                 />
               </div>
@@ -546,7 +565,7 @@ function ManageProducts() {
                   value={formData.description}
                   onChange={handleInputChange}
                   rows="3"
-                  className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                  className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-[#003554]focus:border-transparent ${
                     errors.description ? "border-red-300" : "border-gray-300"
                   }`}
                   placeholder="Enter product description"
@@ -568,7 +587,7 @@ function ManageProducts() {
                   value={formData.overview}
                   onChange={handleInputChange}
                   rows="4"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#003554]focus:border-transparent"
                   placeholder="Detailed overview of the product..."
                 />
               </div>
@@ -612,7 +631,7 @@ function ManageProducts() {
                       <button
                         type="button"
                         onClick={() => fileInputRef.current?.click()}
-                        className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm transition-colors"
+                        className="bg-[#003554] hover:bg-[#002a43] cursor-pointer text-white px-4 py-2 rounded-lg text-sm transition-colors"
                       >
                         Upload Images
                       </button>
@@ -665,20 +684,20 @@ function ManageProducts() {
                       type="text"
                       value={newSpecKey}
                       onChange={(e) => setNewSpecKey(e.target.value)}
-                      placeholder="Key (e.g., Brand)"
-                      className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      placeholder="Key"
+                      className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#003554]focus:border-transparent"
                     />
                     <input
                       type="text"
                       value={newSpecValue}
                       onChange={(e) => setNewSpecValue(e.target.value)}
-                      placeholder="Value (e.g., Apple)"
-                      className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      placeholder="Value"
+                      className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#003554]focus:border-transparent"
                     />
                     <button
                       type="button"
                       onClick={addSpecification}
-                      className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition-colors"
+                      className="bg-[#003554] hover:bg-[#002a43] text-white px-4 py-2 rounded-lg transition-colors"
                     >
                       Add
                     </button>
@@ -727,7 +746,7 @@ function ManageProducts() {
                       name="enabled"
                       checked={formData.enabled}
                       onChange={handleInputChange}
-                      className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500"
+                      className="w-4 h-4 text-green-600 cursor-pointer bg-gray-100 border-gray-300 rounded accent-green-500"
                     />
                     <label className="ml-2 text-sm text-gray-700">
                       Enabled (visible to customers)
@@ -746,7 +765,7 @@ function ManageProducts() {
                       name="tutorialLink"
                       value={formData.tutorialLink}
                       onChange={handleInputChange}
-                      className={`w-full px-3 py-2 pr-10 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                      className={`w-full px-3 py-2 pr-10 border rounded-lg focus:ring-2 focus:ring-[#003554] focus:border-transparent ${
                         errors.tutorialLink
                           ? "border-red-300"
                           : "border-gray-300"
@@ -769,7 +788,7 @@ function ManageProducts() {
                   type="button"
                   onClick={handleSubmit}
                   disabled={submitting}
-                  className="bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white px-6 py-2 rounded-lg font-medium transition-colors flex items-center justify-center gap-2"
+                  className="bg-[#003554] hover:bg-[#002a43] cursor-pointer text-white px-6 py-2 rounded-lg font-medium transition-colors flex items-center justify-center gap-2"
                 >
                   {submitting ? (
                     <Loader className="w-4 h-4 animate-spin" />
@@ -786,7 +805,7 @@ function ManageProducts() {
                   type="button"
                   onClick={closeModal}
                   disabled={submitting}
-                  className="bg-gray-200 hover:bg-gray-300 disabled:bg-gray-100 text-gray-800 px-6 py-2 rounded-lg font-medium transition-colors"
+                  className="bg-gray-200 cursor-pointer hover:bg-gray-300 disabled:bg-gray-100 text-gray-800 px-6 py-2 rounded-lg font-medium transition-colors"
                 >
                   Cancel
                 </button>
@@ -829,6 +848,15 @@ function ManageProducts() {
           </div>
         </div>
       )}
+
+      <Alert
+        open={alert.open}
+        onClose={closeAlert}
+        message={alert.message}
+        type={alert.type}
+        position={alert.position}
+        autoHideDuration={3000}
+      />
     </div>
   );
 }

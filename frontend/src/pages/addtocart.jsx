@@ -1,148 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { Trash2, Plus, Minus, ShoppingBag, Tag, Truck, X } from "lucide-react";
 import { useParams, useNavigate } from "react-router-dom";
-import axios from "axios";
 import api from "../services/api";
 import Alert from "../components/Alert";
 import DynamicHeader from "../components/DynamicHeader";
-import { loadStripe } from "@stripe/stripe-js";
-
-const ShippingAddressModal = ({
-  isOpen,
-  onClose,
-  shippingAddress,
-  onSave,
-  userId,
-}) => {
-  const [availableAddresses, setAvailableAddresses] = useState([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    if (isOpen) {
-      fetchAvailableAddresses();
-    }
-  }, [isOpen, userId]);
-
-  const fetchAvailableAddresses = async () => {
-    setLoading(true);
-    try {
-      const response = await api.get(`/user/getAddress/${userId}`, {
-        withCredentials: true,
-      });
-      setAvailableAddresses(response.data || []);
-    } catch (error) {
-      console.error("Error fetching addresses:", error);
-      setAvailableAddresses([]);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleSelectAddress = (address) => {
-    onSave(address);
-  };
-
-  const handleBackdropClick = (e) => {
-    if (e.target === e.currentTarget) {
-      onClose();
-    }
-  };
-
-  if (!isOpen) return null;
-
-  return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 bg-opacity-50"
-      onClick={handleBackdropClick}
-    >
-      <div
-        className="bg-white rounded-lg shadow-xl max-w-md w-full max-h-[90vh] overflow-hidden"
-        onClick={(e) => e.stopPropagation()}
-      >
-        {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b bg-white">
-          <h2 className="text-xl font-semibold" style={{ color: "#051923" }}>
-            Select Shipping Address
-          </h2>
-          <button
-            onClick={onClose}
-            className="text-gray-500 hover:text-gray-700 transition-colors p-1"
-          >
-            <X className="w-6 cursor-pointer h-6" />
-          </button>
-        </div>
-
-        {/* Content */}
-        <div className="p-6 space-y-4 max-h-96 overflow-y-auto">
-          {loading ? (
-            <div className="text-center py-8">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto"></div>
-              <p className="mt-2 text-gray-600">Loading addresses...</p>
-            </div>
-          ) : availableAddresses.length === 0 ? (
-            <div className="text-center py-8">
-              <p className="text-gray-600">No addresses found</p>
-            </div>
-          ) : (
-            availableAddresses.map((address) => (
-              <div
-                key={address.id}
-                className={`border rounded-lg p-4 cursor-pointer transition-colors hover:bg-gray-50 ${
-                  shippingAddress?.id === address.id
-                    ? "border-blue-500 bg-blue-50"
-                    : "border-gray-300"
-                }`}
-                onClick={() => handleSelectAddress(address)}
-              >
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <div className="flex items-center mb-2">
-                      <p className="font-semibold" style={{ color: "#051923" }}>
-                        {address.name}
-                      </p>
-                      {address.isDefault && (
-                        <span className="ml-2 px-2 py-1 text-xs bg-green-100 text-green-800 rounded-full">
-                          Default
-                        </span>
-                      )}
-                    </div>
-                    <p className="text-sm text-gray-600">
-                      {address.streetAddress}
-                    </p>
-                    <p className="text-sm text-gray-600">
-                      {address.city}, {address.state} {address.zipCode}
-                    </p>
-                    <p className="text-sm text-gray-600">{address.country}</p>
-                  </div>
-                  <div className="ml-4">
-                    {shippingAddress?.id === address.id ? (
-                      <div className="w-5 h-5 bg-blue-500 rounded-full flex items-center justify-center">
-                        <div className="w-2 h-2 bg-white rounded-full"></div>
-                      </div>
-                    ) : (
-                      <div className="w-5 h-5 border-2 border-gray-300 rounded-full"></div>
-                    )}
-                  </div>
-                </div>
-              </div>
-            ))
-          )}
-        </div>
-
-        {/* Footer */}
-        <div className="flex space-x-3 p-6 border-t bg-gray-50">
-          <button
-            type="button"
-            onClick={onClose}
-            className="flex-1 px-4 py-2 bg-[#003554] hover:bg-[#002a43] text-white cursor-pointer font-semibold rounded-md text-center transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
-          >
-            Cancel
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-};
 
 const AddToCart = () => {
   const [cartItems, setCartItems] = useState([]);
@@ -150,16 +11,9 @@ const AddToCart = () => {
   const [promoCode, setPromoCode] = useState("");
   const [appliedPromo, setAppliedPromo] = useState("");
   const [discount, setDiscount] = useState(0);
-  const [shippingAddress, setShippingAddress] = useState(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isProcessingPayment, setIsProcessingPayment] = useState(false);
-  
+
   const { userId } = useParams();
   const navigate = useNavigate();
-
-  const stripePromise = loadStripe(
-    "pk_test_51Ry9B9DDcyLBjfrUlgMNVbELmrwSEsAM1zquvhN80FSPDGPe58WXzVDPdRu81LuWsw8TdU7dia0oqBXk2wlta9el00OtAhxZXl"
-  );
 
   const [alert, setAlert] = useState({
     open: false,
@@ -180,31 +34,32 @@ const AddToCart = () => {
     navigate("/shop");
   };
 
-  const openModal = () => {
-    setIsModalOpen(true);
-  };
-
-  const closeModal = () => {
-    setIsModalOpen(false);
-  };
-
-  // Updated handleSaveAddress - only frontend changes, no API call
-  const handleSaveAddress = (newAddress) => {
-    // Update local state only
-    setShippingAddress(newAddress);
-    setIsModalOpen(false);
-    showAlert("Address changed successfully!");
+  const proceedToCheckout = () => {
+    if (cartItems.length === 0) {
+      showAlert("Your cart is empty", "error");
+      return;
+    }
+    // Navigate to checkout page with cart data
+    navigate(`/checkout/${userId}`, {
+      state: {
+        source: "cart", // Add source identifier
+        cartItems,
+        subtotal,
+        discount,
+        appliedPromo,
+        discountAmount,
+      },
+    });
   };
 
   useEffect(() => {
     fetchAddToCart();
-    fetchAddress();
   }, [userId]);
 
   const fetchAddToCart = async () => {
     try {
       const response = await api.get(`/cart/item/${userId}`);
-      
+
       if (response.data && response.data.items) {
         setCartItems(response.data.items);
         setCartData(response.data);
@@ -269,12 +124,10 @@ const AddToCart = () => {
         items.filter((item) => item.cartItemId !== cartItemId)
       );
 
-      // Add this line to refresh header cart count
       if (window.refreshCartCount) {
         window.refreshCartCount();
       }
 
-      // Update cartData totalItems
       if (cartData && removedItem) {
         setCartData((prev) => ({
           ...prev,
@@ -309,15 +162,6 @@ const AddToCart = () => {
     showAlert("Promo code removed", "success");
   };
 
-  const fetchAddress = async () => {
-    try {
-      const response = await api.get(`/cart/getAddress/${userId}`);
-      setShippingAddress(response.data);
-    } catch (error) {
-      console.error("Error fetch address");
-    }
-  };
-
   // Calculate totals
   const subtotal = cartItems.reduce(
     (sum, item) => sum + (item.unitPrice || 0) * (item.quantity || 1),
@@ -333,61 +177,6 @@ const AddToCart = () => {
     (sum, item) => sum + (item.quantity || 1),
     0
   );
-
-  // Fixed Stripe payment function
-  const handleCheckout = async () => {
-    if (cartItems.length === 0) {
-      showAlert("Your cart is empty", "error");
-      return;
-    }
-
-    if (!shippingAddress) {
-      showAlert("Please select a shipping address", "error");
-      return;
-    }
-
-    setIsProcessingPayment(true);
-
-    try {
-      // Create checkout session
-      const response = await axios.post(
-        "http://localhost:8080/api/checkout/session",
-        {
-          amount: Math.round(total * 100), // Convert to cents and round
-        },
-        {
-          headers: {
-            'Content-Type': 'application/json',
-          }
-        }
-      );
-
-      const { sessionId } = response.data;
-
-      if (!sessionId) {
-        throw new Error("No session ID received from server");
-      }
-
-      // Redirect to Stripe Checkout
-      const stripe = await stripePromise;
-      const { error } = await stripe.redirectToCheckout({
-        sessionId: sessionId
-      });
-
-      if (error) {
-        console.error("Stripe redirect error:", error);
-        showAlert("Payment redirect failed. Please try again.", "error");
-      }
-    } catch (error) {
-      console.error("Error during checkout:", error);
-      showAlert(
-        error.response?.data?.message || "Checkout failed. Please try again.",
-        "error"
-      );
-    } finally {
-      setIsProcessingPayment(false);
-    }
-  };
 
   return (
     <>
@@ -632,70 +421,14 @@ const AddToCart = () => {
                   </div>
                 )}
 
-                {/* Shipping Address */}
-                <div className="mb-4 sm:mb-6">
-                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 space-y-2 sm:space-y-0">
-                    <h3
-                      className="text-lg font-semibold"
-                      style={{ color: "#051923" }}
-                    >
-                      Shipping Address
-                    </h3>
-                  </div>
-
-                  <div className="border border-gray-300 rounded-lg p-4 bg-white">
-                    <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between space-y-3 sm:space-y-0">
-                      {shippingAddress ? (
-                        <div className="flex-1">
-                          <p
-                            className="font-semibold"
-                            style={{ color: "#051923" }}
-                          >
-                            {shippingAddress.name}
-                          </p>
-                          <p className="text-sm text-gray-600 mt-1">
-                            {shippingAddress.streetAddress}
-                          </p>
-                          <p className="text-sm text-gray-600">
-                            {shippingAddress.city}
-                          </p>
-                          <p className="text-sm text-gray-600">
-                            {shippingAddress.state}
-                          </p>
-                          <p className="text-sm text-gray-600">
-                            {shippingAddress.zipCode}
-                          </p>
-                        </div>
-                      ) : (
-                        <p className="text-sm text-gray-600">
-                          Loading address...
-                        </p>
-                      )}
-                      <button
-                        onClick={openModal}
-                        className="text-blue-600 hover:text-blue-800 text-sm font-medium self-start sm:self-auto sm:ml-4 cursor-pointer"
-                      >
-                        Change
-                      </button>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Checkout Button */}
+                {/* Proceed to Checkout Button */}
                 <button
-                  className="w-full py-3 sm:py-4 px-6 rounded-lg font-semibold text-lg transition-colors flex items-center justify-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
-                  onClick={handleCheckout}
+                  className="w-full py-3 sm:py-4 px-6 rounded-lg font-semibold text-lg transition-colors flex items-center justify-center space-x-2 cursor-pointer"
+                  onClick={proceedToCheckout}
                   style={{ backgroundColor: "#051923", color: "white" }}
-                  disabled={cartItems.length === 0 || isProcessingPayment}
+                  disabled={cartItems.length === 0}
                 >
-                  {isProcessingPayment ? (
-                    <>
-                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
-                      <span>Processing...</span>
-                    </>
-                  ) : (
-                    <span>🔒 Checkout</span>
-                  )}
+                  <span>Proceed To Checkout</span>
                 </button>
 
                 {/* Continue Shopping */}
@@ -709,15 +442,6 @@ const AddToCart = () => {
             </div>
           </div>
         </div>
-
-        {/* Shipping Address Modal */}
-        <ShippingAddressModal
-          isOpen={isModalOpen}
-          onClose={closeModal}
-          shippingAddress={shippingAddress}
-          onSave={handleSaveAddress}
-          userId={userId}
-        />
 
         <Alert
           open={alert.open}

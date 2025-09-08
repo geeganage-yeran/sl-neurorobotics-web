@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from "react";
-import { Plus, Home, X, Trash2 } from "lucide-react";
+import { Plus, Home, X, Trash2, PenLine } from "lucide-react";
 import api from "../../services/api";
 import Alert from "../../components/Alert";
 import ConfirmDialog from "../../components/confirmDialog";
+import { getData } from "country-list";
 
 // Validation utility functions
 const validateAddress = (formData) => {
@@ -48,6 +49,11 @@ const validateAddress = (formData) => {
       "ZIP code must be 5 digits or 5-4 format (e.g., 12345 or 12345-6789)";
   }
 
+  //Shipping country validation
+  if (!formData.country?.trim()) {
+    errors.country = "Country is required";
+  }
+
   return errors;
 };
 
@@ -59,6 +65,7 @@ const sanitizeFormData = (formData) => {
     city: formData.city?.trim() || "",
     state: formData.state?.trim().toUpperCase() || "",
     zipCode: formData.zipCode?.trim() || "",
+    country: formData.country?.trim() || "",
     defaultAddress: formData.defaultAddress ?? false, // Fixed: use formData instead of undefined 'address'
   };
 };
@@ -92,6 +99,8 @@ export default function Shipping({ user }) {
     addressToDelete: null,
   });
 
+  const countries = getData();
+
   const [alert, setAlert] = useState({
     open: false,
     message: "",
@@ -123,8 +132,8 @@ export default function Shipping({ user }) {
     setLoading(true);
     try {
       if (user) {
-        const response = await api.get(`/user/getAddress/${user.id}`,{
-          withCredentials:true,
+        const response = await api.get(`/user/getAddress/${user.id}`, {
+          withCredentials: true,
         });
         setAddresses(response.data);
       } else {
@@ -196,19 +205,23 @@ export default function Shipping({ user }) {
   };
 
   const updateAddress = async (addressId, addressData) => {
-    const dataToSend={
+    const dataToSend = {
       ...addressData,
       createdBy: user.id,
-    }
+    };
     try {
       if (user) {
-        const response = await api.put(`/user/updateAddress/${addressId}`, dataToSend, {
-          headers: {
-            "Content-Type": "application/json",
-          },
-          withCredentials: true,
-        });
-      
+        const response = await api.put(
+          `/user/updateAddress/${addressId}`,
+          dataToSend,
+          {
+            headers: {
+              "Content-Type": "application/json",
+            },
+            withCredentials: true,
+          }
+        );
+
         if (response.status === 200) {
           showAlert("Address updated successfully");
           await fetchAddresses();
@@ -291,6 +304,7 @@ export default function Shipping({ user }) {
       city: address?.city || "",
       state: address?.state || "",
       zipCode: address?.zipCode || "",
+      country: address?.country || "",
       defaultAddress: address?.defaultAddress ?? false,
     });
     const [errors, setErrors] = useState({});
@@ -305,6 +319,7 @@ export default function Shipping({ user }) {
           city: address?.city || "",
           state: address?.state || "",
           zipCode: address?.zipCode || "",
+          country: address?.country || "",
           defaultAddress: address?.defaultAddress ?? false,
         });
         setErrors({});
@@ -353,6 +368,7 @@ export default function Shipping({ user }) {
           city: "",
           state: "",
           zipCode: "",
+          country: "",
           defaultAddress: false, // Fixed: changed from isDefault to defaultAddress
         });
         setErrors({});
@@ -454,22 +470,46 @@ export default function Shipping({ user }) {
             </div>
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              ZIP Code *
-            </label>
-            <input
-              type="text"
-              value={formData.zipCode}
-              onChange={(e) => handleInputChange("zipCode", e.target.value)}
-              className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-1 focus:ring-[#003554] focus:border-transparent ${
-                errors.zipCode ? "border-red-500" : "border-gray-300"
-              }`}
-              placeholder="12345"
-            />
-            {errors.zipCode && (
-              <p className="mt-1 text-sm text-red-600">{errors.zipCode}</p>
-            )}
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                ZIP Code *
+              </label>
+              <input
+                type="text"
+                value={formData.zipCode}
+                onChange={(e) => handleInputChange("zipCode", e.target.value)}
+                className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-1 focus:ring-[#003554] focus:border-transparent ${
+                  errors.zipCode ? "border-red-500" : "border-gray-300"
+                }`}
+                placeholder="12345"
+              />
+              {errors.zipCode && (
+                <p className="mt-1 text-sm text-red-600">{errors.zipCode}</p>
+              )}
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Country *
+              </label>
+              <select
+                value={formData.country}
+                onChange={(e) => handleInputChange("country", e.target.value)}
+                className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-1 focus:ring-[#003554] focus:border-transparent ${
+                  errors.country ? "border-red-500" : "border-gray-300"
+                }`}
+              >
+                <option value="">Select a country</option>
+                {countries.map((country) => (
+                  <option key={country.code} value={country.name}>
+                    {country.name}
+                  </option>
+                ))}
+              </select>
+              {errors.country && (
+                <p className="mt-1 text-sm text-red-600">{errors.country}</p>
+              )}
+            </div>
           </div>
 
           <div className="flex items-center">
@@ -561,7 +601,7 @@ export default function Shipping({ user }) {
                     {address.defaultAddress ? "Default" : "Not Default"}
                   </span>
                   <p className="text-gray-600">
-                    {`${address.streetAddress}, ${address.city}, ${address.state} ${address.zipCode}`}
+                    {`${address.streetAddress}, ${address.city}, ${address.state} ${address.zipCode} ${address.country}`}
                   </p>
                 </div>
                 <div className="flex gap-2">
@@ -569,7 +609,7 @@ export default function Shipping({ user }) {
                     onClick={() => handleEditClick(address)}
                     className="text-blue-600 hover:text-blue-800 font-medium cursor-pointer"
                   >
-                    Edit
+                    <PenLine size={16} />
                   </button>
                   <button
                     onClick={() => handleDeleteClick(address.id)}

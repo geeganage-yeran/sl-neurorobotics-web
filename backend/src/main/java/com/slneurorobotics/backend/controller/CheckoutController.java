@@ -5,10 +5,10 @@ import com.slneurorobotics.backend.dto.response.CheckoutSessionResponse;
 import com.slneurorobotics.backend.service.CheckoutService;
 import com.stripe.model.checkout.Session;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.HashMap;
+import java.util.Map;
 
 
 @RestController
@@ -33,6 +33,33 @@ public class CheckoutController {
             // Handle any errors during session creation
             System.out.println(e.getMessage());
             return ResponseEntity.status(500).body(new CheckoutSessionResponse("Error creating session"));
+        }
+    }
+
+    @GetMapping("/verify-payment/{sessionId}")
+    public ResponseEntity<Map<String, Object>> verifyPayment(@PathVariable String sessionId) {
+        try {
+            // Retrieve the session from Stripe
+            Session session = Session.retrieve(sessionId);
+
+            Map<String, Object> response = new HashMap<>();
+
+            // Check if payment was successful
+            if ("complete".equals(session.getStatus()) && "paid".equals(session.getPaymentStatus())) {
+                response.put("valid", true);
+                response.put("amount", session.getAmountTotal());
+                response.put("currency", session.getCurrency());
+                return ResponseEntity.ok(response);
+            } else {
+                response.put("valid", false);
+                return ResponseEntity.badRequest().body(response);
+            }
+
+        } catch (Exception e) {
+            Map<String, Object> response = new HashMap<>();
+            response.put("valid", false);
+            response.put("error", "Invalid session");
+            return ResponseEntity.badRequest().body(response);
         }
     }
 }

@@ -13,13 +13,15 @@ import Page404 from "./pages/404Page";
 import Shop from "./pages/Product";
 import Productview from "./pages/ProductView";
 import AddToCart from "./pages/addtocart";
+import ProceedToPay from "./pages/proceedToPay";
+import PaymentSuccess from "./components/PaymentSuccess";
+import PaymentFailed from "./components/paymentFail";
 
 function App() {
   return (
     <BrowserRouter>
       <Routes>
         {/* No authentication needed */}
-
         <Route path="/" element={<HomePage />} />
         <Route path="/about" element={<AboutPage />} />
         <Route path="/addcart" element={<AddCart />} />
@@ -28,9 +30,10 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/shop" element={<Shop />}/>
         <Route path="/productview/:id" element={<Productview/>}/>
+        <Route path="/payment-success" element={<PaymentSuccess />} />
+        <Route path="/payment-failed" element={<PaymentFailed />} />
 
         {/* Authentication needed */}
-
         <Route
           path="/dashboard/*"
           element={
@@ -49,17 +52,28 @@ function App() {
           }
         />
 
-        {/*404 Page catchup */}
-        <Route path="*" element={<Page404 />} />
-
+        {/* Cart Route */}
         <Route
-          path="/cart/:userId/*"
+          path="/cart/:userId"
           element={
             <ProtectedRoute requiredRole="USER">
               <AddToCart />
             </ProtectedRoute>
           }
         />
+
+        {/* NEW: Checkout Route */}
+        <Route
+          path="/checkout/:userId"
+          element={
+            <ProtectedRoute requiredRole="USER">
+              <ProceedToPay />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* 404 Page catchup - This should be at the end */}
+        <Route path="*" element={<Page404 />} />
       </Routes>
     </BrowserRouter>
   );

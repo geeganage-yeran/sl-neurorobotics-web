@@ -34,6 +34,9 @@ public class Shipping_address {
     private String zipcode;
 
     @Column(nullable = false)
+    private String country;
+
+    @Column(nullable = false)
     private boolean isDefault;
 
     @Column(name = "created_by")

@@ -49,35 +49,6 @@ function Product() {
     }
   };
 
-  const addToCart = async (productId, quantity = 1) => {
-    if (!isAuthenticated) {
-      return Navigate("/login");
-    }
-    const userId = user.id;
-    const dataTosend = {
-      userId: userId,
-      productId: productId,
-      quantity: quantity,
-    };
-    try {
-      const response = await api.post(`/cart/add`, dataTosend, {
-        headers: {
-          "Content-Type": "application/json",
-        },
-        withCredentials: true,
-      });
-
-      if (response.status === 200) {
-        if (window.refreshCartCount) {
-          window.refreshCartCount();
-        }
-        showAlert("Item added to cart successfully");
-      }
-    } catch (error) {
-      showAlert("Product already in cart", "error");
-    }
-  };
-
   // Search function
   const handleSearch = (searchTerm) => {
     setSearch(searchTerm);
@@ -548,22 +519,14 @@ function Product() {
                       </a>
 
                       {/* Action Buttons */}
-                      <div className="mt-8 flex flex-col sm:flex-row gap-4">
-                        <a
-                          href="#"
-                          className="flex-1 bg-[#003554] hover:bg-[#002a43] text-white font-semibold py-4 px-6 rounded-xl text-center transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
-                        >
-                          Buy Now
-                        </a>
-                        <button
-                          onClick={() => addToCart(product.id)}
-                          disabled={cartLoading[product.id]}
-                          href="#"
-                          className="cursor-pointer  flex-1 bg-white hover:bg-gray-50 text-[#003554] font-semibold py-4 px-6 rounded-xl text-center border-2 border-[#003554] hover:border-[#002a43] transition-all duration-300 transform hover:-translate-y-0.5"
-                        >
-                          Add to Cart
-                        </button>
-                      </div>
+<div className="mt-8">
+  <a
+    href={`/productview/${product.id}`}
+    className="block w-full bg-[#003554] hover:bg-[#002a43] text-white font-semibold py-4 px-6 rounded-xl text-center transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+  >
+    View Details
+  </a>
+</div>
                     </div>
                   </div>
                 </div>
