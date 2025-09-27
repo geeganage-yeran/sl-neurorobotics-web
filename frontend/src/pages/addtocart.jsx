@@ -52,6 +52,13 @@ const AddToCart = () => {
     });
   };
 
+  // Add makePayment function that was referenced but missing
+  const makePayment = () => {
+    // Add your payment logic here
+    console.log("Processing payment...");
+    showAlert("Payment processing...", "info");
+  };
+
   useEffect(() => {
     fetchAddToCart();
   }, [userId]);
@@ -354,7 +361,6 @@ const AddToCart = () => {
                       onClick={applyPromoCode}
                       className="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition-colors"
                     >
-                      <Tag className="w-4 h-4 inline mr-1" />
                       Apply
                     </button>
                   </div>
@@ -420,16 +426,6 @@ const AddToCart = () => {
                     </div>
                   </div>
                 )}
-
-                {/* Proceed to Checkout Button */}
-                <button
-                  className="w-full py-3 sm:py-4 px-6 rounded-lg font-semibold text-lg transition-colors flex items-center justify-center space-x-2 cursor-pointer"
-                  onClick={proceedToCheckout}
-                  style={{ backgroundColor: "#051923", color: "white" }}
-                  disabled={cartItems.length === 0}
-                >
-                  <span>Proceed To Checkout</span>
-                </button>
 
                 {/* Continue Shopping */}
                 <button
