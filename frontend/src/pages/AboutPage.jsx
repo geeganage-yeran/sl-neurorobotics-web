@@ -1,10 +1,11 @@
-import React, { useState,useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { Mail, Phone, MapPin, Globe } from "lucide-react";
 import Footer from "../components/Footer";
 import image1 from "../assets/image5.png";
 import image2 from "../assets/aboutus.jpg";
 import Alert from "../components/Alert";
 import DynamicHeader from "../components/DynamicHeader";
+import api from "../services/api";
 
 export default function AboutPage() {
   const [alert, setAlert] = useState({
@@ -14,7 +15,9 @@ export default function AboutPage() {
     position: "top-right",
   });
 
-   useEffect(() => {
+  const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
     if (window.location.hash === "#contactUs") {
       setTimeout(() => {
         const contactElement = document.getElementById("contactUs");
@@ -42,7 +45,7 @@ export default function AboutPage() {
     name: "",
     contactNumber: "",
     email: "",
-    country: "",
+    country: "Select Your Country",
     message: "",
   });
 
@@ -93,7 +96,72 @@ export default function AboutPage() {
     }));
   };
 
-  const handleSubmit = (e) => {
+  // Email validation function
+  const validateEmail = (email) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  };
+
+  // Phone number validation function
+  const validatePhoneNumber = (phone) => {
+    const phoneRegex = /^[\+]?[\d\s\-\(\)]{7,15}$/;
+    return phoneRegex.test(phone);
+  };
+
+  const sendMessage = async () => {
+    try {
+      const requestData = {
+        name: formData.name.trim(),
+        email: formData.email.trim(),
+        contactNumber: formData.contactNumber.trim(),
+        country: formData.country,
+        message: formData.message.trim(),
+      };
+
+      console.log("Sending request data:", requestData);
+
+      const response = await api.post("/sendemail", requestData);
+
+      if (response.status === 200) {
+        console.log("Email sent successfully:", response.data);
+        showAlert("Message sent successfully! We'll get back to you soon.", "success", "top-right");
+
+        // Reset form
+        setFormData({
+          name: "",
+          contactNumber: "",
+          email: "",
+          country: "Select Your Country",
+          message: "",
+        });
+      } else {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+    } catch (error) {
+      console.error("Error sending email:", error);
+      
+      // Log more detailed error information
+      if (error.response) {
+        console.error("Error response data:", error.response.data);
+        console.error("Error response status:", error.response.status);
+        console.error("Error response headers:", error.response.headers);
+        
+        // Show specific error message from backend if available
+        const errorMessage = error.response.data || "Failed to send message. Please try again or contact us directly.";
+        showAlert(errorMessage, "error", "top-right");
+      } else if (error.request) {
+        console.error("Error request:", error.request);
+        showAlert("Network error. Please check your connection and try again.", "error", "top-right");
+      } else {
+        console.error("Error message:", error.message);
+        showAlert("Failed to send message. Please try again or contact us directly.", "error", "top-right");
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     // Basic validation
@@ -109,20 +177,31 @@ export default function AboutPage() {
       return;
     }
 
-    console.log("Form submitted:", formData);
-    showAlert("Message sent successfully!", "success", "top-right");
-    setFormData({
-      name: "",
-      contactNumber: "",
-      email: "",
-      country: "",
-      message: "",
-    });
+    // Email validation
+    if (!validateEmail(formData.email)) {
+      showAlert("Please enter a valid email address.", "error", "top-right");
+      return;
+    }
+
+    // Phone number validation
+    if (!validatePhoneNumber(formData.contactNumber)) {
+      showAlert("Please enter a valid contact number.", "error", "top-right");
+      return;
+    }
+
+    // Name validation (no numbers)
+    if (!/^[a-zA-Z\s]+$/.test(formData.name)) {
+      showAlert("Name should only contain letters and spaces.", "error", "top-right");
+      return;
+    }
+
+    setIsLoading(true);
+    await sendMessage();
   };
 
   return (
     <div className="min-h-screen bg-white">
-      <DynamicHeader/>
+      <DynamicHeader />
 
       {/* Top Bar with Company Name and Brain Logo */}
       <div className="py-8 mt-16 text-white bg-slate-800">
@@ -263,7 +342,7 @@ export default function AboutPage() {
                   SEND US A MESSAGE
                 </h3>
 
-                <div className="space-y-4">
+                <form onSubmit={handleSubmit} className="space-y-4">
                   {/* Name and Email Row - Responsive */}
                   <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                     <input
@@ -272,7 +351,9 @@ export default function AboutPage() {
                       value={formData.name}
                       onChange={handleInputChange}
                       placeholder="Enter Your Name"
-                      className="w-full px-3 py-2.5 sm:py-2 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-[#006494] focus:border-transparent outline-none"
+                      disabled={isLoading}
+                      className="w-full px-3 py-2.5 sm:py-2 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-[#006494] focus:border-transparent outline-none disabled:bg-gray-100 disabled:cursor-not-allowed"
+                      required
                     />
                     <input
                       type="email"
@@ -280,19 +361,23 @@ export default function AboutPage() {
                       value={formData.email}
                       onChange={handleInputChange}
                       placeholder="Enter Your Email"
-                      className="w-full px-3 py-2.5 sm:py-2 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-[#006494] focus:border-transparent outline-none"
+                      disabled={isLoading}
+                      className="w-full px-3 py-2.5 sm:py-2 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-[#006494] focus:border-transparent outline-none disabled:bg-gray-100 disabled:cursor-not-allowed"
+                      required
                     />
                   </div>
 
-                  {/* Contact Number and Email Row - Responsive */}
+                  {/* Contact Number Row - Responsive */}
                   <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                     <input
                       type="tel"
                       name="contactNumber"
                       value={formData.contactNumber}
                       onChange={handleInputChange}
-                      placeholder="Contact Number"
-                      className="w-full px-3 py-2.5 sm:py-2 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-[#006494] focus:border-transparent outline-none"
+                      placeholder="Contact Number (e.g., +94 71 123 4567)"
+                      disabled={isLoading}
+                      className="w-full px-3 py-2.5 sm:py-2 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-[#006494] focus:border-transparent outline-none disabled:bg-gray-100 disabled:cursor-not-allowed"
+                      required
                     />
                   </div>
 
@@ -301,7 +386,9 @@ export default function AboutPage() {
                     name="country"
                     value={formData.country}
                     onChange={handleInputChange}
-                    className="w-full px-3 py-2.5 sm:py-2 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-[#006494] focus:border-transparent outline-none bg-white"
+                    disabled={isLoading}
+                    className="w-full px-3 py-2.5 sm:py-2 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-[#006494] focus:border-transparent outline-none bg-white disabled:bg-gray-100 disabled:cursor-not-allowed"
+                    required
                   >
                     {countries.map((country, index) => (
                       <option
@@ -324,25 +411,39 @@ export default function AboutPage() {
                     name="message"
                     value={formData.message}
                     onChange={handleInputChange}
-                    placeholder="Message"
+                    placeholder="Enter your message here..."
                     rows="5"
-                    className="w-full px-3 py-2.5 sm:py-2 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-[#006494] focus:border-transparent outline-none resize-none"
+                    disabled={isLoading}
+                    className="w-full px-3 py-2.5 sm:py-2 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-[#006494] focus:border-transparent outline-none resize-none disabled:bg-gray-100 disabled:cursor-not-allowed"
+                    required
                   ></textarea>
 
                   <button
-                    onClick={handleSubmit}
-                    className="w-full sm:w-auto bg-[#006494] hover:bg-[#003554] cursor-pointer text-white font-medium py-2.5 sm:py-2 px-6 rounded text-sm transition-colors"
+                    type="submit"
+                    disabled={isLoading}
+                    className="w-full sm:w-auto bg-[#006494] hover:bg-[#003554] disabled:bg-gray-400 disabled:cursor-not-allowed text-white font-medium py-2.5 sm:py-2 px-6 rounded text-sm transition-colors flex items-center justify-center cursor-pointer"
                   >
-                    Send Message
+                    {isLoading ? (
+                      <>
+                        <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        Sending...
+                      </>
+                    ) : (
+                      'Send Message'
+                    )}
                   </button>
-                </div>
+                </form>
+
                 <Alert
                   open={alert.open}
                   onClose={closeAlert}
                   message={alert.message}
                   type={alert.type}
                   position={alert.position}
-                  autoHideDuration={3000}
+                  autoHideDuration={5000}
                 />
               </div>
             </div>
