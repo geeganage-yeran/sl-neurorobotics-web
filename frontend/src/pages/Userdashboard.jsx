@@ -20,13 +20,11 @@ function UserDashboard() {
         });
 
         if (response.data.success) {
-          console.log(response.data.userInfo);
           setUser(response.data.userInfo);
         } else {
           navigate("/login", { replace: true });
         }
       } catch (err) {
-        console.error("Auth verification failed:", err);
         navigate("/login", { replace: true });
       } finally {
         setLoading(false);

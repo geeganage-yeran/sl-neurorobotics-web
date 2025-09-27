@@ -431,6 +431,7 @@ const ProceedToPay = () => {
   const [isShippingModalOpen, setIsShippingModalOpen] = useState(false);
   const [isAddAddressModalOpen, setIsAddAddressModalOpen] = useState(false);
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
+  const [userEmail, setUserEmail] = useState("");
 
   // Order data from navigation state
   const [orderData, setOrderData] = useState({
@@ -477,6 +478,24 @@ const ProceedToPay = () => {
     setIsProcessingPayment(false);
   }, []);
 
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        const response = await api.get("/user/me", {
+          withCredentials: true,
+        });
+
+        if (response.data.success) {
+          setUserEmail(response.data.userInfo.email);
+        }
+      } catch (error) {
+        console.error("Error fetching user data:", error);
+        // Handle error - maybe redirect to login
+      }
+    };
+
+    fetchUserData();
+  }, []);
 
   useEffect(() => {
     // First clear any existing state
@@ -592,6 +611,60 @@ const ProceedToPay = () => {
     0
   );
 
+  // const handlePayment = async () => {
+  //   if (cartItems.length === 0) {
+  //     showAlert("Your cart is empty", "error");
+  //     return;
+  //   }
+
+  //   if (!shippingAddress) {
+  //     showAlert("Please select a shipping address", "error");
+  //     return;
+  //   }
+
+  //   setIsProcessingPayment(true);
+
+  //   try {
+  //     // Create checkout session
+  //     const response = await axios.post(
+  //       "http://localhost:8080/api/checkout/session",
+  //       {
+  //         amount: Math.round(total * 100), // Convert to cents and round
+  //       },
+  //       {
+  //         headers: {
+  //           "Content-Type": "application/json",
+  //         },
+  //       }
+  //     );
+
+  //     const { sessionId } = response.data;
+
+  //     if (!sessionId) {
+  //       throw new Error("No session ID received from server");
+  //     }
+
+  //     // Redirect to Stripe Checkout
+  //     const stripe = await stripePromise;
+  //     const { error } = await stripe.redirectToCheckout({
+  //       sessionId: sessionId,
+  //     });
+
+  //     if (error) {
+  //       console.error("Stripe redirect error:", error);
+  //       showAlert("Payment redirect failed. Please try again.", "error");
+  //     }
+  //   } catch (error) {
+  //     console.error("Error during checkout:", error);
+  //     showAlert(
+  //       error.response?.data?.message || "Checkout failed. Please try again.",
+  //       "error"
+  //     );
+  //   } finally {
+  //     setIsProcessingPayment(false);
+  //   }
+  // };
+
   const handlePayment = async () => {
     if (cartItems.length === 0) {
       showAlert("Your cart is empty", "error");
@@ -606,26 +679,50 @@ const ProceedToPay = () => {
     setIsProcessingPayment(true);
 
     try {
-      // Create checkout session
-      const response = await axios.post(
-        "http://localhost:8080/api/checkout/session",
-        {
-          amount: Math.round(total * 100), // Convert to cents and round
-        },
-        {
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
+      const itemsSubtotal = cartItems.reduce(
+        (sum, item) => sum + item.unitPrice * item.quantity,
+        0
       );
+      // Step 1: Create temp order payload matching your DTO structure
+      const orderPayload = {
+        userId: parseInt(userId),
+        totalAmount: itemsSubtotal,
+        source: location.state?.source === "buy_now" ? "BUY_NOW" : "CART", // Must match Order.OrderSource enum
+        customerEmail: userEmail, // TODO: Get from user context/session
+        items: cartItems.map((item) => ({
+          productId: item.productId,
+          quantity: item.quantity,
+          price: item.unitPrice,
+        })),
+        shippingAddressId: shippingAddress.id, // Using address ID instead of full object
+        appliedPromoCode: orderData.appliedPromo || null,
+        discountAmount: discountAmount,
+        orderNotes: null, // Optional
+      };
 
-      const { sessionId } = response.data;
+      console.log("Sending order payload:", orderPayload);
 
-      if (!sessionId) {
-        throw new Error("No session ID received from server");
+      // Step 2: Call your enhanced checkout endpoint
+      const response = await api.post("/checkout/session", orderPayload, {
+        headers: {
+          "Content-Type": "application/json",
+        },
+        withCredentials: true,
+      });
+
+      console.log("Checkout response:", response.data);
+
+      const { success, sessionId, orderId, sessionUrl } = response.data;
+
+      if (!success || !sessionId) {
+        throw new Error("Failed to create checkout session");
       }
 
-      // Redirect to Stripe Checkout
+      // Step 3: Store order ID for tracking (optional)
+      localStorage.setItem("currentOrderId", orderId);
+      localStorage.setItem("checkoutSessionId", sessionId);
+
+      // Step 4: Redirect to Stripe Checkout
       const stripe = await stripePromise;
       const { error } = await stripe.redirectToCheckout({
         sessionId: sessionId,

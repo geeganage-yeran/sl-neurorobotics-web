@@ -58,7 +58,6 @@ public class SecurityConfig {
                                 "/api/chatbot/ask",
                                 "/api/faq/all",
                                 "/api/products/chatbot",
-                                "/api/checkout/session",
                                 "/api/sendemail"
                         ).permitAll()
 
