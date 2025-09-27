@@ -27,6 +27,9 @@ public class Order {
     @Column(name = "total_amount", nullable = false, precision = 10, scale = 2)
     private BigDecimal totalAmount;
 
+    @Column(name= "shipping_id", nullable = false)
+    private Long shippingId;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)
     private OrderStatus status = OrderStatus.TEMP;
@@ -56,6 +59,16 @@ public class Order {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
+    // Add tracking fields
+    @Column(name = "tracking_number")
+    private String trackingNumber;
+
+    @Column(name = "tracking_link")
+    private String trackingLink;
+
+    @Column(name = "cancellation_reason")
+    private String cancellationReason;
+
     // Relationships
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<OrderItem> orderItems;
@@ -64,9 +77,14 @@ public class Order {
     @JoinColumn(name = "user_id", insertable = false, updatable = false)
     private User user;
 
+    // Add shipping address relationship
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "shipping_id", insertable = false, updatable = false)
+    private Shipping_address shippingAddress;
+
     // Enums
     public enum OrderStatus {
-        TEMP, PAID, CANCELLED, SHIPPED, DELIVERED
+        TEMP, PAID, CANCELLED, PROCESSING, SHIPPED, DELIVERED
     }
 
     public enum OrderSource {

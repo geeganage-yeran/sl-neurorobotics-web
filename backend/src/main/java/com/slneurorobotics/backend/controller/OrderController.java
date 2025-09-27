@@ -56,6 +56,32 @@ public class OrderController {
         }
     }
 
+    /**
+     * Get all orders (excluding TEMP status) with full details
+     */
+//    @GetMapping("/all")
+//    public ResponseEntity<?> getAllOrders(@RequestParam(required = false) String status) {
+//        try {
+//            log.info("Fetching all orders - status: {}", status);
+//
+//            List<OrderResponseDTO> orders = orderService.getAllOrdersWithDetails(status);
+//
+//            return ResponseEntity.ok(Map.of(
+//                    "success", true,
+//                    "data", orders,
+//                    "count", orders.size()
+//            ));
+//
+//        } catch (Exception e) {
+//            log.error("Error fetching all orders: {}", e.getMessage());
+//            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+//                    .body(Map.of(
+//                            "success", false,
+//                            "message", "Failed to fetch orders"
+//                    ));
+//        }
+//    }
+
 
     /**
      * Get order by ID

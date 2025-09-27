@@ -1,15 +1,17 @@
 package com.slneurorobotics.backend.service;
 
 import com.slneurorobotics.backend.dto.request.CreateTempOrderDTO;
+import com.slneurorobotics.backend.dto.request.ShippingAddressRequestDTO;
 import com.slneurorobotics.backend.dto.response.OrderResponseDTO;
-import com.slneurorobotics.backend.entity.Order;
-import com.slneurorobotics.backend.entity.OrderItem;
-import com.slneurorobotics.backend.entity.Payment;
+import com.slneurorobotics.backend.dto.response.OrderItemResponseDTO;
+import com.slneurorobotics.backend.dto.response.ShippingAddressResponseDTO;
+import com.slneurorobotics.backend.entity.*;
 import com.slneurorobotics.backend.repository.OrderRepository;
 import com.slneurorobotics.backend.repository.OrderItemRepository;
 import com.slneurorobotics.backend.repository.PaymentRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -49,6 +51,7 @@ public class OrderService {
         // Create order entity
         Order order = new Order();
         order.setUserId(createOrderDTO.getUserId());
+        order.setShippingId(createOrderDTO.getShippingAddressId());
         order.setTotalAmount(createOrderDTO.getTotalAmount());
         order.setStatus(Order.OrderStatus.TEMP);
         order.setSource(createOrderDTO.getSource());
@@ -124,23 +127,6 @@ public class OrderService {
     }
 
     /**
-     * Cancel order
-     */
-    public void cancelOrder(Long orderId, String reason) {
-        log.info("Cancelling order: {} - Reason: {}", orderId, reason);
-
-        Order order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new RuntimeException("Order not found: " + orderId));
-
-        if (order.getStatus() == Order.OrderStatus.PAID) {
-            throw new RuntimeException("Cannot cancel paid order");
-        }
-
-        orderRepository.updateOrderStatus(orderId, Order.OrderStatus.CANCELLED, LocalDateTime.now());
-        log.info("Order cancelled: {}", orderId);
-    }
-
-    /**
      * Get order by ID
      */
     @Transactional(readOnly = true)
@@ -196,6 +182,110 @@ public class OrderService {
     }
 
     /**
+     * List all orders for admin
+     */
+
+    public List<OrderResponseDTO> getAllOrdersWithDetails(String status) {
+        List<Order> orders;
+
+        if (status != null && !status.isEmpty()) {
+            // Get orders with specific status but exclude TEMP
+            orders = orderRepository.findByStatusAndStatusNot(
+                    Order.OrderStatus.valueOf(status.toUpperCase()),
+                    Order.OrderStatus.TEMP,
+                    Sort.by("createdDate").descending()
+            );
+        } else {
+            // Get all orders except TEMP
+            orders = orderRepository.findByStatusNot(
+                    Order.OrderStatus.TEMP,
+                    Sort.by("createdAt").descending()
+            );
+        }
+
+        return orders.stream()
+                .map(this::convertToOrderResponseWithFullDetails)
+                .collect(Collectors.toList());
+    }
+
+    private OrderResponseDTO convertToOrderResponseWithFullDetails(Order order) {
+        // Fetch user details
+        User user = order.getUser();
+
+        // Fetch shipping address details
+        Shipping_address shippingAddress = order.getShippingAddress();
+        ShippingAddressResponseDTO shippingAddressDTO = null;
+        if (shippingAddress != null) {
+            shippingAddressDTO = new ShippingAddressResponseDTO();
+            shippingAddressDTO.setId(shippingAddress.getId());
+            shippingAddressDTO.setName(shippingAddress.getFull_name());
+            shippingAddressDTO.setStreetAddress(shippingAddress.getStreet_address());
+            shippingAddressDTO.setCity(shippingAddress.getCity());
+            shippingAddressDTO.setState(shippingAddress.getState());
+            shippingAddressDTO.setZipCode(shippingAddress.getZipcode());
+            shippingAddressDTO.setCountry(shippingAddress.getCountry());
+        }
+
+
+        // Convert order items (assuming you have OrderItemResponseDTO)
+        List<OrderItemResponseDTO> orderItemDTOs = order.getOrderItems().stream()
+                .map(this::convertToOrderItemResponseDTO) // You'll need this method
+                .collect(Collectors.toList());
+
+        return OrderResponseDTO.builder()
+                .orderId(order.getOrderId())
+                .userId(user.getId())
+                .userEmail(user.getEmail())
+                .userPhone(user.getContact())
+                .totalAmount(order.getTotalAmount())
+                .status(order.getStatus())
+                .source(order.getSource())
+                .createdAt(order.getCreatedAt())
+                .updatedAt(order.getUpdatedAt())
+                .items(orderItemDTOs)
+                //  .payment(order.getPayment() != null ? convertToPaymentResponseDTO(order.getPayment()) : null)
+                .shippingAddressId(shippingAddress != null ? shippingAddress.getId() : null)
+                .shippingAddress(shippingAddressDTO)
+                //.totalItems(order.)
+                .subtotal(order.getTotalAmount())
+                //  .discountAmount(order.getDiscountAmount())
+                //   .shippingCost(order.getShippingCost())
+                // .taxAmount(order.getTaxAmount())
+                //  .appliedPromoCode(order.getAppliedPromoCode())
+                //   .orderNotes(order.getOrderNotes())
+                //  .stripeSessionId(order.getStripeSessionId())
+                .trackingNumber(order.getTrackingNumber())
+                .trackingLink(order.getTrackingLink())
+                .cancellationReason(order.getCancellationReason())
+                .build();
+    }
+
+    public void updateOrderTracking(Long orderId, String trackingNumber, String trackingLink) {
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new RuntimeException("Order not found: " + orderId));
+
+        order.setTrackingNumber(trackingNumber);
+        order.setTrackingLink(trackingLink);
+        order.setStatus(Order.OrderStatus.SHIPPED); // Automatically set to shipped when tracking is added
+
+        orderRepository.save(order);
+    }
+
+    public  void cancelOrder(Long orderId, String reason) {
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new RuntimeException("Order not found: " + orderId));
+        order.setStatus(Order.OrderStatus.CANCELLED);
+        order.setCancellationReason(reason);
+        orderRepository.save(order);
+    }
+
+    public void completeOrder(Long orderId) {
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new RuntimeException("Order not found: " + orderId));
+        order.setStatus(Order.OrderStatus.DELIVERED);
+    }
+
+    /**
      * Update order with Stripe session ID
      */
     public void updateOrderWithStripeSession(Long orderId, String stripeSessionId) {
@@ -248,6 +338,17 @@ public class OrderService {
             // This is a placeholder - implement based on your PaymentResponseDTO structure
         }
 
+        return dto;
+    }
+
+    private OrderItemResponseDTO convertToOrderItemResponseDTO(OrderItem orderItem) {
+        OrderItemResponseDTO dto = new OrderItemResponseDTO();
+        dto.setOrderItemId(orderItem.getOrderId());
+        dto.setProductId(orderItem.getProductId());
+        dto.setProductName(orderItem.getProduct() != null ? orderItem.getProduct().getName() : null);
+        dto.setQuantity(orderItem.getQuantity());
+        dto.setPrice(orderItem.getPrice());
+        dto.setTotalPrice(orderItem.getTotalPrice());
         return dto;
     }
 }

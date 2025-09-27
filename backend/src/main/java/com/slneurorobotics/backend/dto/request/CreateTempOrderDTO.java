@@ -34,24 +34,15 @@ public class CreateTempOrderDTO {
     @Size(max = 50, message = "Maximum 50 items allowed per order")
     private List<CreateOrderItemDTO> items;
 
-    // Optional: Cart ID if coming from cart (for cleanup after payment)
     private Long cartId;
 
-    // Shipping address ID (reference to user's address)
     @NotNull(message = "Shipping address is required")
     @Positive(message = "Shipping address ID must be positive")
     private Long shippingAddressId;
 
-    // Optional: Applied discount info
-    private String appliedPromoCode;
-
-    @DecimalMin(value = "0.00", message = "Discount amount cannot be negative")
-    @Digits(integer = 10, fraction = 2, message = "Invalid discount format")
-    private BigDecimal discountAmount = BigDecimal.ZERO;
-
-    // Optional: Additional order notes
-    @Size(max = 500, message = "Order notes cannot exceed 500 characters")
-    private String orderNotes;
+//    @DecimalMin(value = "0.00", message = "Discount amount cannot be negative")
+//    @Digits(integer = 10, fraction = 2, message = "Invalid discount format")
+//    private BigDecimal discountAmount = BigDecimal.ZERO;
 
     // Nested DTO for order items
     @Data

@@ -12,7 +12,7 @@ import java.util.List;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-class OrderItemResponseDTO {
+public class OrderItemResponseDTO {
 
     private Long orderItemId;
 
@@ -26,12 +26,10 @@ class OrderItemResponseDTO {
 
     private BigDecimal price;
 
-    private BigDecimal totalPrice; // price * quantity
+    private BigDecimal totalPrice;
 
     private LocalDateTime createdAt;
 
-    // Product details that might be useful
     private String productDescription;
 
-    private String productSku;
 }

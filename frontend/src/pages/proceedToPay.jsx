@@ -683,21 +683,20 @@ const ProceedToPay = () => {
         (sum, item) => sum + item.unitPrice * item.quantity,
         0
       );
-      // Step 1: Create temp order payload matching your DTO structure
+
       const orderPayload = {
         userId: parseInt(userId),
         totalAmount: itemsSubtotal,
-        source: location.state?.source === "buy_now" ? "BUY_NOW" : "CART", // Must match Order.OrderSource enum
-        customerEmail: userEmail, // TODO: Get from user context/session
+        source: location.state?.source === "buy_now" ? "BUY_NOW" : "CART",
+        customerEmail: userEmail,
         items: cartItems.map((item) => ({
           productId: item.productId,
           quantity: item.quantity,
           price: item.unitPrice,
         })),
-        shippingAddressId: shippingAddress.id, // Using address ID instead of full object
+        shippingAddressId: shippingAddress.id,
         appliedPromoCode: orderData.appliedPromo || null,
-        discountAmount: discountAmount,
-        orderNotes: null, // Optional
+        discountAmount: discountAmount
       };
 
       console.log("Sending order payload:", orderPayload);

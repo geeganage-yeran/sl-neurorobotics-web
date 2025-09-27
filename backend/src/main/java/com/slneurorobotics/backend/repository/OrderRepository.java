@@ -1,6 +1,7 @@
 package com.slneurorobotics.backend.repository;
 
 import com.slneurorobotics.backend.entity.Order;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -64,4 +65,8 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
     // Check if user has active temp order
     @Query("SELECT o FROM Order o WHERE o.userId = :userId AND o.status = 'TEMP' AND o.expiresAt > :currentTime")
     List<Order> findActiveTempOrders(@Param("userId") Long userId, @Param("currentTime") LocalDateTime currentTime);
+
+    // In your OrderRepository interface
+    List<Order> findByStatusNot(Order.OrderStatus status, Sort sort);
+    List<Order> findByStatusAndStatusNot(Order.OrderStatus status, Order.OrderStatus excludeStatus, Sort sort);
 }
