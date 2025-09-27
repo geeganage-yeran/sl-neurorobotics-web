@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Package,
   Clock,
@@ -7,77 +7,78 @@ import {
   Eye,
   CreditCard,
   CircleX,
+  ExternalLink,
 } from "lucide-react";
 import CancelModal from "../../components/confirmDialog";
+import api from "../../services/api";
 
-function MyOrder() {
-  const [activeTab, setActiveTab] = useState("all");
-
+function MyOrder({ user }) {
+  const [activeTab, setActiveTab] = useState("shipped");
   const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
+  const [orders, setOrders] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [selectedOrder, setSelectedOrder] = useState(null);
 
-  const handleCancelOrder = () => {
-    console.log("Account deleted!");
+  // Fetch orders on component mount
+  useEffect(() => {
+    if (user?.id) {
+      fetchUserOrders();
+    }
+  }, [user]);
+
+  const fetchUserOrders = async () => {
+    try {
+      setLoading(true);
+      const response = await api.get(`/orders/user/${user.id}`, {
+        withCredentials: true,
+      });
+
+      if (response.data.success) {
+        setOrders(response.data.data);
+        console.log("Fetched orders:", response.data.data);
+      }
+    } catch (error) {
+      console.error("Error fetching orders:", error);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const orders = [
-    {
-      id: "ORD-001",
-      date: "2025-05-15",
-      product: "Apex X EEG Headset",
-      category: "EEG Headset with Wireless EEG",
-      price: "$2,499.00",
-      status: "delivered",
-      statusText: "Delivered",
-      estimatedDelivery: "2025-05-20",
-      trackingNumber: "NT12345678",
-      image: "/api/placeholder/80/80",
-    },
-    {
-      id: "ORD-002",
-      date: "2025-05-18",
-      product: "Chair X Ergonomic",
-      category: "Ergonomic Brain Chair",
-      price: "$899.00",
-      status: "shipped",
-      statusText: "Shipped",
+  const handleCancelOrder = async () => {
+    if (selectedOrder) {
+      try {
+        const response = await api.put(
+          `/admin/orders/${selectedOrder.orderId}/cancel`,
+          { reason: "Cancelled by user" },
+          { withCredentials: true }
+        );
 
-      trackingNumber: "NT87654321",
-      image: "/api/placeholder/80/80",
-    },
-    {
-      id: "ORD-003",
-      date: "2025-06-01",
-      product: "Emotiv Flex 2",
-      category: "Wireless Brain Monitoring",
-      price: "$1,299.00",
-      status: "processing",
-      statusText: "Processing",
-      trackingNumber: "NT11223344",
-      image: "/api/placeholder/80/80",
-    },
-    {
-      id: "ORD-004",
-      date: "2025-06-05",
-      product: "NeuroLink Pro",
-      category: "Advanced Brain Interface",
-      price: "$3,299.00",
-      status: "pending",
-      statusText: "Pending",
-      trackingNumber: "NT99887766",
-      image: "/api/placeholder/80/80",
-    },
-  ];
+        if (response.data.success) {
+          // Refresh orders after cancellation
+          await fetchUserOrders();
+          setCancelDialogOpen(false);
+          setSelectedOrder(null);
+        }
+      } catch (error) {
+        console.error("Error cancelling order:", error);
+      }
+    }
+  };
 
   const getStatusColor = (status) => {
     switch (status) {
-      case "delivered":
+      case "DELIVERED":
         return "bg-green-100 text-green-800";
-      case "shipped":
+      case "SHIPPED":
         return "bg-blue-100 text-blue-800";
-      case "processing":
+      case "PROCESSING":
         return "bg-yellow-100 text-yellow-800";
-      case "pending":
+      case "PAID":
+        return "bg-purple-100 text-purple-800";
+      case "TEMP":
         return "bg-gray-100 text-gray-800";
+      case "CANCELLED":
+        return "bg-red-100 text-red-800";
       default:
         return "bg-gray-100 text-gray-800";
     }
@@ -85,23 +86,71 @@ function MyOrder() {
 
   const getStatusIcon = (status) => {
     switch (status) {
-      case "delivered":
+      case "DELIVERED":
         return <CheckCircle className="w-4 h-4" />;
-      case "shipped":
+      case "SHIPPED":
         return <Truck className="w-4 h-4" />;
-      case "processing":
+      case "PROCESSING":
         return <Package className="w-4 h-4" />;
-      case "pending":
+      case "PAID":
         return <Clock className="w-4 h-4" />;
+      case "TEMP":
+        return <Clock className="w-4 h-4" />;
+      case "CANCELLED":
+        return <CircleX className="w-4 h-4" />;
       default:
         return <Clock className="w-4 h-4" />;
     }
   };
 
+  const getStatusText = (status) => {
+    switch (status) {
+      case "DELIVERED":
+        return "Delivered";
+      case "SHIPPED":
+        return "Shipped";
+      case "PROCESSING":
+        return "Processing";
+      case "PAID":
+        return "Paid";
+      case "TEMP":
+        return "Pending Payment";
+      case "CANCELLED":
+        return "Cancelled";
+      default:
+        return status;
+    }
+  };
+
   const filteredOrders =
-    activeTab === "all"
-      ? orders
-      : orders.filter((order) => order.status === activeTab);
+    activeTab === "cancelled"
+      ? orders.filter((order) => order.status === "CANCELLED")
+      : activeTab === "shipped"
+      ? orders.filter((order) => order.status === "SHIPPED")
+      : orders.filter((order) => order.status === "DELIVERED");
+
+  const getOrderCounts = () => {
+    return {
+      cancelled: orders.filter((o) => o.status === "CANCELLED").length,
+      shipped: orders.filter((o) => o.status === "SHIPPED").length,
+      delivered: orders.filter((o) => o.status === "DELIVERED").length,
+    };
+  };
+
+  const counts = getOrderCounts();
+
+  if (loading) {
+    return (
+      <div className="min-h-screen lg:ml-18 bg-[#F5F5F5]">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-center items-center h-64">
+            <div className="text-gray-500">Loading orders...</div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen lg:ml-18 bg-[#F5F5F5]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 ">
@@ -115,60 +164,36 @@ function MyOrder() {
             <div className="bg-white rounded-lg shadow-sm border border-gray-200">
               {/* Filter Tabs */}
               <div className="px-6 py-4 border-b border-gray-200">
-                <div className="flex space-x-8">
-                  <button
-                    onClick={() => setActiveTab("all")}
-                    className={`pb-2 text-sm font-medium border-b-2 transition-colors ${
-                      activeTab === "all"
-                        ? "border-[#003554] text-[#003554]"
-                        : "border-transparent text-gray-500 hover:text-gray-700 cursor-pointer"
-                    }`}
-                  >
-                    All Orders ({orders.length})
-                  </button>
-                  <button
-                    onClick={() => setActiveTab("pending")}
-                    className={`pb-2 text-sm font-medium border-b-2 transition-colors ${
-                      activeTab === "pending"
-                        ? "border-[#003554] text-[#003554]"
-                        : "border-transparent text-gray-500 hover:text-gray-700 cursor-pointer"
-                    }`}
-                  >
-                    Pending (
-                    {orders.filter((o) => o.status === "pending").length})
-                  </button>
-                  <button
-                    onClick={() => setActiveTab("processing")}
-                    className={`pb-2 text-sm font-medium border-b-2 transition-colors ${
-                      activeTab === "processing"
-                        ? "border-[#003554] text-[#003554]"
-                        : "border-transparent text-gray-500 hover:text-gray-700 cursor-pointer"
-                    }`}
-                  >
-                    Processing (
-                    {orders.filter((o) => o.status === "processing").length})
-                  </button>
+                <div className="flex space-x-8 overflow-x-auto">
                   <button
                     onClick={() => setActiveTab("shipped")}
-                    className={`pb-2 text-sm font-medium border-b-2 transition-colors ${
+                    className={`pb-2 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
                       activeTab === "shipped"
                         ? "border-[#003554] text-[#003554]"
                         : "border-transparent text-gray-500 hover:text-gray-700 cursor-pointer"
                     }`}
                   >
-                    Shipped (
-                    {orders.filter((o) => o.status === "shipped").length})
+                    Shipped ({counts.shipped})
                   </button>
                   <button
                     onClick={() => setActiveTab("delivered")}
-                    className={`pb-2 text-sm font-medium border-b-2 transition-colors ${
+                    className={`pb-2 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
                       activeTab === "delivered"
                         ? "border-[#003554] text-[#003554]"
                         : "border-transparent text-gray-500 hover:text-gray-700 cursor-pointer"
                     }`}
                   >
-                    Delivered (
-                    {orders.filter((o) => o.status === "delivered").length})
+                    Delivered ({counts.delivered})
+                  </button>
+                  <button
+                    onClick={() => setActiveTab("cancelled")}
+                    className={`pb-2 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
+                      activeTab === "cancelled"
+                        ? "border-[#003554] text-[#003554]"
+                        : "border-transparent text-gray-500 hover:text-gray-700 cursor-pointer"
+                    }`}
+                  >
+                    Cancelled ({counts.cancelled})
                   </button>
                 </div>
               </div>
@@ -177,7 +202,7 @@ function MyOrder() {
               <div className="divide-y divide-gray-200">
                 {filteredOrders.map((order) => (
                   <div
-                    key={order.id}
+                    key={order.orderId}
                     className="p-6 hover:bg-gray-50 transition-colors"
                   >
                     <div className="flex items-start justify-between">
@@ -191,7 +216,7 @@ function MyOrder() {
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center space-x-3 mb-2">
                             <h3 className="text-lg font-semibold text-gray-900">
-                              {order.product}
+                              Order #{order.orderId}
                             </h3>
                             <span
                               className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(
@@ -199,24 +224,63 @@ function MyOrder() {
                               )}`}
                             >
                               {getStatusIcon(order.status)}
-                              <span className="ml-1">{order.statusText}</span>
+                              <span className="ml-1">{getStatusText(order.status)}</span>
                             </span>
                           </div>
-                          <p className="text-gray-600 mb-2">{order.category}</p>
+                          
+                          {/* Order Items */}
+                          {order.items && order.items.length > 0 && (
+                            <div className="mb-3">
+                              {order.items.map((item, index) => (
+                                <div key={index} className="text-gray-600 text-sm mb-1">
+                                  <span className="font-medium">{item.productName}</span> - 
+                                  Qty: {item.quantity} × ${item.price}
+                                </div>
+                              ))}
+                            </div>
+                          )}
+
                           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm text-gray-500">
                             <div>
                               <span className="font-medium">Order ID:</span>{" "}
-                              {order.id}
+                              {order.orderId}
                             </div>
                             <div>
                               <span className="font-medium">Order Date:</span>{" "}
-                              {new Date(order.date).toLocaleDateString()}
+                              {new Date(order.createdAt).toLocaleDateString()}
+                            </div>
+                            <div>
+                              <span className="font-medium">Total Items:</span>{" "}
+                              {order.totalItems || 0}
                             </div>
                           </div>
+
+                          {/* Tracking Information */}
                           {order.trackingNumber && (
-                            <div className="mt-2 text-sm text-gray-500">
-                              <span className="font-medium">Tracking:</span>{" "}
-                              {order.trackingNumber}
+                            <div className="mt-2 flex items-center space-x-4 text-sm">
+                              <div className="text-gray-500">
+                                <span className="font-medium">Tracking:</span>{" "}
+                                {order.trackingNumber}
+                              </div>
+                              {order.trackingLink && (
+                                <a
+                                  href={order.trackingLink}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="inline-flex items-center text-blue-600 hover:text-blue-800"
+                                >
+                                  Track Package
+                                  <ExternalLink className="w-3 h-3 ml-1" />
+                                </a>
+                              )}
+                            </div>
+                          )}
+
+                          {/* Cancellation Reason */}
+                          {order.status === "CANCELLED" && order.cancellationReason && (
+                            <div className="mt-2 text-sm text-red-600">
+                              <span className="font-medium">Cancelled:</span>{" "}
+                              {order.cancellationReason}
                             </div>
                           )}
                         </div>
@@ -225,30 +289,39 @@ function MyOrder() {
                       {/* Price and Actions */}
                       <div className="text-right flex-shrink-0">
                         <div className="text-xl font-bold text-gray-900 mb-3">
-                          {order.price}
+                          ${order.totalAmount}
                         </div>
                         <div className="flex flex-col space-y-2">
-                          <button className="inline-flex cursor-pointer items-center px-3 py-1.5 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors">
-                            <Eye className="w-4 h-4 mr-1" />
-                            View Details
-                          </button>
-                          {order.status === "pending" && (
+                          {order.status === "TEMP" && (
                             <button className="inline-flex cursor-pointer items-center px-3 py-1.5 border border-green-600 rounded-lg text-sm font-medium text-green-600 bg-white hover:bg-green-50 transition-colors">
                               <CreditCard className="w-4 h-4 mr-1" />
                               Pay Now
                             </button>
                           )}
-                          {order.status === "processing" && (
-                            <button onClick={() => setCancelDialogOpen(true)} className="inline-flex cursor-pointer items-center px-3 py-1.5 border border-red-600 rounded-lg text-sm font-medium text-red-600 bg-white hover:bg-red-50 transition-colors">
+                          
+                          {(order.status === "PAID" || order.status === "PROCESSING") && (
+                            <button 
+                              onClick={() => {
+                                setSelectedOrder(order);
+                                setCancelDialogOpen(true);
+                              }} 
+                              className="inline-flex cursor-pointer items-center px-3 py-1.5 border border-red-600 rounded-lg text-sm font-medium text-red-600 bg-white hover:bg-red-50 transition-colors"
+                            >
                               <CircleX className="w-4 h-4 mr-1" />
                               Cancel
                             </button>
                           )}
-                          {order.status === "shipped" && (
-                            <button className="inline-flex cursor-pointer items-center px-3 py-1.5 border border-blue-300 rounded-lg text-sm font-medium text-blue-700 bg-blue-50 hover:bg-blue-100 transition-colors">
+                          
+                          {order.status === "SHIPPED" && order.trackingLink && (
+                            <a
+                              href={order.trackingLink}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex cursor-pointer items-center px-3 py-1.5 border border-blue-300 rounded-lg text-sm font-medium text-blue-700 bg-blue-50 hover:bg-blue-100 transition-colors"
+                            >
                               <Truck className="w-4 h-4 mr-1" />
-                              Track Order
-                            </button>
+                              Track Package
+                            </a>
                           )}
                         </div>
                       </div>
@@ -269,13 +342,17 @@ function MyOrder() {
                 </div>
               )}
             </div>
-            {/* Delete Account Dialog */}
+            
+            {/* Cancel Order Dialog */}
             <CancelModal
               isOpen={cancelDialogOpen}
-              onClose={() => setCancelDialogOpen(false)}
+              onClose={() => {
+                setCancelDialogOpen(false);
+                setSelectedOrder(null);
+              }}
               onConfirm={handleCancelOrder}
               title="Cancel Order"
-              message="Are you sure you want to cancel this order?This action cannot be undone."
+              message={`Are you sure you want to cancel order #${selectedOrder?.orderId}? This action cannot be undone.`}
               confirmText="Confirm"
               cancelText="Cancel"
             />

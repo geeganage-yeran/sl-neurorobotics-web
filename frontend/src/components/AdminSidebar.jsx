@@ -11,7 +11,8 @@ import {
   UserCog,
   Package,
   LogOut,
-  ShoppingBag
+  ShoppingBag,
+  Home
 } from "lucide-react";
 import Logo from "../assets/image5.png";
 
@@ -73,6 +74,12 @@ const AdminSidebar = ({ activePage, setActivePage }) => {
       icon: HelpCircle,
       path: "/admin/FAQ",
       description: "Update FAQ's section",
+    },
+    {
+      name: "Manage HomePage",
+      icon: Home,
+      path: "/admin/managehomepage",
+      description: "Update HomePage sections",
     },
     {
       name: "Settings",

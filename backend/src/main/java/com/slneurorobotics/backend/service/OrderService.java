@@ -318,6 +318,8 @@ public class OrderService {
         OrderResponseDTO dto = new OrderResponseDTO();
         dto.setOrderId(order.getOrderId());
         dto.setUserId(order.getUserId());
+        dto.setTrackingNumber(order.getTrackingNumber());
+        dto.setTrackingLink(order.getTrackingLink());
         dto.setTotalAmount(order.getTotalAmount());
         dto.setStatus(order.getStatus());
         dto.setSource(order.getSource());
@@ -328,6 +330,10 @@ public class OrderService {
         // Convert order items
         // Note: You'll need to implement OrderItemResponseDTO conversion
         // This is a placeholder - implement based on your OrderItemResponseDTO structure
+        List<OrderItemResponseDTO> orderItemDTOs = orderItems.stream()
+                .map(this::convertToOrderItemResponseDTO)
+                .collect(Collectors.toList());
+        dto.setItems(orderItemDTOs);
 
         dto.setTotalItems(orderItems.size());
         dto.setSubtotal(order.getTotalAmount()); // Simplified - implement proper calculation
