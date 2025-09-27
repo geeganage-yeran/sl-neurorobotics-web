@@ -23,4 +23,7 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     @Query("SELECT p FROM Product p WHERE p.enabled = true")
     List<Product> findAllEnabledProductsForChatbot();
 
+    @Query("SELECT p FROM Product p WHERE p.enabled = true ORDER BY p.createdAt DESC LIMIT 4")
+    List<Product> findTop4EnabledProductsByCreatedAt();
+
 }

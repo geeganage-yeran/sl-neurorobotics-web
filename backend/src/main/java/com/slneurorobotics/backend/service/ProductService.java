@@ -18,6 +18,8 @@ import org.modelmapper.ModelMapper;
 import org.modelmapper.TypeToken;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -323,30 +325,30 @@ public class ProductService {
             product.getImages().add(productImage);
         }
     }
-/// /
+    /// /
     private ProductResponseDTO convertToResponseDTO(Product product) {
-    ProductResponseDTO dto = new ProductResponseDTO();
-    dto.setId(product.getId());
-    dto.setName(product.getName());
-    dto.setSummary(product.getSummary());
-    dto.setDescription(product.getDescription());
-    dto.setOverview(product.getOverview());
-    dto.setTutorialLink(product.getTutorialLink());
-    dto.setPrice(product.getPrice());
-    dto.setEnabled(product.getEnabled());
+        ProductResponseDTO dto = new ProductResponseDTO();
+        dto.setId(product.getId());
+        dto.setName(product.getName());
+        dto.setSummary(product.getSummary());
+        dto.setDescription(product.getDescription());
+        dto.setOverview(product.getOverview());
+        dto.setTutorialLink(product.getTutorialLink());
+        dto.setPrice(product.getPrice());
+        dto.setEnabled(product.getEnabled());
 
-    // Use the same specifications parsing logic as admin version
-    Map<String, String> specifications = parseSpecifications(product.getSpecifications());
-    dto.setSpecifications(specifications);
+        // Use the same specifications parsing logic as admin version
+        Map<String, String> specifications = parseSpecifications(product.getSpecifications());
+        dto.setSpecifications(specifications);
 
-    List<ProductImageResponseDTO> imageDTOs = product.getImages().stream()
-            .map(this::convertToImageResponseDTO)
-            .sorted(Comparator.comparing(ProductImageResponseDTO::getDisplayOrder))
-            .collect(Collectors.toList());
+        List<ProductImageResponseDTO> imageDTOs = product.getImages().stream()
+                .map(this::convertToImageResponseDTO)
+                .sorted(Comparator.comparing(ProductImageResponseDTO::getDisplayOrder))
+                .collect(Collectors.toList());
 
-    dto.setImages(imageDTOs);
-    return dto;
-}
+        dto.setImages(imageDTOs);
+        return dto;
+    }
 
     private Map<String, String> parseSpecifications(String specificationsJson) {
         if (specificationsJson == null || specificationsJson.trim().isEmpty()) {
@@ -587,5 +589,23 @@ public class ProductService {
             e.printStackTrace();
         }
     }
+
+    public List<ProductResponseDTO> getLatest4Products() {
+        List<Product> latestProducts = productRepository
+                .findTop4EnabledProductsByCreatedAt();
+
+        return latestProducts.stream()
+                .map(this::convertToSummaryDTO)
+                .collect(Collectors.toList());
+    }
+
+    private ProductResponseDTO convertToSummaryDTO(Product product) {
+        ProductResponseDTO productResponseDTO = new ProductResponseDTO();
+        productResponseDTO.setId(product.getId());
+        productResponseDTO.setName(product.getName());
+        return productResponseDTO;
+    }
+
+
 
 }
