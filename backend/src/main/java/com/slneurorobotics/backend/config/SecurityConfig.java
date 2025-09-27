@@ -57,13 +57,9 @@ public class SecurityConfig {
                                 "/api/auth/logout",
                                 "/api/chatbot/ask",
                                 "/api/faq/all",
-<<<<<<< Updated upstream
-                                "/api/products/chatbot"
-=======
                                 "/api/products/chatbot",
                                 "/api/checkout/session",
                                 "/api/sendemail"
->>>>>>> Stashed changes
                         ).permitAll()
 
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")

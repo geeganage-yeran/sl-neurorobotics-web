@@ -11,6 +11,7 @@ import {
   UserCog,
   Package,
   LogOut,
+  ShoppingBag
 } from "lucide-react";
 import Logo from "../assets/image5.png";
 
@@ -36,6 +37,12 @@ const AdminSidebar = ({ activePage, setActivePage }) => {
       icon: LayoutDashboard,
       path: "/admin/dashboard",
       description: "System summary view",
+    },
+    {
+      name: "Orders",
+      icon: ShoppingBag,
+      path: "/admin/ordermanagement",
+      description: "Manage customer orders",
     },
     {
       name: "Add Product",

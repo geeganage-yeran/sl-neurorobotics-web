@@ -23,5 +23,6 @@ public class ProductRequestDTO {
     @JsonProperty("enabled")
     private Boolean enabled = true;
 
-    private List<Map<String, String>> specifications;
+    //private List<Map<String, String>> specifications;
+    private Map<String, String> specifications;
 }

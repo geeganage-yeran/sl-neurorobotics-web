@@ -1,19 +1,109 @@
 import React, { useEffect, useState } from "react";
 import { Info, ChevronLeft, ChevronRight } from "lucide-react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 import Footer from "../components/Footer";
 import ar from "../assets/ar.gif";
 import DynamicHeader from "../components/DynamicHeader";
+import useAuth from "../hooks/useAuth";
+import api from "../services/api";
+import Alert from "../components/Alert";
 
 export default function ProductViewPage() {
   const [selectedImage, setSelectedImage] = useState(0);
   const [quantity, setQuantity] = useState(1);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [cartLoading, setCartLoading] = useState(false);
   const { id } = useParams();
   const [product, setProduct] = useState(null);
   const [specifications, setSpecifications] = useState([]);
+  const { isAuthenticated, user } = useAuth();
+  const navigate = useNavigate();
+
+  // Alert state
+  const [alert, setAlert] = useState({
+    open: false,
+    message: "",
+    type: "success",
+    position: "top-right",
+  });
+
+  const showAlert = (message, type = "success", position = "top-right") => {
+    setAlert({ open: true, message, type, position });
+  };
+
+  const closeAlert = () => {
+    setAlert((prev) => ({ ...prev, open: false }));
+  };
+
+  // Add to Cart function
+  const addToCart = async (productId, quantity = 1) => {
+    if (!isAuthenticated) {
+      return navigate("/login");
+    }
+    
+    setCartLoading(true);
+    const userId = user.id;
+    const dataToSend = {
+      userId: userId,
+      productId: productId,
+      quantity: quantity,
+    };
+
+    try {
+      const response = await api.post(`/cart/add`, dataToSend, {
+        headers: {
+          "Content-Type": "application/json",
+        },
+        withCredentials: true,
+      });
+
+      if (response.status === 200) {
+        if (window.refreshCartCount) {
+          window.refreshCartCount();
+        }
+        showAlert("Item added to cart successfully");
+      }
+    } catch (error) {
+      showAlert("Product already in cart", "error");
+    } finally {
+      setCartLoading(false);
+    }
+  };
+
+  // Buy Now function
+  const buyNow = (product, quantity = 1) => {
+    if (!isAuthenticated) {
+      return navigate("/login");
+    }
+
+    // Create a cart item structure for single product
+    const buyNowItem = {
+      cartItemId: `buynow-${product.id}`,
+      productId: product.id,
+      productName: product.name,
+      productImage: product.images?.length > 0 
+        ? `http://localhost:8080/uploads/productImages/${product.id}/${product.images[0].imageName}`
+        : null,
+      unitPrice: product.price,
+      quantity: quantity,
+    };
+
+    const subtotal = product.price * quantity;
+
+    // Navigate directly to checkout with single item
+    navigate(`/checkout/${user.id}`, {
+      state: {
+        source: "buynow",
+        cartItems: [buyNowItem],
+        subtotal: subtotal,
+        discount: 0,
+        appliedPromo: "",
+        discountAmount: 0,
+      },
+    });
+  };
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -24,16 +114,17 @@ export default function ProductViewPage() {
         );
         setProduct(response.data);
 
-        // Parse specifications from the response
+        // Handle specifications - now comes as Map/object from backend
         if (response.data.specifications) {
-          try {
-            const parsedSpecs = JSON.parse(response.data.specifications);
-            if (Array.isArray(parsedSpecs)) {
-              setSpecifications(parsedSpecs);
-            }
-          } catch (e) {
-            console.error("Error parsing specifications:", e);
-          }
+          const specsArray = Object.entries(response.data.specifications).map(
+            ([name, description]) => ({
+              name: name,
+              description: description,
+            })
+          );
+          setSpecifications(specsArray);
+        } else {
+          setSpecifications([]);
         }
 
         console.log(response.data);
@@ -50,6 +141,17 @@ export default function ProductViewPage() {
       fetchProduct();
     }
   }, [id]);
+
+  // Auto-slide images every 4 seconds
+  useEffect(() => {
+    if (!product || !product.images || product.images.length <= 1) return;
+
+    const interval = setInterval(() => {
+      setSelectedImage((prev) => (prev + 1) % product.images.length);
+    }, 4000); // Change image every 4 seconds
+
+    return () => clearInterval(interval);
+  }, [product]);
 
   // Loading state
   if (loading) {
@@ -89,7 +191,7 @@ export default function ProductViewPage() {
         )
       : [
           `http://localhost:8080/uploads/productImages/default/default-product.jpg`,
-        ]; // fallback image
+        ];
 
   // Navigation functions for images
   const nextImage = () => {
@@ -139,6 +241,23 @@ export default function ProductViewPage() {
                     <ChevronRight className="w-6 h-6 text-gray-700 cursor-pointer" />
                   </button>
                 </>
+              )}
+
+              {/* Image indicators */}
+              {productImages.length > 1 && (
+                <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2">
+                  {productImages.map((_, index) => (
+                    <button
+                      key={index}
+                      onClick={() => setSelectedImage(index)}
+                      className={`w-2 h-2 rounded-full transition-all ${
+                        selectedImage === index
+                          ? "bg-white"
+                          : "bg-white bg-opacity-50"
+                      }`}
+                    />
+                  ))}
+                </div>
               )}
             </div>
 
@@ -229,15 +348,30 @@ export default function ProductViewPage() {
                 </div>
               </div>
 
-              {/* Buy Now Button */}
-              <button className="w-full bg-[#006494] hover:bg-[#003554] text-white py-4 px-6 rounded-xl font-semibold text-lg transition-colors">
-                BUY NOW
-              </button>
+              {/* Action Buttons */}
+              <div className="space-y-3">
+                {/* Buy Now Button */}
+                <button
+                  onClick={() => buyNow(product, quantity)}
+                  className="w-full bg-[#006494] hover:bg-[#003554] text-white py-4 px-6 rounded-xl font-semibold text-lg transition-colors"
+                >
+                  BUY NOW
+                </button>
+
+                {/* Add to Cart Button */}
+                <button
+                  onClick={() => addToCart(product.id, quantity)}
+                  disabled={cartLoading}
+                  className="w-full bg-white hover:bg-gray-50 text-[#006494] font-semibold py-4 px-6 rounded-xl border-2 border-[#006494] hover:border-[#003554] transition-all duration-300 disabled:opacity-50"
+                >
+                  {cartLoading ? "Adding..." : "ADD TO CART"}
+                </button>
+              </div>
             </div>
           </div>
         </div>
 
-        {/* Product Overview */}
+        {/* Rest of your existing content - Product Overview, Description, Specifications, Tutorial */}
         {product.overview && (
           <div data-aos="fade-up" className="mt-20">
             <h2 className="text-3xl font-semibold text-[#006494] mb-8">
@@ -251,7 +385,6 @@ export default function ProductViewPage() {
           </div>
         )}
 
-        {/* Product Description */}
         {product.description && (
           <div data-aos="fade-up" className="mt-20">
             <h2 className="text-3xl font-semibold text-[#006494] mb-8">
@@ -259,13 +392,12 @@ export default function ProductViewPage() {
             </h2>
             <div className="bg-gray-50 p-8 rounded-2xl">
               <p className="text-gray-700 leading-relaxed text-lg max-w-4xl text-justify">
-                {product.overview}
+                {product.description}
               </p>
             </div>
           </div>
         )}
 
-        {/* Specifications - Grid Layout */}
         <div data-aos="fade-up" className="mt-20">
           <h2 className="text-3xl font-semibold text-[#006494] mb-8">
             Specifications
@@ -295,7 +427,6 @@ export default function ProductViewPage() {
           )}
         </div>
 
-        {/* Setup Tutorial Section */}
         {product.tutorialLink && (
           <section data-aos="fade-up" className="py-16 bg-white lg:py-24">
             <div className="px-6 mx-auto lg:px-6 xl:px-0 md:px-6 max-w-7xl">
@@ -319,6 +450,16 @@ export default function ProductViewPage() {
           </section>
         )}
       </div>
+
+      {/* Alert Component */}
+      <Alert
+        open={alert.open}
+        onClose={closeAlert}
+        message={alert.message}
+        type={alert.type}
+        position={alert.position}
+        autoHideDuration={3000}
+      />
 
       <Footer />
     </div>

@@ -25,6 +25,9 @@ public class ShippingAddressRequestDTO {
     @NotBlank(message = "Zip Code is required")
     private String zipCode;
 
+    @NotBlank(message = "Country is required")
+    private String country;
+
     private boolean defaultAddress;
 
     private Long createdBy;

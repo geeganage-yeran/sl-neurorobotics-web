@@ -343,7 +343,7 @@ const addProduct = () => {
           </div>
         </div>
 
-        <div className="bg-white rounded-xl sm:rounded-2xlshadow-xl p-4 sm:p-6 lg:p-5">
+        <div className="bg-white rounded-xl sm:rounded-2xl shadow-xl p-4 sm:p-6 lg:p-5">
           <form onSubmit={handleSubmit} className="space-y-6 sm:space-y-8">
             {/* Basic Information */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">

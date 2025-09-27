@@ -125,9 +125,6 @@
             <artifactId>reactor-core</artifactId>
             <version>3.8.0-M4</version>
         </dependency>
-<<<<<<< Updated upstream
-
-=======
         <dependency>
             <groupId>com.stripe</groupId>
             <artifactId>stripe-java</artifactId>
@@ -146,7 +143,6 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-mail</artifactId>
         </dependency>
->>>>>>> Stashed changes
     </dependencies>
 
     <build>
