@@ -4,6 +4,22 @@ import { useParams, useNavigate } from "react-router-dom";
 import api from "../services/api";
 import Alert from "../components/Alert";
 import DynamicHeader from "../components/DynamicHeader";
+
+const ShippingAddressModal = ({ isOpen, onClose, shippingAddress, onSave, userId }) => {
+  const [availableAddresses, setAvailableAddresses] = useState([]);
+  const [loading, setLoading] = useState(false);
+
+  const handleSelectAddress = (address) => {
+    onSave(address);
+  };
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="bg-white rounded-lg max-w-md w-full mx-4 max-h-[80vh] overflow-y-auto">
+        <div className="flex items-center justify-between p-6 border-b">
+          <h2 className="text-xl font-semibold" style={{ color: "#051923" }}>
             Select Shipping Address
           </h2>
           <button
@@ -128,6 +144,13 @@ const AddToCart = () => {
     setShippingAddress(newAddress);
     setIsModalOpen(false);
     showAlert("Address change successfully!");
+  };
+
+  // Add makePayment function that was referenced but missing
+  const makePayment = () => {
+    // Add your payment logic here
+    console.log("Processing payment...");
+    showAlert("Payment processing...", "info");
   };
 
   useEffect(() => {
@@ -433,78 +456,21 @@ const AddToCart = () => {
 
                 {/* Promo Code */}
                 <div className="mb-4 sm:mb-6">
-                  <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2"></div>
-                  {appliedPromo && (
-                    <div className="mt-2 flex items-center justify-between text-sm text-green-600">
-                      <span>✓ {appliedPromo} applied</span>
-                      <button
-                        onClick={removePromoCode}
-                        className="text-red-600 hover:text-red-800"
-                      >
-                        <X className="w-4 h-4" />
-                      </button>
-                    </div>
-                  )}
-                </div>
-
-                {/* Price Breakdown */}
-                <div className="space-y-3 mb-4 sm:mb-6">
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Subtotal</span>
-                  {/* Promo Code */}
-                  <div className="mb-4 sm:mb-6">
-                    <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2"></div>
-                    {appliedPromo && (
-                      <div className="mt-2 flex items-center justify-between text-sm text-green-600">
-                        <span>✓ {appliedPromo} applied</span>
-                        <button
-                          onClick={removePromoCode}
-                          className="text-red-600 hover:text-red-800"
-                        >
-                          <X className="w-4 h-4" />
-                        </button>
-                      </div>
-                    )}
-                  </div>
-
-<<<<<<< Updated upstream
-                  {/* Price Breakdown */}
-                  <div className="space-y-3 mb-4 sm:mb-6">
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Subtotal</span>
-                      <span className="text-gray-600">
-                        ${subtotal.toFixed(2)}
-=======
-                  <div className="mt-4 flex items-start">
+                  <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2">
                     <input
-                      type="checkbox"
-                      id="sameBilling"
-                      defaultChecked
-                      className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 mt-0.5"
+                      type="text"
+                      placeholder="Enter promo code"
+                      value={promoCode}
+                      onChange={(e) => setPromoCode(e.target.value)}
+                      className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
-                    <label
-                      htmlFor="sameBilling"
-                      className="ml-2 text-sm text-gray-600 leading-5"
+                    <button
+                      onClick={applyPromoCode}
+                      className="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition-colors"
                     >
-                      ✓ Billing Address is same as Shipping Address
-                    </label>
+                      Apply
+                    </button>
                   </div>
-                </div>
-            </div>
-
-            {/* Order Summary */}
-            <div className="xl:col-span-1">
-              <div className="bg-gray-50 rounded-lg p-4 sm:p-6 sticky top-4 sm:top-24">
-                <h2
-                  className="text-xl font-semibold mb-4 sm:mb-6"
-                  style={{ color: "#051923" }}
-                >
-                  Order Summary
-                </h2>
-
-                {/* Promo Code */}
-                <div className="mb-4 sm:mb-6">
-                  <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2"></div>
                   {appliedPromo && (
                     <div className="mt-2 flex items-center justify-between text-sm text-green-600">
                       <span>✓ {appliedPromo} applied</span>
@@ -563,133 +529,92 @@ const AddToCart = () => {
                       <span className="text-sm">
                         You're ${(50 - subtotal).toFixed(2)} away from free
                         shipping!
->>>>>>> Stashed changes
                       </span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Shipping cost</span>
-                      <span className="text-gray-600">
-                        {shippingCost === 0
-                          ? "FREE"
-                          : `$${shippingCost.toFixed(2)}`}
-                      </span>
-                    </div>
-                    {discount > 0 && (
-                      <div className="flex justify-between text-green-600">
-                        <span>Discount ({discount}%)</span>
-                        <span>-${discountAmount.toFixed(2)}</span>
-                      </div>
-                    )}
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Tax</span>
-                      <span className="text-gray-600">${tax.toFixed(2)}</span>
-                    </div>
-                    <div className="border-t pt-3">
-                      <div
-                        className="flex justify-between text-lg sm:text-xl font-bold"
-                        style={{ color: "#051923" }}
-                      >
-                        <span>Estimated Total</span>
-                        <span>${total.toFixed(2)}</span>
-                      </div>
                     </div>
                   </div>
+                )}
 
-                  {/* Free Shipping Notice */}
-                  {subtotal > 0 && subtotal < 50 && (
-                    <div className="mb-4 sm:mb-6 p-3 bg-blue-50 rounded-lg">
-                      <div className="flex items-center text-blue-700">
-                        <Truck className="w-5 h-5 mr-2 flex-shrink-0" />
-                        <span className="text-sm">
-                          You're ${(50 - subtotal).toFixed(2)} away from free
-                          shipping!
-                        </span>
-                      </div>
-                    </div>
-                  )}
+                {/* Shipping Address */}
+                <div className="mb-4 sm:mb-6">
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 space-y-2 sm:space-y-0">
+                    <h3
+                      className="text-lg font-semibold"
+                      style={{ color: "#051923" }}
+                    >
+                      Shipping Address
+                    </h3>
+                  </div>
 
-                  {/* Shipping Address */}
-                  <div className="mb-4 sm:mb-6">
-                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 space-y-2 sm:space-y-0">
-                      <h3
-                        className="text-lg font-semibold"
-                        style={{ color: "#051923" }}
-                      >
-                        Shipping Address
-                      </h3>
-                    </div>
-
-                    <div className="border border-gray-300 rounded-lg p-4 bg-white">
-                      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between space-y-3 sm:space-y-0">
-                        {shippingAddress ? (
-                          <div className="flex-1">
-                            <p
-                              className="font-semibold"
-                              style={{ color: "#051923" }}
-                            >
-                              {shippingAddress.name}
-                            </p>
-                            <p className="text-sm text-gray-600 mt-1">
-                              {shippingAddress.streetAddress}
-                            </p>
-                            <p className="text-sm text-gray-600">
-                              {shippingAddress.city}
-                            </p>
-                            <p className="text-sm text-gray-600">
-                              {shippingAddress.state}
-                            </p>
-                            <p className="text-sm text-gray-600">
-                              {shippingAddress.zipCode}
-                            </p>
-                          </div>
-                        ) : (
-                          <p className="text-sm text-gray-600">
-                            Loading address...
+                  <div className="border border-gray-300 rounded-lg p-4 bg-white">
+                    <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between space-y-3 sm:space-y-0">
+                      {shippingAddress ? (
+                        <div className="flex-1">
+                          <p
+                            className="font-semibold"
+                            style={{ color: "#051923" }}
+                          >
+                            {shippingAddress.name}
                           </p>
-                        )}
-                        <button
-                          onClick={openModal}
-                          className="text-blue-600 hover:text-blue-800 text-sm font-medium self-start sm:self-auto sm:ml-4 cursor-pointer"
-                        >
-                          Change
-                        </button>
-                      </div>
-                    </div>
-
-                    <div className="mt-4 flex items-start">
-                      <input
-                        type="checkbox"
-                        id="sameBilling"
-                        defaultChecked
-                        className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 mt-0.5"
-                      />
-                      <label
-                        htmlFor="sameBilling"
-                        className="ml-2 text-sm text-gray-600 leading-5"
+                          <p className="text-sm text-gray-600 mt-1">
+                            {shippingAddress.streetAddress}
+                          </p>
+                          <p className="text-sm text-gray-600">
+                            {shippingAddress.city}
+                          </p>
+                          <p className="text-sm text-gray-600">
+                            {shippingAddress.state}
+                          </p>
+                          <p className="text-sm text-gray-600">
+                            {shippingAddress.zipCode}
+                          </p>
+                        </div>
+                      ) : (
+                        <p className="text-sm text-gray-600">
+                          Loading address...
+                        </p>
+                      )}
+                      <button
+                        onClick={openModal}
+                        className="text-blue-600 hover:text-blue-800 text-sm font-medium self-start sm:self-auto sm:ml-4 cursor-pointer"
                       >
-                        ✓ Billing Address is same as Shipping Address
-                      </label>
+                        Change
+                      </button>
                     </div>
                   </div>
 
-                  {/* Checkout Button */}
-                  <button
-                    className="w-full py-3 sm:py-4 px-6 rounded-lg font-semibold text-lg transition-colors flex items-center justify-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
-                    onClick={makePayment}
-                    style={{ backgroundColor: "#051923", color: "white" }}
-                    disabled={cartItems.length === 0}
-                  >
-                    <span>🔒 Checkout</span>
-                  </button>
-
-                  {/* Continue Shopping */}
-                  <button
-                    className="w-full mt-4 py-3 px-6 border-2 border-gray-300 rounded-lg font-semibold hover:border-gray-400 transition-colors cursor-pointer"
-                    onClick={continueShopping}
-                  >
-                    Continue Shopping
-                  </button>
+                  <div className="mt-4 flex items-start">
+                    <input
+                      type="checkbox"
+                      id="sameBilling"
+                      defaultChecked
+                      className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 mt-0.5"
+                    />
+                    <label
+                      htmlFor="sameBilling"
+                      className="ml-2 text-sm text-gray-600 leading-5"
+                    >
+                      ✓ Billing Address is same as Shipping Address
+                    </label>
+                  </div>
                 </div>
+
+                {/* Checkout Button */}
+                <button
+                  className="w-full py-3 sm:py-4 px-6 rounded-lg font-semibold text-lg transition-colors flex items-center justify-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                  onClick={makePayment}
+                  style={{ backgroundColor: "#051923", color: "white" }}
+                  disabled={cartItems.length === 0}
+                >
+                  <span>🔒 Checkout</span>
+                </button>
+
+                {/* Continue Shopping */}
+                <button
+                  className="w-full mt-4 py-3 px-6 border-2 border-gray-300 rounded-lg font-semibold hover:border-gray-400 transition-colors cursor-pointer"
+                  onClick={continueShopping}
+                >
+                  Continue Shopping
+                </button>
               </div>
             </div>
           </div>
