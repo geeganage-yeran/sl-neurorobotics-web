@@ -64,6 +64,8 @@ public class SecurityConfig implements WebMvcConfigurer {
                                 "/api/auth/register",
                                 "/api/auth/login",
                                 "/api/public/**",
+                                "/api/3d-models/product/*",
+                                "/api/3d-models/files/**",
                                 "/api/auth/refresh",
                                 "/uploads/**",
                                 "/api/auth/logout",

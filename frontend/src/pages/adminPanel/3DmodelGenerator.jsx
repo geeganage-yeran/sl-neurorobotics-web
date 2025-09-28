@@ -5,25 +5,32 @@ import {
   X,
   Save,
   RotateCcw,
-  Edit,
   Trash2,
+  Eye
 } from "lucide-react";
+
 import api from "../../services/api";
 
 const ModelGeneratorInterface = () => {
   const [selectedProduct, setSelectedProduct] = useState("");
   const [uploadedImage, setUploadedImage] = useState(null);
+  const [viewingModel, setViewingModel] = useState(null);
   const [generatedModels, setGeneratedModels] = useState([]);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [deleteConfirmId, setDeleteConfirmId] = useState(null);
-  const [editingModel, setEditingModel] = useState(null);
-  const [editProduct, setEditProduct] = useState("");
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(false);
-  
-  // SIMPLIFIED LOADING STATES - Only one loading state and message
+
   const [isGenerating, setIsGenerating] = useState(false);
-  const [statusMessage, setStatusMessage] = useState(""); // Single message for all states
+  const [statusMessage, setStatusMessage] = useState("");
+
+  const handleView3D = (model) => {
+    setViewingModel(model);
+  };
+
+  const closeViewer = () => {
+    setViewingModel(null);
+  };
 
   const fetchProducts = async () => {
     try {
@@ -44,8 +51,33 @@ const ModelGeneratorInterface = () => {
     }
   };
 
+  const fetchGeneratedModels = async () => {
+    try {
+      const response = await api.get("/3d-models", {
+        withCredentials: true,
+      });
+      if (response.data.success) {
+        setGeneratedModels(response.data.models);
+        console.log("First model path:", response.data.models[0].modelFilePath);
+      }
+    } catch (error) {
+      console.error("Error fetching 3D models:", error);
+    }
+  };
+
   React.useEffect(() => {
     fetchProducts();
+    fetchGeneratedModels();
+  }, []);
+
+  // Load model-viewer script if not already loaded
+  React.useEffect(() => {
+    if (!document.querySelector('script[src*="model-viewer"]')) {
+      const script = document.createElement('script');
+      script.type = 'module';
+      script.src = 'https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js';
+      document.head.appendChild(script);
+    }
   }, []);
 
   const handleImageUpload = (event) => {
@@ -59,7 +91,7 @@ const ModelGeneratorInterface = () => {
       }
 
       // Validate file type
-      if (!file.type.startsWith('image/')) {
+      if (!file.type.startsWith("image/")) {
         setStatusMessage("Error: Please select a valid image file");
         setTimeout(() => setStatusMessage(""), 5000);
         return;
@@ -120,7 +152,7 @@ const ModelGeneratorInterface = () => {
       const result = apiResponse.data;
 
       if (result.success) {
-        // Add to generated models
+        await fetchGeneratedModels();
         const newModel = {
           id: result.modelId,
           image: uploadedImage,
@@ -139,19 +171,18 @@ const ModelGeneratorInterface = () => {
       } else {
         throw new Error(result.message || "Model generation failed");
       }
-
     } catch (error) {
       console.error("Error generating 3D model:", error);
       let errorMessage = "Failed to generate 3D model";
-      
+
       if (error.response?.data?.message) {
         errorMessage = error.response.data.message;
       } else if (error.message) {
         errorMessage = error.message;
       }
-      
+
       setStatusMessage("Error: " + errorMessage);
-      
+
       // Clear error message after 8 seconds for longer errors
       setTimeout(() => setStatusMessage(""), 8000);
     } finally {
@@ -169,10 +200,23 @@ const ModelGeneratorInterface = () => {
     setDeleteConfirmId(modelId);
   };
 
-  const confirmDelete = () => {
-    setGeneratedModels(
-      generatedModels.filter((model) => model.id !== deleteConfirmId)
-    );
+  const confirmDelete = async () => {
+    try {
+      const response = await api.delete(`/3d-models/${deleteConfirmId}`, {
+        withCredentials: true,
+      });
+      if (response.data.success) {
+        setGeneratedModels(
+          generatedModels.filter((model) => model.id !== deleteConfirmId)
+        );
+        setStatusMessage("Model deleted successfully!");
+        setTimeout(() => setStatusMessage(""), 3000);
+      }
+    } catch (error) {
+      console.error("Error deleting model:", error);
+      setStatusMessage("Error: Failed to delete model");
+      setTimeout(() => setStatusMessage(""), 5000);
+    }
     setDeleteConfirmId(null);
   };
 
@@ -180,33 +224,11 @@ const ModelGeneratorInterface = () => {
     setDeleteConfirmId(null);
   };
 
-  const handleEdit = (model) => {
-    setEditingModel(model);
-    setEditProduct(model.product);
-  };
-
-  const saveEdit = () => {
-    setGeneratedModels(
-      generatedModels.map((model) =>
-        model.id === editingModel.id
-          ? { ...model, product: editProduct }
-          : model
-      )
-    );
-    setEditingModel(null);
-    setEditProduct("");
-  };
-
-  const cancelEdit = () => {
-    setEditingModel(null);
-    setEditProduct("");
-  };
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
       <div
         className={`container mx-auto px-4 py-8 max-w-7xl ${
-          deleteConfirmId || editingModel ? "blur-sm" : ""
+          deleteConfirmId ? "blur-sm" : ""
         } transition-all duration-200`}
       >
         {/* Header Section */}
@@ -300,7 +322,11 @@ const ModelGeneratorInterface = () => {
                     )}
                   </div>
                 ) : (
-                  <label className={`cursor-pointer block ${isGenerating ? 'pointer-events-none opacity-50' : ''}`}>
+                  <label
+                    className={`cursor-pointer block ${
+                      isGenerating ? "pointer-events-none opacity-50" : ""
+                    }`}
+                  >
                     <div className="border-2 border-dashed border-gray-300 rounded-xl p-12 text-center hover:border-[#003554] hover:bg-blue-50 transition-all duration-200">
                       <Upload className="mx-auto h-12 w-12 text-gray-400 mb-4" />
                       <p className="text-gray-600 font-medium">
@@ -393,30 +419,36 @@ const ModelGeneratorInterface = () => {
                     key={model.id}
                     className="bg-gray-50 border border-gray-200 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-200"
                   >
-                    <div className="aspect-square bg-white">
-                      <img
-                        src={model.image}
-                        alt={`3D Model of ${model.product}`}
-                        className="w-full h-full object-cover"
-                      />
+                    <div className="aspect-square bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
+                      <div className="text-gray-600 text-center">
+                        <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center mx-auto mb-3 shadow-sm">
+                          <Upload className="w-8 h-8 text-blue-600" />
+                        </div>
+                        <p className="font-medium">3D Model Ready</p>
+                        <p className="text-sm text-gray-500 mt-1">
+                          {model.productName}
+                        </p>
+                      </div>
                     </div>
                     <div className="p-4">
-                      <h3 className="font-semibold text-gray-900 mb-2">
-                        {model.product}
+                      <h3 className="font-semibold text-gray-900 mb-1">
+                        {model.productName}
                       </h3>
-                      <div className="flex gap-2">
+                      <p className="text-xs text-gray-500 mb-4">
+                        Created:{" "}
+                        {new Date(model.createdAt).toLocaleDateString()}
+                      </p>
+                      <div className="space-y-2">
                         <button
-                          onClick={() => handleEdit(model)}
-                          disabled={isGenerating}
-                          className="flex-1 bg-blue-100 text-blue-700 px-4 py-2 rounded-lg hover:bg-blue-200 transition-all font-medium text-sm flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                          onClick={() => handleView3D(model)}
+                          className="w-full bg-green-100 text-green-700 px-4 py-2 rounded-lg hover:bg-green-200 transition-all font-medium text-sm flex items-center justify-center gap-2"
                         >
-                          <Edit className="w-4 h-4" />
-                          Edit
+                          <Eye className="w-4 h-4" />
+                          View 3D Model
                         </button>
                         <button
                           onClick={() => handleDelete(model.id)}
-                          disabled={isGenerating}
-                          className="flex-1 bg-red-100 text-red-700 px-4 py-2 rounded-lg hover:bg-red-200 transition-all font-medium text-sm flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                          className="w-full bg-red-100 text-red-700 px-4 py-2 rounded-lg hover:bg-red-200 transition-all font-medium text-sm flex items-center justify-center gap-2"
                         >
                           <Trash2 className="w-4 h-4" />
                           Delete
@@ -449,7 +481,7 @@ const ModelGeneratorInterface = () => {
 
       {/* Delete Confirmation Modal */}
       {deleteConfirmId && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50">
+        <div className="fixed inset-0 bg-black/50 bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50">
           <div className="bg-white rounded-xl p-6 w-full max-w-sm mx-4 shadow-2xl">
             <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
               <Trash2 className="w-6 h-6 text-red-600" />
@@ -479,56 +511,67 @@ const ModelGeneratorInterface = () => {
         </div>
       )}
 
-      {/* Edit Modal */}
-      {editingModel && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl p-6 w-full max-w-md mx-4 shadow-2xl">
-            <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Edit className="w-6 h-6 text-blue-600" />
-            </div>
-            <h3 className="text-lg font-semibold text-gray-900 mb-4 text-center">
-              Edit 3D Model
-            </h3>
-
-            <div className="mb-4">
-              <img
-                src={editingModel.image}
-                alt="Model preview"
-                className="w-full h-48 object-cover rounded-xl border border-gray-200"
-              />
-            </div>
-
-            <div className="mb-6">
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
-                Product Category
-              </label>
-              <select
-                value={editProduct}
-                onChange={(e) => setEditProduct(e.target.value)}
-                className="w-full px-4 py-4 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all duration-200 text-gray-900"
-              >
-                {products.map((product) => (
-                  <option key={product.id} value={product.name}>
-                    {product.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div className="flex gap-3">
+      {/* 3D Model Viewer Modal */}
+      {viewingModel && (
+        <div className="fixed inset-0 bg-black/50 bg-opacity-75 backdrop-blur-sm flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl w-full max-w-4xl h-[80vh] mx-4 shadow-2xl flex flex-col">
+            <div className="p-4 border-b border-gray-200 flex items-center justify-between">
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900">
+                  3D Model: {viewingModel.productName}
+                </h3>
+                <p className="text-sm text-gray-500">
+                  Created:{" "}
+                  {new Date(viewingModel.createdAt).toLocaleDateString()}
+                </p>
+              </div>
               <button
-                onClick={cancelEdit}
-                className="flex-1 px-4 py-3 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200 transition-all font-medium"
+                onClick={closeViewer}
+                className="p-2 hover:bg-gray-100 rounded-lg transition-all"
               >
-                Cancel
+                <X className="w-5 h-5" />
               </button>
-              <button
-                onClick={saveEdit}
-                className="flex-1 px-4 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-all font-medium flex items-center justify-center gap-2"
-              >
-                <Save className="w-4 h-4" />
-                Save Changes
-              </button>
+            </div>
+            <div className="flex-1 p-4 flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100">
+              {viewingModel.modelFilePath ? (
+                <div
+                  className="w-full h-full rounded-lg overflow-hidden shadow-inner"
+                  style={{ minHeight: "400px" }}
+                >
+                  <model-viewer
+                    src={
+                      viewingModel.modelFilePath 
+                        ? `http://localhost:8080/api/3d-models/files/${viewingModel.modelFilePath.split('\\').pop()}`
+                        : null
+                    }
+                    alt={`3D model of ${viewingModel.productName}`}
+                    auto-rotate
+                    camera-controls
+                    loading="eager"
+                    style={{
+                      width: "100%",
+                      height: "100%",
+                      backgroundColor: "#ffffff",
+                    }}
+                    onError={(e) => {
+                      console.error("Model viewer error:", e);
+                    }}
+                    onLoad={() => {
+                      console.log("Model loaded successfully");
+                    }}
+                  ></model-viewer>
+                </div>
+              ) : (
+                <div className="flex flex-col items-center justify-center text-gray-500">
+                  <div className="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center mb-4">
+                    <X className="w-8 h-8" />
+                  </div>
+                  <h3 className="text-lg font-medium mb-2">Model Not Available</h3>
+                  <p className="text-sm text-center">
+                    The 3D model file could not be loaded. Please check if the file exists.
+                  </p>
+                </div>
+              )}
             </div>
           </div>
         </div>

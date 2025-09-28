@@ -519,14 +519,14 @@ function Product() {
                       </a>
 
                       {/* Action Buttons */}
-<div className="mt-8">
-  <a
-    href={`/productview/${product.id}`}
-    className="block w-full bg-[#003554] hover:bg-[#002a43] text-white font-semibold py-4 px-6 rounded-xl text-center transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
-  >
-    View Details
-  </a>
-</div>
+                      <div className="mt-8">
+                        <a
+                          href={`/productview/${product.id}`}
+                          className="block w-full bg-[#003554] hover:bg-[#002a43] text-white font-semibold py-4 px-6 rounded-xl text-center transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+                        >
+                          View Details
+                        </a>
+                      </div>
                     </div>
                   </div>
                 </div>

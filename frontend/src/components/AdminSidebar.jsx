@@ -65,12 +65,6 @@ const AdminSidebar = ({ activePage, setActivePage }) => {
       description: "Manage site users",
     },
     {
-      name: "Quotations",
-      icon: FileText,
-      path: "/admin/quotations",
-      description: "Quotation requests",
-    },
-    {
       name: "FAQ's",
       icon: HelpCircle,
       path: "/admin/FAQ",

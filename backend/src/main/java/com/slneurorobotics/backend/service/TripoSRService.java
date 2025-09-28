@@ -74,6 +74,7 @@ public class TripoSRService {
         }
     }
 
+
     /**
      * Validates the uploaded image file
      */
@@ -102,6 +103,7 @@ public class TripoSRService {
         log.info("Image validation passed: {} ({} bytes, type: {})",
                 imageFile.getOriginalFilename(), imageFile.getSize(), contentType);
     }
+
 
     /**
      * Uploads the image to Tripo3D using STS upload and returns an image_token
@@ -160,6 +162,7 @@ public class TripoSRService {
             throw new IOException("Failed to upload image: " + e.getMessage());
         }
     }
+
 
     /**
      * Creates a 3D model task using the uploaded image token
@@ -233,6 +236,7 @@ public class TripoSRService {
             throw new IOException("Failed to create task: " + e.getMessage());
         }
     }
+
 
     /**
      * Polls Tripo3D until the task is complete
@@ -328,6 +332,7 @@ public class TripoSRService {
         throw new RuntimeException("Task timeout - model generation took too long");
     }
 
+
     /**
      * Downloads the 3D model and saves it locally
      */
@@ -358,22 +363,23 @@ public class TripoSRService {
         }
     }
 
-    /**
-     * Test API connectivity and balance
-     */
-    public void testTripoAPIConnection() {
-        try {
-            String url = "https://api.tripo3d.ai/v2/openapi/user/balance";
-            HttpHeaders headers = new HttpHeaders();
-            headers.setBearerAuth(apiKey);
-            HttpEntity<Void> entity = new HttpEntity<>(headers);
+//    /**
+//     * Test API connectivity and balance
+//     */
+//    public void testTripoAPIConnection() {
+//        try {
+//            String url = "https://api.tripo3d.ai/v2/openapi/user/balance";
+//            HttpHeaders headers = new HttpHeaders();
+//            headers.setBearerAuth(apiKey);
+//            HttpEntity<Void> entity = new HttpEntity<>(headers);
+//
+//            ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.GET, entity, String.class);
+//            log.info("API Test Response: {}", response.getBody());
+//        } catch (Exception e) {
+//            log.error("API connectivity test failed", e);
+//        }
+//    }
 
-            ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.GET, entity, String.class);
-            log.info("API Test Response: {}", response.getBody());
-        } catch (Exception e) {
-            log.error("API connectivity test failed", e);
-        }
-    }
 
     /**
      * Helper class to send MultipartFile as Resource
