@@ -26,4 +26,17 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     @Query("SELECT p FROM Product p WHERE p.enabled = true ORDER BY p.createdAt DESC LIMIT 4")
     List<Product> findTop4EnabledProductsByCreatedAt();
 
+    // Find products by name (for fuzzy matching)
+    @Query("SELECT p FROM Product p WHERE p.enabled = true AND " +
+            "(LOWER(p.name) LIKE LOWER(CONCAT('%', :searchTerm, '%')) OR " +
+            "LOWER(p.summary) LIKE LOWER(CONCAT('%', :searchTerm, '%')) OR " +
+            "LOWER(p.description) LIKE LOWER(CONCAT('%', :searchTerm, '%')))")
+    List<Product> findBySearchTerm(@Param("searchTerm") String searchTerm);
+
+    // Get all enabled products
+    List<Product> findByEnabledTrue();
+
+    // Find by name containing (case insensitive)
+    List<Product> findByNameContainingIgnoreCase(String name);
+
 }
