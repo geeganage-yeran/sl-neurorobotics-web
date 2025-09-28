@@ -19,6 +19,7 @@ public class ProductRequestDTO {
     private String overview;
     private String tutorialLink;
     private BigDecimal price;
+    private int quantity;
 
     @JsonProperty("enabled")
     private Boolean enabled = true;

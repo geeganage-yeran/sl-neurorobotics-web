@@ -32,6 +32,9 @@ public class Product {
     @Column(nullable = false, length = 1000)
     private String overview;
 
+    @Column(nullable = false)
+    private int quantity;
+
     @Column(name = "tutorial_link", length = 2048)
     private String tutorialLink;
 

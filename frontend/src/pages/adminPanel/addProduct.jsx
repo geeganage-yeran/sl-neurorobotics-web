@@ -22,6 +22,7 @@ const addProduct = () => {
     overview: "",
     tutorialLink: "",
     price: "",
+    quantity: "",
     enabled: true,
   });
 
@@ -263,7 +264,6 @@ const addProduct = () => {
         formDataToSend.append("displayOrders", img.displayOrder.toString());
       });
 
-
       const response = await api.post("/admin/addProduct", formDataToSend, {
         headers: {
           "Content-Type": "multipart/form-data",
@@ -285,6 +285,7 @@ const addProduct = () => {
           overview: "",
           tutorialLink: "",
           price: "",
+          quantity: "",
           enabled: true,
         });
         setSpecifications([]);
@@ -329,7 +330,6 @@ const addProduct = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 px-3 sm:px-4 lg:px-6">
       <div className="max-w-sm sm:max-w-lg md:max-w-2xl lg:max-w-4xl xl:max-w-6xl">
-
         <div className="flex items-center p-4 justify-between py-8">
           <div className="flex items-center gap-4">
             <div>
@@ -374,7 +374,7 @@ const addProduct = () => {
 
               <div>
                 <label className="block text-xs sm:text-sm font-semibold text-gray-700 mb-2">
-                  Price *
+                  Price ($) *
                 </label>
                 <input
                   type="number"
@@ -765,37 +765,68 @@ const addProduct = () => {
               )}
             </div>
 
-            {/* Enable/Disable Toggle - FIXED VERSION */}
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between bg-gray-50 rounded-lg sm:rounded-xl p-4 gap-3 sm:gap-0">
+            {/* Quantity and Product Status Section */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+              {/* Quantity Field - Left Side */}
               <div>
-                <h3 className="text-base sm:text-lg font-semibold text-[#003554]">
-                  Product Status
-                </h3>
-                <p className="text-xs sm:text-sm text-gray-600">
-                  Enable or disable this product
-                </p>
+                <label className="block text-xs sm:text-sm font-semibold text-gray-700 mb-2">
+                  Quantity *
+                </label>
+                <input
+                  type="number"
+                  name="quantity"
+                  value={formData.quantity}
+                  onChange={handleInputChange}
+                  onBlur={() => handleBlur("quantity")}
+                  className={`w-full px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base border rounded-lg focus:ring-2 focus:ring-[#0582CA] focus:border-transparent transition-all ${
+                    hasFieldError(errors, "quantity")
+                      ? "border-red-500 bg-red-50"
+                      : "border-gray-300"
+                  }`}
+                  placeholder="Enter quantity"
+                  min="0"
+                  step="1"
+                  required
+                />
+                {hasFieldError(errors, "quantity") && (
+                  <p className="mt-1 text-sm text-red-600">
+                    {getFieldError(errors, "quantity")}
+                  </p>
+                )}
               </div>
-              <div className="flex items-center gap-3">
-                <span
-                  className={`text-sm font-medium ${
-                    formData.enabled ? "text-green-600" : "text-gray-500"
-                  }`}
-                >
-                  {formData.enabled ? "Enabled" : "Disabled"}
-                </span>
-                <button
-                  type="button"
-                  onClick={handleToggleEnabled}
-                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-[#0582CA] focus:ring-offset-2 ${
-                    formData.enabled ? "bg-green-500" : "bg-gray-200"
-                  }`}
-                >
+
+              {/* Product Status - Right Side */}
+              <div className="flex flex-col justify-between bg-gray-50 rounded-lg sm:rounded-xl p-4">
+                <div>
+                  <h3 className="text-base sm:text-lg font-semibold text-[#003554]">
+                    Product Status
+                  </h3>
+                  <p className="text-xs sm:text-sm text-gray-600 mb-3">
+                    Enable or disable this product
+                  </p>
+                </div>
+                <div className="flex items-center gap-3">
                   <span
-                    className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                      formData.enabled ? "translate-x-6" : "translate-x-1"
+                    className={`text-sm font-medium ${
+                      formData.enabled ? "text-green-600" : "text-gray-500"
                     }`}
-                  />
-                </button>
+                  >
+                    {formData.enabled ? "Enabled" : "Disabled"}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={handleToggleEnabled}
+                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-[#0582CA] focus:ring-offset-2 ${
+                      formData.enabled ? "bg-green-500" : "bg-gray-200"
+                    }`}
+                  >
+                    <span
+                      className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                        formData.enabled ? "translate-x-6" : "translate-x-1"
+                      }`}
+                    />
+                  </button>
+                </div>
               </div>
             </div>
 

@@ -59,6 +59,7 @@ public class ProductService {
         product.setTutorialLink(productRequest.getTutorialLink());
         product.setPrice(productRequest.getPrice());
         product.setEnabled(productRequest.getEnabled());
+        product.setQuantity(productRequest.getQuantity());
 
         //specification saving
         if (productRequest.getSpecifications() != null && !productRequest.getSpecifications().isEmpty()) {
@@ -165,6 +166,7 @@ public class ProductService {
         existingProduct.setTutorialLink(productRequest.getTutorialLink());
         existingProduct.setPrice(productRequest.getPrice());
         existingProduct.setEnabled(productRequest.getEnabled());
+        existingProduct.setQuantity(productRequest.getQuantity());
 
         // Update specifications
         if (productRequest.getSpecifications() != null && !productRequest.getSpecifications().isEmpty()) {
@@ -252,6 +254,7 @@ public class ProductService {
         dto.setTutorialLink(product.getTutorialLink());
         dto.setPrice(product.getPrice());
         dto.setEnabled(product.getEnabled());
+        dto.setQuantity(product.getQuantity());
 
         // Use the same specifications parsing logic
         Map<String, String> specifications = parseSpecifications(product.getSpecifications());
@@ -336,6 +339,7 @@ public class ProductService {
         dto.setTutorialLink(product.getTutorialLink());
         dto.setPrice(product.getPrice());
         dto.setEnabled(product.getEnabled());
+        dto.setQuantity(product.getQuantity());
 
         // Use the same specifications parsing logic as admin version
         Map<String, String> specifications = parseSpecifications(product.getSpecifications());

@@ -151,7 +151,7 @@ const ManageHomePage = () => {
                     type="text"
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
-                    className="w-full px-4 py-4 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all duration-200 text-gray-900 placeholder-gray-500 shadow-sm"
+                    className="w-full px-4 py-4 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#003554] focus:border-transparent outline-none transition-all duration-200 text-gray-900 placeholder-gray-500 shadow-sm"
                     placeholder="Enter device title"
                     disabled={saveLoading}
                   />
@@ -164,7 +164,7 @@ const ManageHomePage = () => {
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
                     rows={4}
-                    className="w-full px-4 py-4 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all duration-200 text-gray-900 placeholder-gray-500 shadow-sm resize-none"
+                    className="w-full px-4 py-4 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#003554] focus:border-transparent outline-none transition-all duration-200 text-gray-900 placeholder-gray-500 shadow-sm resize-none"
                     placeholder="Enter device description"
                     disabled={saveLoading}
                   />
@@ -198,7 +198,7 @@ const ManageHomePage = () => {
                     </div>
                   ) : (
                     <label className={`cursor-pointer block ${saveLoading ? 'pointer-events-none opacity-50' : ''}`}>
-                      <div className="border-2 border-dashed border-gray-300 rounded-xl p-12 text-center hover:border-blue-400 hover:bg-blue-50 transition-all duration-200">
+                      <div className="border-2 border-dashed border-gray-300 rounded-xl p-12 text-center hover:border-[#003554] hover:bg-blue-50 transition-all duration-200">
                         <Upload className="mx-auto h-12 w-12 text-gray-400 mb-4" />
                         <p className="text-gray-600 font-medium">Click to upload device image</p>
                         <p className="text-sm text-gray-400 mt-2">PNG, JPG, GIF up to 10MB</p>
@@ -228,7 +228,7 @@ const ManageHomePage = () => {
                 <button
                   onClick={handleSave}
                   disabled={saveLoading}
-                  className="px-6 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-all font-medium shadow-sm hover:shadow-md flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="px-6 py-3 bg-[#003554] text-white rounded-xl hover:bg-[#003554] transition-all font-medium shadow-sm hover:shadow-md flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {saveLoading ? (
                     <>

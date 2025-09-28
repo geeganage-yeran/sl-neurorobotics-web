@@ -96,12 +96,24 @@ public class ThreeDModelController {
     @GetMapping("/product/{productId}")
     public ResponseEntity<?> getModelsByProductId(@PathVariable Long productId) {
         try {
-            var models = threeDModelRepository.findByProductId(productId);
+            List<ThreeDModel> models = threeDModelRepository.findByProductId(productId);
+
+            List<ThreeDModelResponseDTO> modelDTOs = models.stream()
+                    .map(model -> new ThreeDModelResponseDTO(
+                            model.getId(),
+                            model.getProduct().getId(),
+                            model.getProduct().getName(),
+                            model.getModelFilePath(),
+                            model.getCreatedAt()
+                    ))
+                    .collect(Collectors.toList());
+
             return ResponseEntity.ok().body(Map.of(
                     "success", true,
-                    "models", models
+                    "models", modelDTOs
             ));
         } catch (Exception e) {
+            log.error("Error fetching 3D models for product: {}", productId, e);
             return ResponseEntity.status(500).body(Map.of(
                     "success", false,
                     "message", e.getMessage()

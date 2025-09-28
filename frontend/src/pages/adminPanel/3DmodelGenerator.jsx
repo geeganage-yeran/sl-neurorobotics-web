@@ -58,11 +58,17 @@ const ModelGeneratorInterface = () => {
       });
       if (response.data.success) {
         setGeneratedModels(response.data.models);
-        console.log("First model path:", response.data.models[0].modelFilePath);
+        console.log("First model path:", response.data.models[0]?.modelFilePath);
       }
     } catch (error) {
       console.error("Error fetching 3D models:", error);
     }
+  };
+
+  // Filter products that don't have 3D models yet
+  const getAvailableProducts = () => {
+    const productsWithModels = generatedModels.map(model => model.productId);
+    return products.filter(product => !productsWithModels.includes(product.id));
   };
 
   React.useEffect(() => {
@@ -79,6 +85,21 @@ const ModelGeneratorInterface = () => {
       document.head.appendChild(script);
     }
   }, []);
+
+  // Helper function to get the primary product image (displayOrder === 1)
+  const getProductImage = (productId) => {
+    const product = products.find(p => p.id === productId);
+    if (!product || !product.images || product.images.length === 0) {
+      return null;
+    }
+    
+    // Find image with displayOrder === 1, or fallback to first image
+    const primaryImage = product.images.find(img => img.displayOrder === 1) || product.images[0];
+    
+    // Convert the image URL similar to Product component logic
+    return primaryImage.imageUrl?.replace("C:\\Users\\USER", "http://localhost:8080") || 
+           `http://localhost:8080/uploads/productImages/${productId}/${primaryImage.imageName}`;
+  };
 
   const handleImageUpload = (event) => {
     const file = event.target.files[0];
@@ -152,16 +173,9 @@ const ModelGeneratorInterface = () => {
       const result = apiResponse.data;
 
       if (result.success) {
-        await fetchGeneratedModels();
-        const newModel = {
-          id: result.modelId,
-          image: uploadedImage,
-          product: selectedProduct,
-          modelFilePath: result.modelPath,
-          createdAt: result.createdAt,
-        };
-
-        setGeneratedModels([...generatedModels, newModel]);
+        // Refetch both products and models to ensure data consistency
+        await Promise.all([fetchGeneratedModels(), fetchProducts()]);
+        
         setUploadedImage(null);
         setSelectedProduct("");
         setStatusMessage("✓ Model generated successfully!");
@@ -196,7 +210,8 @@ const ModelGeneratorInterface = () => {
     setStatusMessage("");
   };
 
-  const handleDelete = (modelId) => {
+  const handleDelete = (modelId, event) => {
+    event.stopPropagation(); // Prevent triggering the image click
     setDeleteConfirmId(modelId);
   };
 
@@ -209,6 +224,11 @@ const ModelGeneratorInterface = () => {
         setGeneratedModels(
           generatedModels.filter((model) => model.id !== deleteConfirmId)
         );
+        // Clear selected product if it was for the deleted model
+        const deletedModel = generatedModels.find(model => model.id === deleteConfirmId);
+        if (deletedModel && selectedProduct === deletedModel.productName) {
+          setSelectedProduct("");
+        }
         setStatusMessage("Model deleted successfully!");
         setTimeout(() => setStatusMessage(""), 3000);
       }
@@ -278,7 +298,7 @@ const ModelGeneratorInterface = () => {
 
                   {isDropdownOpen && !loading && !isGenerating && (
                     <div className="absolute z-10 mt-2 w-full max-w-md bg-white border border-gray-200 rounded-xl shadow-lg">
-                      {products.map((product) => (
+                      {getAvailableProducts().map((product) => (
                         <button
                           key={product.id}
                           onClick={() => {
@@ -290,9 +310,9 @@ const ModelGeneratorInterface = () => {
                           {product.name}
                         </button>
                       ))}
-                      {products.length === 0 && (
+                      {getAvailableProducts().length === 0 && (
                         <div className="px-4 py-3 text-gray-500 text-sm">
-                          No products available
+                          {products.length === 0 ? "No products available" : "All products already have 3D models"}
                         </div>
                       )}
                     </div>
@@ -414,49 +434,79 @@ const ModelGeneratorInterface = () => {
                 Generated 3D Models
               </h2>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {generatedModels.map((model) => (
-                  <div
-                    key={model.id}
-                    className="bg-gray-50 border border-gray-200 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-200"
-                  >
-                    <div className="aspect-square bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
-                      <div className="text-gray-600 text-center">
-                        <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center mx-auto mb-3 shadow-sm">
-                          <Upload className="w-8 h-8 text-blue-600" />
+                {generatedModels.map((model) => {
+                  const productImage = getProductImage(model.productId);
+                  
+                  return (
+                    <div
+                      key={model.id}
+                      className="bg-gray-50 border border-gray-200 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-200 relative group"
+                    >
+                      {/* Delete Button - Top Right Corner */}
+                      <button
+                        onClick={(e) => handleDelete(model.id, e)}
+                        className="absolute top-3 right-3 z-10 bg-red-500 text-white rounded-full p-2 hover:bg-red-600 shadow-lg transition-all hover:scale-110 opacity-0 group-hover:opacity-100"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+
+                      {/* Clickable Image Area */}
+                      <div 
+                        className="aspect-square cursor-pointer relative overflow-hidden"
+                        onClick={() => handleView3D(model)}
+                      >
+                        {productImage ? (
+                          <img
+                            src={productImage}
+                            alt={model.productName}
+                            className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                            onError={(e) => {
+                              // Fallback to placeholder if image fails to load
+                              e.target.style.display = 'none';
+                              e.target.nextElementSibling.style.display = 'flex';
+                            }}
+                          />
+                        ) : null}
+                        
+                        {/* Fallback placeholder (hidden by default, shown when image fails) */}
+                        <div 
+                          className="w-full h-full bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center"
+                          style={{ display: productImage ? 'none' : 'flex' }}
+                        >
+                          <div className="text-gray-600 text-center">
+                            <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center mx-auto mb-3 shadow-sm">
+                              <Upload className="w-8 h-8 text-blue-600" />
+                            </div>
+                            <p className="font-medium">3D Model Ready</p>
+                            <p className="text-sm text-gray-500 mt-1">
+                              {model.productName}
+                            </p>
+                          </div>
                         </div>
-                        <p className="font-medium">3D Model Ready</p>
-                        <p className="text-sm text-gray-500 mt-1">
+
+                        {/* Hover Overlay */}
+                        <div className="absolute inset-0 bg-black/20 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300">
+                          <div className="bg-white/90 rounded-full p-3 transform scale-90 group-hover:scale-100 transition-transform">
+                            <Eye className="w-6 h-6 text-gray-700" />
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Model Info */}
+                      <div className="p-4">
+                        <h3 className="font-semibold text-gray-900 mb-1 truncate">
                           {model.productName}
+                        </h3>
+                        <p className="text-xs text-gray-500 mb-3">
+                          Created: {new Date(model.createdAt).toLocaleDateString()}
                         </p>
+                        <div className="text-xs text-gray-400">
+                          Click image to view 3D model
+                        </div>
                       </div>
                     </div>
-                    <div className="p-4">
-                      <h3 className="font-semibold text-gray-900 mb-1">
-                        {model.productName}
-                      </h3>
-                      <p className="text-xs text-gray-500 mb-4">
-                        Created:{" "}
-                        {new Date(model.createdAt).toLocaleDateString()}
-                      </p>
-                      <div className="space-y-2">
-                        <button
-                          onClick={() => handleView3D(model)}
-                          className="w-full bg-green-100 text-green-700 px-4 py-2 rounded-lg hover:bg-green-200 transition-all font-medium text-sm flex items-center justify-center gap-2"
-                        >
-                          <Eye className="w-4 h-4" />
-                          View 3D Model
-                        </button>
-                        <button
-                          onClick={() => handleDelete(model.id)}
-                          className="w-full bg-red-100 text-red-700 px-4 py-2 rounded-lg hover:bg-red-200 transition-all font-medium text-sm flex items-center justify-center gap-2"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                          Delete
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
           </div>
@@ -521,8 +571,7 @@ const ModelGeneratorInterface = () => {
                   3D Model: {viewingModel.productName}
                 </h3>
                 <p className="text-sm text-gray-500">
-                  Created:{" "}
-                  {new Date(viewingModel.createdAt).toLocaleDateString()}
+                  Created: {new Date(viewingModel.createdAt).toLocaleDateString()}
                 </p>
               </div>
               <button
