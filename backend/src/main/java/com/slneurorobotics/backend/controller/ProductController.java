@@ -2,11 +2,14 @@ package com.slneurorobotics.backend.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.slneurorobotics.backend.dto.request.ProductRequestDTO;
+import com.slneurorobotics.backend.dto.response.HomePageDeviceResponseDTO;
 import com.slneurorobotics.backend.dto.response.ProductResponseDTO;
 import com.slneurorobotics.backend.entity.Product;
+import com.slneurorobotics.backend.service.HomePageService;
 import com.slneurorobotics.backend.service.ProductService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -22,6 +25,7 @@ public class ProductController {
 
     private final ProductService productService;
     private final ObjectMapper objectMapper;
+    private final HomePageService homePageService;
 
     @PostMapping("/addProduct")
     public ResponseEntity<?> createProduct(
@@ -72,6 +76,16 @@ public class ProductController {
         } catch (Exception e) {
             log.error("Error fetching latest products: ", e);
             return ResponseEntity.internalServerError().build();
+        }
+    }
+
+    @GetMapping("/getHomePageDevice")
+    public ResponseEntity<List<HomePageDeviceResponseDTO>> getHomePageDevice() {
+        try {
+            List<HomePageDeviceResponseDTO> devices = homePageService.getAllHomePageDevices();
+            return ResponseEntity.ok(devices);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 

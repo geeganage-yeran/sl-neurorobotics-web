@@ -7,12 +7,15 @@ import Alert from "../components/Alert";
 import DynamicHeader from "../components/DynamicHeader"
 import carsol1 from "../assets/carsol1.jpg"
 import carsol2 from "../assets/carsol2.jpg"
+import api from "../services/api";
 
 export default function HomePage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [email, setEmail] = useState("");
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [currentSlide, setCurrentSlide] = useState(0);
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [alert, setAlert] = useState({
     open: false,
     message: "",
@@ -25,6 +28,31 @@ export default function HomePage() {
     carsol1,
     carsol2,
   ];
+
+  const getAllProducts = async () => {
+    try {
+      setLoading(true);
+      const response = await api.get(
+        "/public/getHomePageDevice",
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+   
+      setProducts(response.data);
+    } catch (error) {
+      console.error(error);
+      showAlert("Failed to load products", "error", "top-right");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    getAllProducts();
+  }, []);
 
   // Auto-advance carousel
   useEffect(() => {
@@ -60,6 +88,9 @@ export default function HomePage() {
     console.log("Subscribe email:", email);
     setEmail("");
   };
+
+  // Get upcoming product (you might want to adjust this logic based on your API response structure)
+  const upcomingProduct = products.find(product => product.category === "upcoming") || products[0];
 
   return (
     <div className="min-h-screen bg-white">
@@ -133,46 +164,49 @@ export default function HomePage() {
             </p>
           </div>
 
-          <div className="overflow-hidden bg-white shadow-xl rounded-2xl">
-            <div className="grid items-center gap-0 lg:grid-cols-2">
-              <div className="flex items-center justify-center p-8 bg-gray-100 lg:p-12 min-h-96">
-                <div className="relative">
-                  <img
-                    src={product1}
-                    alt="SL Neurorobotics prouduct1"
-                    className="object-cover w-full h-full transition-transform duration-300 ease-in-out transform hover:scale-110"
-                  />
+          {loading ? (
+            <div className="flex justify-center items-center py-12">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#006494]"></div>
+            </div>
+          ) : upcomingProduct ? (
+            <div className="overflow-hidden bg-white shadow-xl rounded-2xl">
+              <div className="grid items-center gap-0 lg:grid-cols-2">
+                <div className="flex items-center justify-center p-8 bg-gray-100 lg:p-12 min-h-96">
+                  <div className="relative">
+                    <img
+                      src={upcomingProduct.imageUrl} // Use product image from API or fallback
+                      alt={upcomingProduct.imageUrl}
+                      className="object-cover w-full h-full transition-transform duration-300 ease-in-out transform hover:scale-110"
+                    />
+                  </div>
                 </div>
-              </div>
-              <div className="p-8 lg:p-12">
-                <h3 className="text-3xl lg:text-4xl font-bold text-[#006494] mb-6 leading-tight">
-                  X - 14 Channel Wireless
-                  <br />
-                  EEG Headset
-                </h3>
-                <p className="mb-8 text-lg leading-relaxed text-justify text-gray-600">
-                  Lorem ipsum is simply dummy text of the printing and
-                  typesetting industry. Lorem ipsum has been the industry's
-                  standard dummy text ever since the 1500s, when an unknown
-                  printer took a galley of type and scrambled it to make a type
-                  specimen book. It has survived not only five centuries, but
-                  also the leap into electronic typesetting, remaining
-                  essentially unchanged.
-                </p>
-                <div className="flex flex-col gap-4 sm:flex-row">
-                  <Button variant="primary" size="medium">
-                    More About
-                  </Button>
-                  <Button variant="secondary" size="medium">
-                    Get a Quotation
-                  </Button>
+                <div className="p-8 lg:p-12">
+                  <h3 className="text-3xl lg:text-4xl font-bold text-[#006494] mb-6 leading-tight">
+                    {upcomingProduct.title}
+                  </h3>
+                  <p className="mb-8 text-lg leading-relaxed text-justify text-gray-600">
+                    {upcomingProduct.description }
+                  </p>
+                  <div className="flex flex-col gap-4 sm:flex-row">
+                    <Button variant="primary" size="medium">
+                      More About
+                    </Button>
+                    <Button variant="secondary" size="medium">
+                      Get a Quotation
+                    </Button>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
+          ) : (
+            <div className="text-center py-12">
+              <p className="text-gray-600">No upcoming products found.</p>
+            </div>
+          )}
         </div>
       </section>
 
+      {/* Rest of your components remain the same */}
       {/* New Arrivals Section */}
       <section className="py-20 bg-[#051923]">
         <div data-aos="fade-up" className="px-4 mx-auto max-w-7xl sm:px-6 lg:px-8">
@@ -180,7 +214,6 @@ export default function HomePage() {
             <div className="grid items-center gap-0 lg:grid-cols-2">
               <div className="p-8 lg:p-12 bg-[#051923] flex items-center justify-center min-h-96">
                 <div className="relative">
-                  {/* Container with your image */}
                   <img
                     src={product2}
                     alt="product2"
