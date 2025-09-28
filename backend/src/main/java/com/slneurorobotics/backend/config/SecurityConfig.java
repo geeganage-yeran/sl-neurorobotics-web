@@ -1,6 +1,7 @@
 package com.slneurorobotics.backend.config;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -15,14 +16,25 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
-public class SecurityConfig {
+public class SecurityConfig implements WebMvcConfigurer {
 
     private final JwtAuthenticationFilter jwtAuthFilter;
     private final UserDetailsService userDetailsService;
+
+    @Value("${product.image.upload.dir2}")
+    private String uploadDir;
+
+    @Override
+    public void addResourceHandlers(ResourceHandlerRegistry registry) {
+        registry.addResourceHandler("/uploads/**")
+                .addResourceLocations("file:" + uploadDir + "/");
+    }
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -61,7 +73,8 @@ public class SecurityConfig {
                                 "/api/sendemail",
                                 "/api/auth/reset-password",
                                 "/api/auth/verify-otp",
-                                "/api/auth/change-password"
+                                "/api/auth/change-password",
+                                "/api/public/getHomePageDevice"
                         ).permitAll()
 
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")

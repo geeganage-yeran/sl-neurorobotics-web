@@ -1,10 +1,7 @@
 package com.slneurorobotics.backend.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.slneurorobotics.backend.dto.request.FaqRequestDTO;
-import com.slneurorobotics.backend.dto.request.PasswordChangeDTO;
-import com.slneurorobotics.backend.dto.request.ProductRequestDTO;
-import com.slneurorobotics.backend.dto.request.UserSettingUpdateDTO;
+import com.slneurorobotics.backend.dto.request.*;
 import com.slneurorobotics.backend.dto.response.*;
 import com.slneurorobotics.backend.entity.FAQ;
 import com.slneurorobotics.backend.service.*;
@@ -34,6 +31,7 @@ public class AdminController {
     private final UserService userService;
     private PasswordService passwordService;
     private final FaqService faqService;
+    private final HomePageService homePageService;
 
     @PostMapping("/addProduct")
     public ResponseEntity<?> createProduct(
@@ -351,5 +349,21 @@ public class AdminController {
                     ));
         }
     }
+
+    @PostMapping("/saveHomePageDevice")
+    public ResponseEntity<?> saveHomePageDevice(
+            @RequestParam("deviceData") String deviceDataJson,
+            @RequestParam(value = "deviceImage", required = false) MultipartFile deviceImage
+    ) {
+        try {
+            HomePageDeviceDTO deviceData = objectMapper.readValue(deviceDataJson, HomePageDeviceDTO.class);
+            homePageService.saveDeviceSection(deviceData, deviceImage);
+            return ResponseEntity.ok("Home page device section saved successfully");
+        } catch (Exception e) {
+            log.error("Error saving home page device section: ", e);
+            return ResponseEntity.badRequest().body("Failed to save device section: " + e.getMessage());
+        }
+    }
+
 
 }
