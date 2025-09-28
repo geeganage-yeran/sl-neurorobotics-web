@@ -4,13 +4,23 @@ import com.slneurorobotics.backend.config.JwtUtil;
 import com.slneurorobotics.backend.dto.response.LoginResponseDTO;
 import com.slneurorobotics.backend.entity.User;
 import com.slneurorobotics.backend.repository.UserRepository;
+import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.security.SecureRandom;
+import java.time.LocalDateTime;
 import java.util.HashSet;
+import java.util.Optional;
+import java.util.Random;
 import java.util.Set;
 
 @Service
@@ -93,4 +103,7 @@ public class AuthService {
     public boolean isTokenBlacklisted(String token) {
         return blacklistedTokens.contains(token);
     }
+
+
+
 }

@@ -72,6 +72,12 @@ public class User implements UserDetails {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
+    @Column(name = "verification_code", length = 60, nullable = true)
+    private String verificationCode;
+
+    @Column(name = "code_expiration_time", nullable = true)
+    private LocalDateTime codeExpirationTime;
+
     public void updateLastLogin() {
         this.lastLogin = LocalDateTime.now();
     }

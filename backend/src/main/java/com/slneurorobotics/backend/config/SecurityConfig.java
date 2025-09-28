@@ -59,7 +59,11 @@ public class SecurityConfig {
                                 "/api/faq/all",
                                 "/api/products/chatbot",
                                 "/api/checkout/session",
-                                "/api/sendemail"
+                                "/api/sendemail",
+                                "/api/auth/reset-password",
+                                "/api/auth/verify-otp",
+                                "/api/auth/change-password"
+
                         ).permitAll()
 
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")

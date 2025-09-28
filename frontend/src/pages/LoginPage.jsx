@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import LeftImage from "../assets/image1.jpg";
-import {ChevronLeft } from 'lucide-react';
+import { ChevronLeft } from 'lucide-react';
 import Alert from "../components/Alert";
 import {
   validateForm,
@@ -20,6 +20,11 @@ export default function LoginPage() {
   });
 
   const navigate = useNavigate();
+
+  const handleForgotPassword = () => {
+    navigate("/enteremail");
+  };
+
 
   const [loading, setLoading] = useState(false);
 
@@ -303,12 +308,12 @@ export default function LoginPage() {
               </div>
 
               <div className="flex justify-end">
-                <a
-                  href="#"
-                  className="text-sm text-[#0582CA] hover:text-[#003554] transition-colors duration-200"
+                <button
+                  onClick={handleForgotPassword}
+                  className="text-sm text-[#0582CA] hover:text-[#003554] transition-colors duration-200 bg-transparent border-none cursor-pointer"
                 >
                   Forgot Password?
-                </a>
+                </button>
               </div>
 
               <button
