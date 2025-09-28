@@ -5,17 +5,12 @@ import com.slneurorobotics.backend.dto.request.FaqRequestDTO;
 import com.slneurorobotics.backend.dto.request.PasswordChangeDTO;
 import com.slneurorobotics.backend.dto.request.ProductRequestDTO;
 import com.slneurorobotics.backend.dto.request.UserSettingUpdateDTO;
-import com.slneurorobotics.backend.dto.response.FaqResponseDTO;
-import com.slneurorobotics.backend.dto.response.ProductResponseDTO;
-import com.slneurorobotics.backend.dto.response.UserResponseDTO;
-import com.slneurorobotics.backend.dto.response.UserSettingResponseDTO;
+import com.slneurorobotics.backend.dto.response.*;
 import com.slneurorobotics.backend.entity.FAQ;
-import com.slneurorobotics.backend.service.FaqService;
-import com.slneurorobotics.backend.service.PasswordService;
-import com.slneurorobotics.backend.service.ProductService;
-import com.slneurorobotics.backend.service.UserService;
+import com.slneurorobotics.backend.service.*;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
+import lombok.extern.slf4j.Slf4j;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -27,12 +22,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+@Slf4j
 @RestController
 @RequestMapping("api/admin")
 @RequiredArgsConstructor
 public class AdminController {
 
     private final ProductService productService;
+    private final OrderService orderService;
     private final ObjectMapper objectMapper;
     private final UserService userService;
     private PasswordService passwordService;
@@ -217,7 +214,142 @@ public class AdminController {
         }
     }
 
+    @GetMapping("/orders/all")
+    public ResponseEntity<?> getAllOrders(@RequestParam(required = false) String status) {
+        try {
+            log.info("Fetching all orders - status: {}", status);
 
+            List<OrderResponseDTO> orders = orderService.getAllOrdersWithDetails(status);
 
+            return ResponseEntity.ok(Map.of(
+                    "success", true,
+                    "data", orders,
+                    "count", orders.size()
+            ));
+
+        } catch (Exception e) {
+            log.error("Error fetching all orders: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of(
+                            "success", false,
+                            "message", "Failed to fetch orders"
+                    ));
+        }
+    }
+
+    /**
+     * Update order tracking information
+     */
+    @PutMapping("/orders/{orderId}/tracking")
+    public ResponseEntity<?> updateOrderTracking(
+            @PathVariable Long orderId,
+            @RequestBody Map<String, String> requestBody) {
+        try {
+            String trackingNumber = requestBody.get("trackingNumber");
+            String trackingLink = requestBody.get("trackingLink");
+
+            if (trackingNumber == null || trackingNumber.trim().isEmpty()) {
+                return ResponseEntity.badRequest()
+                        .body(Map.of(
+                                "success", false,
+                                "message", "Tracking number is required"
+                        ));
+            }
+
+            if (trackingLink == null || trackingLink.trim().isEmpty()) {
+                return ResponseEntity.badRequest()
+                        .body(Map.of(
+                                "success", false,
+                                "message", "Tracking link is required"
+                        ));
+            }
+
+            orderService.updateOrderTracking(orderId, trackingNumber, trackingLink);
+
+            return ResponseEntity.ok(Map.of(
+                    "success", true,
+                    "message", "Tracking information updated successfully"
+            ));
+
+        } catch (RuntimeException e) {
+            log.error("Error updating tracking for order {}: {}", orderId, e.getMessage());
+            return ResponseEntity.badRequest()
+                    .body(Map.of(
+                            "success", false,
+                            "message", e.getMessage()
+                    ));
+        } catch (Exception e) {
+            log.error("Unexpected error updating tracking: {}", orderId, e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of(
+                            "success", false,
+                            "message", "An unexpected error occurred"
+                    ));
+        }
+    }
+
+    /**
+     * Cancel Orders
+     */
+    @PutMapping("/orders/{orderId}/cancel")
+    public ResponseEntity<?> updateOrderStatus(
+            @PathVariable Long orderId,
+            @RequestBody Map<String, String> requestBody) {
+        try {
+
+            String reason = requestBody.get("reason");
+            orderService.cancelOrder(orderId,reason);
+
+            return ResponseEntity.ok(Map.of(
+                    "success", true,
+                    "message", "Order cancelled successfully"
+            ));
+
+        } catch (RuntimeException e) {
+            log.error("Error updating tracking for order {}: {}", orderId, e.getMessage());
+            return ResponseEntity.badRequest()
+                    .body(Map.of(
+                            "success", false,
+                            "message", e.getMessage()
+                    ));
+        } catch (Exception e) {
+            log.error("Unexpected error updating tracking: {}", orderId, e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of(
+                            "success", false,
+                            "message", "An unexpected error occurred"
+                    ));
+        }
+    }
+
+    @PutMapping("/orders/{orderId}/complete")
+    public ResponseEntity<?> completeOrder(
+            @PathVariable Long orderId,
+            @RequestBody Map<String, String> requestBody) {
+        try {
+
+            orderService.completeOrder(orderId);
+
+            return ResponseEntity.ok(Map.of(
+                    "success", true,
+                    "message", "Order cancelled successfully"
+            ));
+
+        } catch (RuntimeException e) {
+            log.error("Error updating tracking for order {}: {}", orderId, e.getMessage());
+            return ResponseEntity.badRequest()
+                    .body(Map.of(
+                            "success", false,
+                            "message", e.getMessage()
+                    ));
+        } catch (Exception e) {
+            log.error("Unexpected error updating tracking: {}", orderId, e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of(
+                            "success", false,
+                            "message", "An unexpected error occurred"
+                    ));
+        }
+    }
 
 }

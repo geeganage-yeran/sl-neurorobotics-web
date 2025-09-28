@@ -56,7 +56,7 @@ function UserAccountOverview({user}) {
         <div className="p-6 lg:p-6">
           <div className="lg:max-w-none">
             <Routes>
-              <Route path="myorders" element={<MyOrders />} />
+              <Route path="myorders" element={<MyOrders user={user} />} />
               <Route path="settings" element={<Settings user={user}/>} />
               <Route path="shipping" element={<ShippingAddress  user={user}/>} />
               <Route path="quotations" element={<Quotations />} />

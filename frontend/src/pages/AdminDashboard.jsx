@@ -10,6 +10,7 @@ import FAQ from "./adminPanel/FaqPage";
 import Settings from "./adminPanel/Settings";
 import { useEffect } from "react";
 import api from "../services/api";
+import ManageHomepage from "./adminPanel/ManageHomePage";
 import OrderManagment from "./adminPanel/OderManagement";
 
 
@@ -72,6 +73,7 @@ function AdminDashboard() {
           <Route path="/FAQ" element={<FAQ user={user} />} />
           <Route path="/settings" element={<Settings user={user} />} />
           <Route path="/ordermanagement" element={<OrderManagment />} />
+          <Route path="/managehomepage" element={<ManageHomepage />} />
           <Route path="/" element={<Dashboard />} />
         </Routes>
       </div>

@@ -9,32 +9,28 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "payments")
+@Table(name = "order_items")
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class Payment {
+public class OrderItem {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
-    private Long paymentId;
+    private Long orderItemId;
 
-    @Column(name = "order_id", nullable = false, unique = true)
+    @Column(name = "order_id", nullable = false)
     private Long orderId;
 
-    @Column(name = "stripe_payment_intent_id", nullable = false, unique = true)
-    private String stripePaymentIntentId;
+    @Column(name = "product_id", nullable = false)
+    private Long productId;
 
-    @Column(name = "amount", nullable = false, precision = 10, scale = 2)
-    private BigDecimal amount;
+    @Column(name = "quantity", nullable = false)
+    private Integer quantity;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "status", nullable = false)
-    private PaymentStatus status = PaymentStatus.PENDING;
-
-    @Column(name = "currency")
-    private String currency = "USD";
+    @Column(name = "price", nullable = false, precision = 10, scale = 2)
+    private BigDecimal price;
 
     @Column(name = "created_by")
     private Long createdBy;
@@ -49,17 +45,13 @@ public class Payment {
     private LocalDateTime updatedAt;
 
     // Relationships
-    @OneToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "order_id", insertable = false, updatable = false)
     private Order order;
 
-    // Enum for payment status
-    public enum PaymentStatus {
-        PENDING,
-        SUCCEEDED,
-        FAILED,
-        CANCELLED
-    }
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "product_id", insertable = false, updatable = false)
+    private Product product;
 
     @PrePersist
     protected void onCreate() {
@@ -72,8 +64,8 @@ public class Payment {
         updatedAt = LocalDateTime.now();
     }
 
-    // Convenience method
-    public boolean isSuccessful() {
-        return status == PaymentStatus.SUCCEEDED;
+    // Convenience method to calculate total price for this item
+    public BigDecimal getTotalPrice() {
+        return price.multiply(BigDecimal.valueOf(quantity));
     }
 }
