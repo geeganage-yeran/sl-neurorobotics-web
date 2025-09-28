@@ -16,6 +16,9 @@ import AddToCart from "./pages/addtocart";
 import ProceedToPay from "./pages/proceedToPay";
 import PaymentSuccess from "./components/PaymentSuccess";
 import PaymentFailed from "./components/paymentFail";
+import ForgetPassword from "./pages/enterEmail";
+import Enterotp from "./pages/enterOTP";
+import ChangePassword from "./pages/fogotPassword";
 
 function App() {
   return (
@@ -32,7 +35,10 @@ function App() {
         <Route path="/productview/:id" element={<Productview/>}/>
         <Route path="/payment-success" element={<PaymentSuccess />} />
         <Route path="/payment-failed" element={<PaymentFailed />} />
-
+        <Route path="/enteremail" element={<ForgetPassword />} />
+        <Route path="/verify-reset-code" element={<Enterotp />} />
+        <Route path="/reset-password" element={<ChangePassword />} />
+        
         {/* Authentication needed */}
         <Route
           path="/dashboard/*"

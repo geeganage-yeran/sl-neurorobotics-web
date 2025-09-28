@@ -20,6 +20,5 @@ public class ProductResponseDTO {
     private BigDecimal price;
     private Boolean enabled;
     private List<ProductImageResponseDTO> images;
-  //  private String specifications; // JSON string
     private Map<String, String> specifications;
 }

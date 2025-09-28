@@ -61,4 +61,18 @@ public class ProductController {
         }
     }
 
+    @GetMapping("/getLatestProducts")
+    public ResponseEntity<List<ProductResponseDTO>> getLatest4Products() {
+        try {
+            log.info("Fetching latest 4 products for footer");
+            List<ProductResponseDTO> latestProducts = productService.getLatest4Products();
+            log.info("Successfully fetched {} products", latestProducts.size());
+
+            return ResponseEntity.ok(latestProducts);
+        } catch (Exception e) {
+            log.error("Error fetching latest products: ", e);
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
 }

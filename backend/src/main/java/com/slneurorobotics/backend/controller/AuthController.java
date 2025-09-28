@@ -1,12 +1,12 @@
 package com.slneurorobotics.backend.controller;
 
 import com.slneurorobotics.backend.config.JwtUtil;
-import com.slneurorobotics.backend.dto.request.LoginRequestDTO;
-import com.slneurorobotics.backend.dto.request.UserRegistrationDTO;
-import com.slneurorobotics.backend.dto.response.ErrorResponseDTO;
-import com.slneurorobotics.backend.dto.response.LoginResponseDTO;
+import com.slneurorobotics.backend.dto.request.*;
+import com.slneurorobotics.backend.dto.response.*;
 import com.slneurorobotics.backend.entity.User;
+import com.slneurorobotics.backend.repository.UserRepository;
 import com.slneurorobotics.backend.service.AuthService;
+import com.slneurorobotics.backend.service.PasswordResetService;
 import com.slneurorobotics.backend.service.UserDetailsServiceImpl;
 import com.slneurorobotics.backend.service.UserService;
 import jakarta.servlet.http.Cookie;
@@ -23,11 +23,14 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 @Slf4j
 @RestController
@@ -38,8 +41,10 @@ public class AuthController {
     private final UserService userService;
     private final AuthenticationManager authenticationManager;
     private final AuthService authService;
+    private final PasswordResetService passwordResetService;
     private final JwtUtil jwtUtil;
     private final UserDetailsServiceImpl userDetailsServiceImpl;
+    private final UserRepository userRepository;
 
     @PostMapping("/register")
     public ResponseEntity<ErrorResponseDTO> registerUser(@Valid @RequestBody UserRegistrationDTO userRegistrationDTO, BindingResult bindingResult) {
@@ -237,6 +242,253 @@ public class AuthController {
 
         response.addHeader("Set-Cookie", cookie.toString());
     }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<?> checkEmailPost(@Valid @RequestBody CheckEmailRequestDTO requestDTO) {
+        try {
+            // Validate input
+            if (requestDTO.getEmail() == null || requestDTO.getEmail().trim().isEmpty()) {
+                CheckEmailResponseDTO response = CheckEmailResponseDTO.builder()
+                        .success(false)
+                        .message("Email is required")
+                        .emailExists(false)
+                        .build();
+                return ResponseEntity.badRequest().body(response);
+            }
+
+            boolean emailExists = passwordResetService.checkEmailExists(requestDTO.getEmail());
+
+            CheckEmailResponseDTO response = CheckEmailResponseDTO.builder()
+                    .success(emailExists)  // ← Set success based on email existence
+                    .message(emailExists ? "Email found and account is active" : "No active account found with this email address")
+                    .emailExists(emailExists)
+                    .email(requestDTO.getEmail().toLowerCase().trim())
+                    .build();
+
+            // Return appropriate HTTP status
+            if (emailExists) {
+                return ResponseEntity.ok(response);
+            } else {
+                return ResponseEntity.ok(response);  // Or use 404 if preferred
+            }
+
+        } catch (Exception e) {
+            log.error("Check email endpoint error for email: {}", requestDTO.getEmail(), e);
+            CheckEmailResponseDTO response = CheckEmailResponseDTO.builder()
+                    .success(false)
+                    .message("An error occurred while checking email")
+                    .emailExists(false)
+                    .email(requestDTO.getEmail() != null ? requestDTO.getEmail().toLowerCase().trim() : null)
+                    .build();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        }
+    }
+
+    @PostMapping("/verify-otp")
+    public ResponseEntity<?> verifyOTP(@Valid @RequestBody VerifyOTPRequestDTO requestDTO) {
+        try {
+            log.info("OTP verification attempt for email: {}", requestDTO.getEmail());
+
+            // Find user by email
+            Optional<User> userOpt = userRepository.findByEmail(requestDTO.getEmail().trim().toLowerCase());
+
+            if (userOpt.isEmpty()) {
+                VerifyOTPResponseDTO response = VerifyOTPResponseDTO.builder()
+                        .success(false)
+                        .message("No account found with this email address")
+                        .codeMatched(false)
+                        .codeExpired(false)
+                        .email(requestDTO.getEmail().toLowerCase().trim())
+                        .build();
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+            }
+
+            User user = userOpt.get();
+
+            // Check if user has a verification code
+            if (user.getVerificationCode() == null || user.getVerificationCode().trim().isEmpty()) {
+                VerifyOTPResponseDTO response = VerifyOTPResponseDTO.builder()
+                        .success(false)
+                        .message("No verification code found. Please request a new code.")
+                        .codeMatched(false)
+                        .codeExpired(false)
+                        .email(requestDTO.getEmail().toLowerCase().trim())
+                        .build();
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+            }
+
+            // Check if code is expired
+            LocalDateTime now = LocalDateTime.now();
+            boolean isExpired = user.getCodeExpirationTime() == null || now.isAfter(user.getCodeExpirationTime());
+
+            if (isExpired) {
+                log.warn("Expired OTP verification attempt for email: {}", requestDTO.getEmail());
+                VerifyOTPResponseDTO response = VerifyOTPResponseDTO.builder()
+                        .success(false)
+                        .message("Verification code has expired. Please request a new code.")
+                        .codeMatched(false)
+                        .codeExpired(true)
+                        .email(requestDTO.getEmail().toLowerCase().trim())
+                        .expirationTime(user.getCodeExpirationTime())
+                        .build();
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+            }
+
+            // Check if OTP matches (using BCrypt for secure comparison if stored as hash)
+            boolean codeMatches = false;
+            if (user.getVerificationCode().startsWith("$2")) {
+                // Code is hashed with BCrypt
+                codeMatches = BCrypt.checkpw(requestDTO.getOtp(), user.getVerificationCode());
+            } else {
+                // Code is stored as plain text (less secure but simpler)
+                codeMatches = user.getVerificationCode().equals(requestDTO.getOtp());
+            }
+
+            if (codeMatches) {
+                log.info("Successful OTP verification for email: {}", requestDTO.getEmail());
+
+                // Optional: Clear the verification code after successful verification
+                // user.setVerificationCode(null);
+                // user.setCodeExpirationTime(null);
+                // userRepository.save(user);
+
+                VerifyOTPResponseDTO response = VerifyOTPResponseDTO.builder()
+                        .success(true)
+                        .message("Verification code verified successfully")
+                        .codeMatched(true)
+                        .codeExpired(false)
+                        .email(requestDTO.getEmail().toLowerCase().trim())
+                        .expirationTime(user.getCodeExpirationTime())
+                        .build();
+                return ResponseEntity.ok(response);
+            } else {
+                log.warn("Invalid OTP verification attempt for email: {}", requestDTO.getEmail());
+                VerifyOTPResponseDTO response = VerifyOTPResponseDTO.builder()
+                        .success(false)
+                        .message("Invalid verification code. Please try again.")
+                        .codeMatched(false)
+                        .codeExpired(false)
+                        .email(requestDTO.getEmail().toLowerCase().trim())
+                        .expirationTime(user.getCodeExpirationTime())
+                        .build();
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+            }
+
+        } catch (Exception e) {
+            log.error("OTP verification error for email: {}", requestDTO.getEmail(), e);
+            VerifyOTPResponseDTO response = VerifyOTPResponseDTO.builder()
+                    .success(false)
+                    .message("An error occurred while verifying the code. Please try again.")
+                    .codeMatched(false)
+                    .codeExpired(false)
+                    .email(requestDTO.getEmail() != null ? requestDTO.getEmail().toLowerCase().trim() : null)
+                    .build();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        }
+    }
+
+    @PostMapping("/change-password")
+    public ResponseEntity<?> changePassword(@Valid @RequestBody ChangePasswordRequestDTO requestDTO, BindingResult bindingResult) {
+        try {
+            // Validation errors
+            if (bindingResult.hasErrors()) {
+                Map<String, String> errors = new HashMap<>();
+                bindingResult.getFieldErrors().forEach(error ->
+                        errors.put(error.getField(), error.getDefaultMessage())
+                );
+                ErrorResponseDTO errorResponse = new ErrorResponseDTO(false, "Validation failed", errors);
+                return ResponseEntity.badRequest().body(errorResponse);
+            }
+
+            // Validate input
+            if (requestDTO.getEmail() == null || requestDTO.getEmail().trim().isEmpty()) {
+                ChangePasswordResponseDTO response = ChangePasswordResponseDTO.builder()
+                        .success(false)
+                        .message("Email is required")
+                        .email(null)
+                        .build();
+                return ResponseEntity.badRequest().body(response);
+            }
+
+            if (requestDTO.getNewPassword() == null || requestDTO.getNewPassword().trim().isEmpty()) {
+                ChangePasswordResponseDTO response = ChangePasswordResponseDTO.builder()
+                        .success(false)
+                        .message("New password is required")
+                        .email(requestDTO.getEmail().toLowerCase().trim())
+                        .build();
+                return ResponseEntity.badRequest().body(response);
+            }
+
+            // Additional password validation
+            if (requestDTO.getNewPassword().length() < 6) {
+                ChangePasswordResponseDTO response = ChangePasswordResponseDTO.builder()
+                        .success(false)
+                        .message("Password must be at least 6 characters long")
+                        .email(requestDTO.getEmail().toLowerCase().trim())
+                        .build();
+                return ResponseEntity.badRequest().body(response);
+            }
+
+            // Check if user exists and is active
+            Optional<User> userOpt = userRepository.findByEmail(requestDTO.getEmail().toLowerCase().trim());
+
+            if (userOpt.isEmpty()) {
+                ChangePasswordResponseDTO response = ChangePasswordResponseDTO.builder()
+                        .success(false)
+                        .message("No account found with this email address")
+                        .email(requestDTO.getEmail().toLowerCase().trim())
+                        .build();
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+            }
+
+            User user = userOpt.get();
+
+            if (user.getIsActive() == null || !user.getIsActive()) {
+                ChangePasswordResponseDTO response = ChangePasswordResponseDTO.builder()
+                        .success(false)
+                        .message("Account is not active")
+                        .email(requestDTO.getEmail().toLowerCase().trim())
+                        .build();
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+            }
+
+            // Change password using service
+            boolean passwordChanged = passwordResetService.changePassword(
+                    requestDTO.getEmail().toLowerCase().trim(),
+                    requestDTO.getNewPassword()
+            );
+
+            if (passwordChanged) {
+                log.info("Password successfully changed for user: {}", requestDTO.getEmail());
+
+                ChangePasswordResponseDTO response = ChangePasswordResponseDTO.builder()
+                        .success(true)
+                        .message("Password changed successfully")
+                        .email(requestDTO.getEmail().toLowerCase().trim())
+                        .build();
+                return ResponseEntity.ok(response);
+            } else {
+                ChangePasswordResponseDTO response = ChangePasswordResponseDTO.builder()
+                        .success(false)
+                        .message("Failed to change password. Please try again.")
+                        .email(requestDTO.getEmail().toLowerCase().trim())
+                        .build();
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+            }
+
+        } catch (Exception e) {
+            log.error("Change password endpoint error for email: {}",
+                    requestDTO.getEmail() != null ? requestDTO.getEmail() : "null", e);
+
+            ChangePasswordResponseDTO response = ChangePasswordResponseDTO.builder()
+                    .success(false)
+                    .message("An error occurred while changing password. Please try again.")
+                    .email(requestDTO.getEmail() != null ? requestDTO.getEmail().toLowerCase().trim() : null)
+                    .build();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        }
+    }
+
 
 
 }
