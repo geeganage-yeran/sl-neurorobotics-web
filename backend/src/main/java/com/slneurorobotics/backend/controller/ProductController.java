@@ -89,4 +89,26 @@ public class ProductController {
         }
     }
 
+    // Add this method to ProductController.java
+
+    @GetMapping("/getLatestProduct")
+    public ResponseEntity<ProductResponseDTO> getLatestProduct() {
+        try {
+            log.info("Fetching latest product for homepage");
+            Optional<ProductResponseDTO> latestProduct = productService.getLatestProduct();
+
+            if (latestProduct.isEmpty()) {
+                log.warn("No enabled products found");
+                return ResponseEntity.notFound().build();
+            }
+
+            log.info("Successfully fetched latest product: {}", latestProduct.get().getName());
+            return ResponseEntity.ok(latestProduct.get());
+
+        } catch (Exception e) {
+            log.error("Error fetching latest product: ", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
 }

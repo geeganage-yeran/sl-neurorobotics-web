@@ -33,7 +33,6 @@ public class TripoSRService {
     private String apiKey;
 
     @Value("${app.models.dir}")
-
     private String modelsDir;
 
     private final RestTemplate restTemplate = new RestTemplate();

@@ -440,7 +440,7 @@ public class ProductService {
         return Optional.of(convertToResponseDTO(product));
     }
 
-    //additional
+
 
     private void updateProductDetailsInJson(Product product, ProductRequestDTO productRequest) {
         try {
@@ -608,6 +608,44 @@ public class ProductService {
         productResponseDTO.setId(product.getId());
         productResponseDTO.setName(product.getName());
         return productResponseDTO;
+    }
+
+
+    @Transactional(readOnly = true)
+    public Optional<ProductResponseDTO> getLatestProduct() {
+        try {
+            List<Product> products = productRepository.findLatestEnabledProduct();
+
+            if (products.isEmpty()) {
+                return Optional.empty();
+            }
+
+            Product latestProduct = products.get(0);
+
+            // Fetch only the image with displayOrder = 1
+            Optional<Product_image> firstImage = latestProduct.getImages().stream()
+                    .filter(img -> img.getDisplayOrder() == 1)
+                    .findFirst();
+
+            ProductResponseDTO dto = new ProductResponseDTO();
+            dto.setId(latestProduct.getId());
+            dto.setName(latestProduct.getName());
+            dto.setDescription(latestProduct.getDescription());
+
+            // Add only the first image
+            if (firstImage.isPresent()) {
+                ProductImageResponseDTO imageDTO = convertToImageResponseDTOWithUrl(firstImage.get());
+                dto.setImages(List.of(imageDTO));
+            } else {
+                dto.setImages(List.of());
+            }
+
+            return Optional.of(dto);
+
+        } catch (Exception e) {
+            System.err.println("Error fetching latest product: " + e.getMessage());
+            return Optional.empty();
+        }
     }
 
 

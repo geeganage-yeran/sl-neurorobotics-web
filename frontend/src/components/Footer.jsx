@@ -131,10 +131,6 @@ const Footer = () => {
                 <div className="pt-4 mt-6 border-t border-gray-800">
                     <div className="text-sm text-center text-gray-400">
                         <p>© 2025 SL Neurorobotics. All rights reserved.</p>
-                        <p className="mt-2">
-                            Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard
-                            dummy text ever since me.
-                        </p>
                     </div>
                 </div>
             </div>

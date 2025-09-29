@@ -16,6 +16,8 @@ export default function HomePage() {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [latestProduct, setLatestProduct] = useState(null);
+  const [latestProductLoading, setLatestProductLoading] = useState(true);
   const [alert, setAlert] = useState({
     open: false,
     message: "",
@@ -50,8 +52,27 @@ export default function HomePage() {
     }
   };
 
+  // Fetch latest product for New Arrivals section
+  const getLatestProduct = async () => {
+    try {
+      setLatestProductLoading(true);
+      const response = await api.get("/public/getLatestProduct", {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+      setLatestProduct(response.data);
+    } catch (error) {
+      console.error("Error fetching latest product:", error);
+      showAlert("Failed to load latest product", "error", "top-right");
+    } finally {
+      setLatestProductLoading(false);
+    }
+  };
+
   useEffect(() => {
     getAllProducts();
+    getLatestProduct(); // Fetch latest product on component mount
   }, []);
 
   // Auto-advance carousel
@@ -89,7 +110,7 @@ export default function HomePage() {
     setEmail("");
   };
 
-  // Get upcoming product (you might want to adjust this logic based on your API response structure)
+  // Get upcoming product
   const upcomingProduct = products.find(product => product.category === "upcoming") || products[0];
 
   return (
@@ -174,7 +195,7 @@ export default function HomePage() {
                 <div className="flex items-center justify-center p-8 bg-gray-100 lg:p-12 min-h-96">
                   <div className="relative">
                     <img
-                      src={upcomingProduct.imageUrl} // Use product image from API or fallback
+                      src={upcomingProduct.imageUrl}
                       alt={upcomingProduct.imageUrl}
                       className="object-cover w-full h-full transition-transform duration-300 ease-in-out transform hover:scale-110"
                     />
@@ -185,7 +206,7 @@ export default function HomePage() {
                     {upcomingProduct.title}
                   </h3>
                   <p className="mb-8 text-lg leading-relaxed text-justify text-gray-600">
-                    {upcomingProduct.description }
+                    {upcomingProduct.description}
                   </p>
                   <div className="flex flex-col gap-4 sm:flex-row">
                     <Button variant="primary" size="medium">
@@ -203,45 +224,59 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Rest of your components remain the same */}
-      {/* New Arrivals Section */}
+      {/* New Arrivals Section - Dynamic Latest Product */}
       <section className="py-20 bg-[#051923]">
         <div data-aos="fade-up" className="px-4 mx-auto max-w-7xl sm:px-6 lg:px-8">
           <div className="bg-[#051923] rounded-2xl shadow-2xl overflow-hidden">
-            <div className="grid items-center gap-0 lg:grid-cols-2">
-              <div className="p-8 lg:p-12 bg-[#051923] flex items-center justify-center min-h-96">
-                <div className="relative">
-                  <img
-                    src={product2}
-                    alt="product2"
-                    className="object-cover w-full h-full transition-transform duration-300 ease-in-out transform hover:scale-110"
-                  />
+            {latestProductLoading ? (
+              <div className="flex items-center justify-center min-h-96">
+                <div className="w-12 h-12 border-4 border-t-[#0582CA] border-gray-600 rounded-full animate-spin"></div>
+              </div>
+            ) : latestProduct ? (
+              <div className="grid items-center gap-0 lg:grid-cols-2">
+                {/* Product Image */}
+                <div className="p-8 lg:p-12 bg-[#051923] flex items-center justify-center min-h-96">
+                  <div className="relative overflow-hidden rounded-lg">
+                    <img
+                      src={
+                        latestProduct.images && latestProduct.images.length > 0
+                          ? latestProduct.images[0].imageUrl
+                          : product2
+                      }
+                      alt={latestProduct.name}
+                      className="object-cover w-full h-full transition-transform duration-300 ease-in-out transform hover:scale-110"
+                      onError={(e) => {
+                        e.target.src = product2;
+                      }}
+                    />
+                  </div>
+                </div>
+
+                {/* Product Details */}
+                <div className="p-8 lg:p-12">
+                  <span className="text-[#0582CA] text-2xl font-bold uppercase tracking-wider animate-pulse">
+                    New Arrivals
+                  </span>
+                  <h3 className="mb-6 text-3xl font-bold leading-tight text-white lg:text-4xl">
+                    {latestProduct.name}
+                  </h3>
+                  <p className="mb-8 text-lg leading-relaxed text-justify text-gray-300">
+                    {latestProduct.description || 'No description available.'}
+                  </p>
+                  <Button 
+                    variant="primary" 
+                    size="medium"
+                    onClick={() => window.location.href = `/productview/${latestProduct.id}`}
+                  >
+                    Buy Now
+                  </Button>
                 </div>
               </div>
-              <div className="p-8 lg:p-12">
-                <span className="text-[#0582CA] text-2xl font-bold uppercase tracking-wider animate-pulse">
-                  New Arrivals
-                </span>
-                <h3
-                  className="mb-6 text-3xl font-bold leading-tight lg:text-4xl"
-                  style={{ color: "#FFFFFF" }}
-                >
-                  EEG Controlled Chairbed
-                </h3>
-                <p className="mb-8 text-lg leading-relaxed text-justify text-gray-300">
-                  Lorem ipsum is simply dummy text of the printing and
-                  typesetting industry. Lorem ipsum has been the industry's
-                  standard dummy text ever since the 1500s, when an unknown
-                  printer took a galley of type and scrambled it to make a type
-                  specimen book. It has survived not only five centuries, but
-                  also the leap into electronic typesetting, remaining
-                  essentially unchanged.
-                </p>
-                <Button variant="primary" size="medium">
-                  Buy Now
-                </Button>
+            ) : (
+              <div className="flex items-center justify-center min-h-96">
+                <p className="text-gray-400">No products available.</p>
               </div>
-            </div>
+            )}
           </div>
         </div>
       </section>
