@@ -326,7 +326,7 @@ export default function LoginPage() {
               </button>
             </form>
 
-            <div className="mt-6">
+            {/* <div className="mt-6">
               <div className="relative">
                 <div className="absolute inset-0 flex items-center">
                   <div className="w-full border-t border-gray-200"></div>
@@ -362,7 +362,7 @@ export default function LoginPage() {
                 </svg>
                 Sign in with Google
               </button>
-            </div>
+            </div> */}
 
             <p className="mt-6 text-center text-sm text-gray-600">
               Don't have an account?{" "}

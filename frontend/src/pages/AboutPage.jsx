@@ -291,7 +291,7 @@ export default function AboutPage() {
               <div className="h-64 overflow-hidden rounded-lg sm:h-80">
                 {/* Google Maps Embed */}
                 <iframe
-                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3960.798511757686!2d79.85397541532826!3d6.919444295003654!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3ae2596b5c8c7e91%3A0x1b0a8f5f8f5f8f5f!2sTemple%20Road%2C%20Colombo!5e0!3m2!1sen!2slk!4v1620000000000!5m2!1sen!2slk"
+                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d31680.774998674817!2d81.05253360198961!3d6.997872136600694!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3ae4618dcc9285c1%3A0xb00c2651b760be78!2sRambukpotha%20Maha%20Walawwa!5e0!3m2!1sen!2slk!4v1759126538023!5m2!1sen!2slk"
                   width="100%"
                   height="100%"
                   style={{ border: 0 }}
@@ -319,7 +319,7 @@ export default function AboutPage() {
                       SL Neurorobotics (PVT) LTD
                     </div>
                     <div className="mt-1 text-xs sm:text-sm">
-                      80/3/2, Temple Road, Kandukkapatha Batahola, Sri Lanka
+                      80/3/2, Temple Road, Rambukpotha, Badulla, Sri Lanka
                     </div>
                   </div>
                 </div>

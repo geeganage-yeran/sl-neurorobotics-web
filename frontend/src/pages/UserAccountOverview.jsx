@@ -5,7 +5,6 @@ import { Routes, Route, useNavigate, useLocation } from "react-router-dom";
 import MyOrders from "./userAccountSection/MyOrders";
 import Settings from "./userAccountSection/Settings";
 import ShippingAddress from "./userAccountSection/Shipping";
-import Quotations from "./userAccountSection/Quotation";
 import HelpCenter from "./userAccountSection/HelpCenter";
 
 function UserAccountOverview({user}) {
@@ -18,7 +17,6 @@ function UserAccountOverview({user}) {
     '/dashboard/account/myorders': 'My Orders',
     '/dashboard/account/settings': 'Settings',
     '/dashboard/account/shipping': 'Shipping Address',
-    '/dashboard/account/quotations': 'Quotations',
     '/dashboard/account/help': 'Help Center'
   };
 
@@ -59,7 +57,6 @@ function UserAccountOverview({user}) {
               <Route path="myorders" element={<MyOrders user={user} />} />
               <Route path="settings" element={<Settings user={user}/>} />
               <Route path="shipping" element={<ShippingAddress  user={user}/>} />
-              <Route path="quotations" element={<Quotations />} />
               <Route path="help" element={<HelpCenter />} />
               <Route index element={<MyOrders />} />
             </Routes>
