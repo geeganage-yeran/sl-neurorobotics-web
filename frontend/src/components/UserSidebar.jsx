@@ -33,12 +33,6 @@ const UserSidebar = ({ activePage, setActivePage }) => {
       description: "Manage delivery addresses",
     },
     {
-      name: "Quotations",
-      icon: FileText,
-      path: "/dashboard/account/quotations",
-      description: "Price estimates",
-    },
-    {
       name: "Help Center",
       icon: HelpCircle,
       path: "/dashboard/account/help",

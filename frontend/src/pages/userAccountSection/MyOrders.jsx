@@ -234,7 +234,7 @@ function MyOrder({ user }) {
                               {order.items.map((item, index) => (
                                 <div key={index} className="text-gray-600 text-sm mb-1">
                                   <span className="font-medium">{item.productName}</span> - 
-                                  Qty: {item.quantity} × ${item.price}
+                                  Qty: {item.quantity} × ${item.price.toFixed(2)}
                                 </div>
                               ))}
                             </div>
@@ -289,7 +289,7 @@ function MyOrder({ user }) {
                       {/* Price and Actions */}
                       <div className="text-right flex-shrink-0">
                         <div className="text-xl font-bold text-gray-900 mb-3">
-                          ${order.totalAmount}
+                          ${order.totalAmount.toFixed(2)}
                         </div>
                         <div className="flex flex-col space-y-2">
                           {order.status === "TEMP" && (
