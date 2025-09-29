@@ -254,6 +254,7 @@ function MyOrder({ user }) {
                                 <div key={index} className="text-gray-600 text-sm mb-1">
                                   <span className="font-medium">{item.productName}</span> - 
                                   Qty: {item.quantity} × ${item.price.toFixed(2)}
+                                </div>
                               ))}
                             </div>
                           )}

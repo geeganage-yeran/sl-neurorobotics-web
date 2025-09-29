@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, use } from "react";
 import Footer from "../components/Footer";
+import { useNavigate, Navigate } from "react-router-dom";
 import Button from "../components/Button";
 import product1 from "../assets/landing.png";
 import product2 from "../assets/chairbed.png";
@@ -30,6 +31,13 @@ export default function HomePage() {
     carsol1,
     carsol2,
   ];
+
+  const Navigate = useNavigate();
+  
+  const buttonClick = () => {
+    Navigate("/about#contactUs");
+  }
+
 
   const getAllProducts = async () => {
     try {
@@ -97,18 +105,18 @@ export default function HomePage() {
     setAlert((prev) => ({ ...prev, open: false }));
   };
 
-  const handleSearch = () => {
-    console.log("Search query:", searchQuery);
-  };
+  // const handleSearch = () => {
+  //   console.log("Search query:", searchQuery);
+  // };
 
-  const handleSubscribe = () => {
-    if (!email) {
-      showAlert("Please enter a valid email address.", "error", "top-right");
-      return;
-    }
-    console.log("Subscribe email:", email);
-    setEmail("");
-  };
+  // const handleSubscribe = () => {
+  //   if (!email) {
+  //     showAlert("Please enter a valid email address.", "error", "top-right");
+  //     return;
+  //   }
+  //   console.log("Subscribe email:", email);
+  //   setEmail("");
+  // };
 
   // Get upcoming product
   const upcomingProduct = products.find(product => product.category === "upcoming") || products[0];
@@ -209,7 +217,7 @@ export default function HomePage() {
                     {upcomingProduct.description}
                   </p>
                   <div className="flex flex-col gap-4 sm:flex-row">
-                    <Button variant="primary" size="medium">
+                    <Button variant="primary" onClick={buttonClick} size="medium">
                       More About
                     </Button>
                   </div>

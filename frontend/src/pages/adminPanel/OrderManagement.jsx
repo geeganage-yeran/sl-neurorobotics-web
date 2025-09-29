@@ -227,7 +227,7 @@ const TrackingInput = ({ order, onUpdateTracking, onMarkComplete }) => {
           <div className="flex gap-2">
             <button
               onClick={() => onMarkComplete(order.id)}
-              className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium"
+              className="px-4 py-2 bg-green-600 cursor-pointer text-white rounded-lg hover:bg-green-700 transition-colors font-medium"
             >
               Mark as Completed
             </button>
@@ -269,7 +269,7 @@ const TrackingInput = ({ order, onUpdateTracking, onMarkComplete }) => {
               disabled={
                 !trackingNumber.trim() || !trackingLink.trim() || isSubmitting
               }
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 font-medium"
+              className="px-4 py-2 cursor-pointer bg-[#003554] text-white rounded-lg hover:bg-[#003554] disabled:opacity-50 font-medium"
             >
               {isSubmitting
                 ? "Saving..."
@@ -284,7 +284,7 @@ const TrackingInput = ({ order, onUpdateTracking, onMarkComplete }) => {
                   setTrackingNumber(order.trackingNumber);
                   setTrackingLink(order.trackingLink);
                 }}
-                className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50"
+                className="px-4 py-2 border border-gray-300 cursor-pointer text-gray-700 rounded-lg hover:bg-gray-50"
               >
                 Cancel
               </button>
@@ -644,7 +644,7 @@ const OrderManagement = () => {
                     <div className="flex gap-3 mb-4">
                       <button
                         onClick={() => handleCancelClick(order)}
-                        className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium flex items-center justify-center gap-2"
+                        className="flex-1 px-4 py-2 bg-red-600 cursor-pointer text-white rounded-lg hover:bg-red-700 transition-colors font-medium flex items-center justify-center gap-2"
                       >
                         <XCircle className="h-4 w-4" />
                         Cancel Order
