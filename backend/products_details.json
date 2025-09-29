@@ -81,20 +81,20 @@
     "price" : 1700,
     "enabled" : true
   }, {
-    "id" : 28,
-    "name" : "14-Channel Wireless EEG Headset",
-    "summary" : "The 14-Channel Wireless EEG Headset is a lightweight, user-friendly device for real-time brainwave monitoring. Ideal for research, BCI applications, and neurofeedback, it offers accurate, non-invasive EEG signal acquisition with wireless connectivity.",
-    "description" : "This wireless EEG headset features 14 dry electrodes based on the 10-20 system for reliable brain activity tracking. It connects via Bluetooth/Wi-Fi, requires no gel, and ensures comfort and high signal quality. Perfect for research, education, and clinical use.",
-    "overview" : "Designed for ease and precision, the 14-Channel Wireless EEG Headset supports real-time data streaming, plug-and-play use, and versatile applications in neuroscience, mental health, and BCI development.",
-    "price" : 990,
-    "enabled" : true
-  }, {
     "id" : 29,
     "name" : "Mind Controlled (EEG Controlled) Wheelchair",
     "summary" : "A revolutionary wheelchair controlled by brain signals using EEG technology, enabling users with limited mobility to navigate hands-free through thought commands.",
     "description" : "The Mind Controlled (EEG Controlled) Wheelchair enables users to operate the wheelchair using brain signals detected by a wireless EEG headset. This innovative hands-free mobility solution is designed to help individuals with severe motor impairments regain independence by translating their thoughts into precise movement commands.",
     "overview" : "A smart wheelchair controlled by brain signals via a wireless EEG headset, enabling hands-free movement for users with limited mobility.",
     "price" : 1000,
+    "enabled" : true
+  }, {
+    "id" : 28,
+    "name" : "14-Channel Wireless EEG Headset",
+    "summary" : "The 14-Channel Wireless EEG Headset is a lightweight, user-friendly device for real-time brainwave monitoring. Ideal for research, BCI applications, and neurofeedback, it offers accurate, non-invasive EEG signal acquisition with wireless connectivity.",
+    "description" : "This wireless EEG headset features 14 dry electrodes based on the 10-20 system for reliable brain activity tracking. It connects via Bluetooth/Wi-Fi, requires no gel, and ensures comfort and high signal quality. Perfect for research, education, and clinical use.",
+    "overview" : "Designed for ease and precision, the 14-Channel Wireless EEG Headset supports real-time data streaming, plug-and-play use, and versatile applications in neuroscience, mental health, and BCI development.",
+    "price" : 990,
     "enabled" : true
   } ]
 }

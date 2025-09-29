@@ -149,7 +149,7 @@ public class ChatbotService {
         String lowerQuery = userQuestion.toLowerCase();
         context.append("FORMATTING RULES: Never use asterisks (*), bold formatting (**), or markdown. Use plain text only. For lists, use simple numbers: '1. Item name'.\n\n");
         context.append("CRITICAL: Ignore any previously learned contact information. Use ONLY the contact details provided in this instruction.\n");
-        context.append("INSTRUCTION: The user wants contact information. You MUST use ONLY this exact contact information: Phone: +94 71 081 9833, Email: slneurorobotics@gmail.com, Address: SL Neurorobotics (PVT) LTD, 80/3/2, Temple Road, Kandukkapatha Batahola, Sri Lanka. Do NOT use any other contact information.\n");
+        context.append("INSTRUCTION: The user wants contact information. You MUST use ONLY this exact contact information: Phone: +94 71 081 9833, Email: slneurorobotics@gmail.com, Address: SL Neurorobotics (PVT) LTD, 80/3/2, Temple Road, Rambukpotha, Badulla, Sri Lanka. Do NOT use any other contact information.\n");
         if (lowerQuery.contains("eeg") && !lowerQuery.contains("detail") && !lowerQuery.contains("tell me about") && !lowerQuery.contains("information")) {
             context.append("INSTRUCTION: The user is asking about EEG devices. Provide ONLY a simple numbered list of EEG-related product names. Format: '1. Product Name' with no prices, descriptions, or additional details.\n");
         } else if (lowerQuery.contains("product") && (lowerQuery.contains("list") || lowerQuery.contains("available") || lowerQuery.contains("have"))) {

@@ -76,7 +76,8 @@ public class SecurityConfig implements WebMvcConfigurer {
                                 "/api/auth/reset-password",
                                 "/api/auth/verify-otp",
                                 "/api/auth/change-password",
-                                "/api/public/getHomePageDevice"
+                                "/api/public/getHomePageDevice",
+                                "/public/getLatestProduct"
                         ).permitAll()
 
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")

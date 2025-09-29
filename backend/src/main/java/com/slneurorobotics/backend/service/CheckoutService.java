@@ -25,17 +25,15 @@ public class CheckoutService {
     @Value("${app.frontend.url:http://localhost:5173}")
     private String frontendUrl;
 
-    // ✅ Keep your existing method with small improvements
     public Session createSession(CheckoutSessionRequest req) throws Exception {
         log.info("Creating Stripe session for order: {} with amount: {}", req.getOrderId(), req.getAmount());
 
-        // Create a dynamic price for the subtotal (amount in cents)
         PriceCreateParams priceParams = PriceCreateParams.builder()
                 .setUnitAmount(req.getAmount())  // Total amount in cents
                 .setCurrency("usd")  // Currency
                 .setProductData(  // Inline product data
                         PriceCreateParams.ProductData.builder()
-                                .setName("SL NeuroRobotics Order #" + req.getOrderId()) // ✅ Better name
+                                .setName("SL NeuroRobotics Order #" + req.getOrderId())
                                 .build()
                 )
                 .build();
@@ -54,10 +52,8 @@ public class CheckoutService {
                 )
                 .setSuccessUrl(frontendUrl + "/payment-success?session_id={CHECKOUT_SESSION_ID}")
                 .setCancelUrl(frontendUrl + "/payment-failed?session_id={CHECKOUT_SESSION_ID}")
-                // ✅ Add metadata to track order
                 .putMetadata("orderId", req.getOrderId().toString());
 
-        // ✅ Add customer email if provided
         if (req.getCustomerEmail() != null && !req.getCustomerEmail().trim().isEmpty()) {
             sessionBuilder.setCustomerEmail(req.getCustomerEmail());
         }
@@ -66,7 +62,7 @@ public class CheckoutService {
         return Session.create(sessionBuilder.build());
     }
 
-    // ✅ FIXED: Now matches your OrderService signature
+
     public void handlePaymentSuccess(String sessionId) {
         try {
             log.info("Handling payment success for session: {}", sessionId);
@@ -82,13 +78,14 @@ public class CheckoutService {
                 BigDecimal paidAmount = BigDecimal.valueOf(session.getAmountTotal())
                         .divide(BigDecimal.valueOf(100)); // Convert cents to dollars
 
-                // ✅ Now calls with correct parameters
-                OrderResponseDTO confirmedOrder=orderService.confirmOrder(
+                // ✅ Confirm order (this will now include stock reduction)
+                OrderResponseDTO confirmedOrder = orderService.confirmOrder(
                         Long.parseLong(orderId),
                         paymentIntentId,
                         paidAmount
                 );
 
+                // Clear cart only after successful order confirmation and stock reduction
                 if ("CART".equals(confirmedOrder.getSource().toString())) {
                     try {
                         cartService.clearCart(confirmedOrder.getUserId());
@@ -99,11 +96,19 @@ public class CheckoutService {
                     }
                 }
 
-                log.info("Order {} marked as PAID with amount: {}", orderId, paidAmount);
+                log.info("Order {} confirmed successfully - status: PAID, amount: {}, stock reduced",
+                        orderId, paidAmount);
+
+            } else {
+                log.warn("No order ID found in session metadata for session: {}", sessionId);
             }
+
         } catch (Exception e) {
             log.error("Error handling payment success for session {}: {}", sessionId, e.getMessage());
-            throw new RuntimeException("Failed to process payment success", e);
+
+            // Important: Don't clear the cart or mark order as paid if stock reduction fails
+            // This ensures data consistency
+            throw new RuntimeException("Failed to process payment success: " + e.getMessage(), e);
         }
     }
 
@@ -123,7 +128,7 @@ public class CheckoutService {
         }
     }
 
-    // ✅ Webhook event handlers
+
     public void handleCheckoutSessionCompleted(Event event) {
         try {
             Session session = (Session) event.getDataObjectDeserializer().getObject().orElse(null);

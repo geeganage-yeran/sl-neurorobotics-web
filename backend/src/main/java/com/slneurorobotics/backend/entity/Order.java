@@ -41,6 +41,12 @@ public class Order {
     @Column(name = "expires_at")
     private LocalDateTime expiresAt;
 
+    @Column(name = "paid_amount", precision = 10, scale = 2)
+    private BigDecimal paidAmount;
+
+    @Column(name = "paid_at")
+    private LocalDateTime paidAt;
+
     @Column(name = "stripe_session_id")
     private String stripeSessionId;
 

@@ -1,26 +1,28 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { TrendingUp, TrendingDown, Users, ShoppingBag, RotateCcw, ChevronRight, Download, Calendar } from 'lucide-react';
+import api from '../../services/api';
 
 const AdminDashboard = () => {
     const [timeRange, setTimeRange] = useState('Last 14 Days');
+    const [dashboardStats, setDashboardStats] = useState(null);
+    const [loading, setLoading] = useState(true);
 
-    // Sample data for the chart
-    const chartData = [
-        { day: 'Wed', earnings: 35, costs: 25 },
-        { day: 'Thu', earnings: 42, costs: 30 },
-        { day: 'Fri', earnings: 38, costs: 28 },
-        { day: 'Sat', earnings: 35, costs: 25 },
-        { day: 'Sun', earnings: 60, costs: 45 },
-        { day: 'Mon', earnings: 55, costs: 40 },
-        { day: 'Tue', earnings: 25, costs: 35 },
-        { day: 'Wed', earnings: 35, costs: 30 },
-        { day: 'Thu', earnings: 45, costs: 35 },
-        { day: 'Fri', earnings: 40, costs: 30 },
-        { day: 'Sat', earnings: 50, costs: 40 },
-        { day: 'Sun', earnings: 48, costs: 38 },
-        { day: 'Mon', earnings: 52, costs: 42 },
-        { day: 'Tue', earnings: 55, costs: 45 }
-    ];
+    useEffect(() => {
+        fetchDashboardStats();
+    }, []);
+
+    const fetchDashboardStats = async () => {
+        try {
+            const response = await api.get('/admin/dashboard/stats', {
+                withCredentials: true
+            });
+            setDashboardStats(response.data);
+            setLoading(false);
+        } catch (error) {
+            console.error('Error fetching dashboard stats:', error);
+            setLoading(false);
+        }
+    };
 
     const MetricCard = ({ title, value, change, changeValue, icon: Icon, isNegative = false, subtitle }) => (
         <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition-shadow duration-200">
@@ -55,21 +57,21 @@ const AdminDashboard = () => {
     );
 
     const LineChart = ({ data }) => {
-        const maxValue = Math.max(...data.flatMap(d => [d.earnings, d.costs]));
+        if (!data || data.length === 0) return null;
+
+        const maxValue = Math.max(...data.map(d => parseFloat(d.earnings)));
         const chartHeight = 200;
         const chartWidth = 600;
 
         const getY = (value) => chartHeight - (value / maxValue) * (chartHeight - 40);
         const getX = (index) => (index / (data.length - 1)) * (chartWidth - 80) + 40;
 
-        const earningsPath = data.map((d, i) => `${i === 0 ? 'M' : 'L'} ${getX(i)} ${getY(d.earnings)}`).join(' ');
-        const costsPath = data.map((d, i) => `${i === 0 ? 'M' : 'L'} ${getX(i)} ${getY(d.costs)}`).join(' ');
+        const earningsPath = data.map((d, i) => `${i === 0 ? 'M' : 'L'} ${getX(i)} ${getY(parseFloat(d.earnings))}`).join(' ');
 
         return (
             <div className="relative">
                 <svg width="100%" height={chartHeight} viewBox={`0 0 ${chartWidth} ${chartHeight}`} className="overflow-visible">
-                    {/* Grid lines */}
-                    {[0, 20, 40, 60].map(value => (
+                    {[0, Math.ceil(maxValue * 0.33), Math.ceil(maxValue * 0.66), Math.ceil(maxValue)].map(value => (
                         <line
                             key={value}
                             x1="40"
@@ -81,7 +83,6 @@ const AdminDashboard = () => {
                         />
                     ))}
 
-                    {/* Earnings line */}
                     <path
                         d={earningsPath}
                         fill="none"
@@ -90,25 +91,11 @@ const AdminDashboard = () => {
                         className="drop-shadow-sm"
                     />
 
-                    {/* Costs line */}
-                    <path
-                        d={costsPath}
-                        fill="none"
-                        stroke="#d1d5db"
-                        strokeWidth="2"
-                        className="drop-shadow-sm"
-                    />
-
-                    {/* Data points */}
                     {data.map((d, i) => (
-                        <g key={i}>
-                            <circle cx={getX(i)} cy={getY(d.earnings)} r="3" fill="#003554" />
-                            <circle cx={getX(i)} cy={getY(d.costs)} r="3" fill="#d1d5db" />
-                        </g>
+                        <circle key={i} cx={getX(i)} cy={getY(parseFloat(d.earnings))} r="3" fill="#003554" />
                     ))}
 
-                    {/* Y-axis labels */}
-                    {[0, 20, 40, 60].map(value => (
+                    {[0, Math.ceil(maxValue * 0.33), Math.ceil(maxValue * 0.66), Math.ceil(maxValue)].map(value => (
                         <text
                             key={value}
                             x="35"
@@ -116,12 +103,11 @@ const AdminDashboard = () => {
                             textAnchor="end"
                             className="text-xs fill-gray-400"
                         >
-                            {value}
+                            ${value}
                         </text>
                     ))}
                 </svg>
 
-                {/* X-axis labels */}
                 <div className="flex justify-between mt-2 px-10 text-xs text-gray-400">
                     {data.map((d, i) => (
                         i % 2 === 0 && <span key={i}>{d.day}</span>
@@ -131,90 +117,73 @@ const AdminDashboard = () => {
         );
     };
 
-    const DonutChart = ({ value, total, label }) => {
-        const percentage = (value / total) * 100;
-        const circumference = 2 * Math.PI * 45;
-        const strokeDasharray = `${(percentage / 100) * circumference} ${circumference}`;
-
+    if (loading) {
         return (
-            <div className="relative w-32 h-32">
-                <svg className="w-32 h-32 transform -rotate-90">
-                    <circle
-                        cx="64"
-                        cy="64"
-                        r="45"
-                        stroke="#f3f4f6"
-                        strokeWidth="8"
-                        fill="transparent"
-                    />
-                    <circle
-                        cx="64"
-                        cy="64"
-                        r="45"
-                        stroke="#003554"
-                        strokeWidth="8"
-                        fill="transparent"
-                        strokeDasharray={strokeDasharray}
-                        strokeLinecap="round"
-                        className="transition-all duration-300"
-                    />
-                </svg>
-                <div className="absolute inset-0 flex items-center justify-center">
-                    <span className="text-xl font-bold" style={{ color: '#003554' }}>${value}k</span>
-                </div>
+            <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+                <div className="text-xl font-semibold" style={{ color: '#003554' }}>Loading dashboard...</div>
             </div>
         );
+    }
+
+    const formatCurrency = (amount) => {
+        return new Intl.NumberFormat('en-US', {
+            style: 'currency',
+            currency: 'USD'
+        }).format(amount);
+    };
+
+    const formatNumber = (num) => {
+        return new Intl.NumberFormat('en-US').format(num);
+    };
+
+    const formatPercentage = (percent) => {
+        const sign = percent >= 0 ? '+' : '';
+        return `${sign}${percent.toFixed(1)}%`;
     };
 
     return (
         <div className="min-h-screen bg-gray-50 p-4 md:p-6">
             <div className="max-w-7xl mx-auto">
-                {/* Header */}
                 <div className="mb-8">
                     <h1 className="text-2xl md:text-3xl font-bold mb-2" style={{ color: '#003554' }}>Admin Dashboard</h1>
                     <p className="text-gray-600">Welcome back! Here's what's happening with your store today.</p>
                 </div>
 
-                {/* Metrics Cards */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
                     <MetricCard
                         title="Total Sales"
-                        subtitle="731 Orders"
-                        value="$9,328.55"
-                        change="+15.6%"
-                        changeValue="+1.4k"
+                        subtitle={`${formatNumber(dashboardStats?.totalOrderCount || 0)} Orders`}
+                        value={formatCurrency(dashboardStats?.totalSalesAmount || 0)}
+                        change={formatPercentage(dashboardStats?.salesChangePercentage || 0)}
+                        changeValue={dashboardStats?.salesChangeCount >= 0 ? `+${formatCurrency(dashboardStats?.salesChangeCount || 0)}` : formatCurrency(dashboardStats?.salesChangeCount || 0)}
                         icon={ShoppingBag}
+                        isNegative={dashboardStats?.salesChangePercentage < 0}
                     />
                     <MetricCard
-                        title="Visitors"
-                        subtitle="Avg time: 4:36m"
-                        value="12,302"
-                        change="+12.7%"
-                        changeValue="+1.2k"
+                        title="Active Users"
+                        subtitle={`Avg time: ${dashboardStats?.averageTimeOnSite || '4:36m'}`}
+                        value={formatNumber(dashboardStats?.activeUsersCount || 0)}
+                        change={formatPercentage(dashboardStats?.activeUsersChangePercentage || 0)}
+                        changeValue={dashboardStats?.activeUsersChangeCount >= 0 ? `+${formatNumber(dashboardStats?.activeUsersChangeCount || 0)}` : formatNumber(dashboardStats?.activeUsersChangeCount || 0)}
                         icon={Users}
+                        isNegative={dashboardStats?.activeUsersChangePercentage < 0}
                     />
-                    <MetricCard
+                    {/* <MetricCard
                         title="Refunds"
-                        subtitle="2 Disputed"
-                        value="963"
-                        change="-12.7%"
-                        changeValue="-213"
+                        subtitle="Cancelled Orders"
+                        value={formatNumber(dashboardStats?.refundCount || 0)}
+                        change={formatPercentage(dashboardStats?.refundChangePercentage || 0)}
+                        changeValue={dashboardStats?.refundChangeCount >= 0 ? `+${formatNumber(dashboardStats?.refundChangeCount || 0)}` : formatNumber(dashboardStats?.refundChangeCount || 0)}
                         icon={RotateCcw}
-                        isNegative={true}
-                    />
+                        isNegative={dashboardStats?.refundChangePercentage >= 0}
+                    /> */}
                 </div>
 
-                {/* Charts Section */}
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    {/* Sales Performance Chart */}
-                    <div className="lg:col-span-2 bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+                <div className="grid grid-cols-1 gap-6">
+                    <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
                         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 gap-4">
-                            <h2 className="text-lg font-semibold text-gray-900">Sales Performance</h2>
+                            <h2 className="text-lg font-semibold text-gray-900">Earnings Overview</h2>
                             <div className="flex gap-3">
-                                <button className="flex items-center gap-2 px-3 py-2 text-sm text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors">
-                                    <Download className="w-4 h-4" />
-                                    Export data
-                                </button>
                                 <button className="flex items-center gap-2 px-3 py-2 text-sm text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors">
                                     <Calendar className="w-4 h-4" />
                                     {timeRange}
@@ -222,58 +191,17 @@ const AdminDashboard = () => {
                             </div>
                         </div>
 
-                        {/* Legend */}
                         <div className="flex gap-6 mb-6">
                             <div className="flex items-center gap-2">
                                 <div className="w-3 h-3 rounded-full" style={{ backgroundColor: '#003554' }}></div>
                                 <span className="text-sm text-gray-600">Earnings</span>
                             </div>
-                            <div className="flex items-center gap-2">
-                                <div className="w-3 h-3 bg-gray-300 rounded-full"></div>
-                                <span className="text-sm text-gray-600">Costs</span>
-                            </div>
                         </div>
 
-                        <LineChart data={chartData} />
-                    </div>
-
-                    {/* Top Categories */}
-                    <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
-                        <h2 className="text-lg font-semibold mb-6" style={{ color: '#003554' }}>Top Categories</h2>
-
-                        <div className="flex justify-center mb-6">
-                            <DonutChart value={6.2} total={10} label="Electronics" />
-                        </div>
-
-                        <div className="space-y-4">
-                            <div className="flex items-center justify-between">
-                                <div className="flex items-center gap-3">
-                                    <div className="w-3 h-3 rounded-full" style={{ backgroundColor: '#003554' }}></div>
-                                    <span className="text-sm font-medium" style={{ color: '#003554' }}>Electronics</span>
-                                </div>
-                                <ChevronRight className="w-4 h-4 text-gray-400" />
-                            </div>
-
-                            <div className="flex items-center justify-between">
-                                <div className="flex items-center gap-3">
-                                    <div className="w-3 h-3 bg-gray-600 rounded-full"></div>
-                                    <span className="text-sm font-medium text-gray-900">Laptops</span>
-                                </div>
-                                <ChevronRight className="w-4 h-4 text-gray-400" />
-                            </div>
-
-                            <div className="flex items-center justify-between">
-                                <div className="flex items-center gap-3">
-                                    <div className="w-3 h-3 bg-gray-300 rounded-full"></div>
-                                    <span className="text-sm font-medium text-gray-900">Phones</span>
-                                </div>
-                                <ChevronRight className="w-4 h-4 text-gray-400" />
-                            </div>
-                        </div>
+                        <LineChart data={dashboardStats?.earningsOverview || []} />
                     </div>
                 </div>
 
-                {/* Mobile-friendly bottom spacing */}
                 <div className="h-8"></div>
             </div>
         </div>

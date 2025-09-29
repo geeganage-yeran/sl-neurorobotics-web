@@ -42,4 +42,8 @@ public interface OrderItemRepository extends JpaRepository<OrderItem, Long> {
 
     // Check if order contains specific product
     boolean existsByOrderIdAndProductId(Long orderId, Long productId);
+
+    // If you don't have this method, add it:
+    List<OrderItem> findByOrderId(Long orderId);
+
 }

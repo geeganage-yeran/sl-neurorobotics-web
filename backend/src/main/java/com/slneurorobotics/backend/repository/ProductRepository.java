@@ -33,10 +33,13 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
             "LOWER(p.description) LIKE LOWER(CONCAT('%', :searchTerm, '%')))")
     List<Product> findBySearchTerm(@Param("searchTerm") String searchTerm);
 
-    // Get all enabled products
     List<Product> findByEnabledTrue();
 
-    // Find by name containing (case insensitive)
     List<Product> findByNameContainingIgnoreCase(String name);
+
+    @Query("SELECT p FROM Product p " +
+            "WHERE p.enabled = true " +
+            "ORDER BY p.createdAt DESC")
+    List<Product> findLatestEnabledProduct();
 
 }

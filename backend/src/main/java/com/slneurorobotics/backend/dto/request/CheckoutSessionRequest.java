@@ -8,10 +8,13 @@ import lombok.Data;
 public class CheckoutSessionRequest {
     @NotNull(message = "Amount is required")
     @Positive(message = "Amount must be positive")
-    private Long amount; // Amount in cents
+    private Long amount;
+
+    @NotNull(message = "Quantity is required")
+    private int quantity;
 
     @NotNull(message = "Order ID is required")
-    private Long orderId; // Links to your order - ESSENTIAL
+    private Long orderId;
 
-    private String customerEmail; // Recommended for better UX
+    private String customerEmail;
 }
