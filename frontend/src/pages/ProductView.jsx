@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Info, ChevronLeft, ChevronRight } from "lucide-react";
+import { Info, ChevronLeft, ChevronRight, X, AlertCircle } from "lucide-react";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 import Footer from "../components/Footer";
@@ -15,6 +15,8 @@ export default function ProductViewPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [cartLoading, setCartLoading] = useState(false);
+  const [arViewingModel, setArViewingModel] = useState(null);
+  const [loadingArModel, setLoadingArModel] = useState(false);
   const { id } = useParams();
   const [product, setProduct] = useState(null);
   const [specifications, setSpecifications] = useState([]);
@@ -37,12 +39,55 @@ export default function ProductViewPage() {
     setAlert((prev) => ({ ...prev, open: false }));
   };
 
+  // Load model-viewer script if not already loaded
+  useEffect(() => {
+    if (!document.querySelector('script[src*="model-viewer"]')) {
+      const script = document.createElement("script");
+      script.type = "module";
+      script.src =
+        "https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js";
+      document.head.appendChild(script);
+    }
+  }, []);
+
+  // Handle AR View click
+  const handleArView = async () => {
+    try {
+      setLoadingArModel(true);
+
+      // Fetch 3D models for this product
+      const response = await api.get(`/3d-models/product/${id}`, {
+        withCredentials: true,
+      });
+
+      if (response.data.success && response.data.models.length > 0) {
+        // Get the first (or most recent) model
+        const model = response.data.models[0];
+        setArViewingModel({
+          ...model,
+          productName: product.name,
+        });
+      } else {
+        showAlert("No 3D model available for AR view yet", "warning");
+      }
+    } catch (error) {
+      console.error("Error fetching 3D model:", error);
+      showAlert("Failed to load 3D model for AR view", "error");
+    } finally {
+      setLoadingArModel(false);
+    }
+  };
+
+  const closeArViewer = () => {
+    setArViewingModel(null);
+  };
+
   // Add to Cart function
   const addToCart = async (productId, quantity = 1) => {
     if (!isAuthenticated) {
       return navigate("/login");
     }
-    
+
     setCartLoading(true);
     const userId = user.id;
     const dataToSend = {
@@ -83,9 +128,10 @@ export default function ProductViewPage() {
       cartItemId: `buynow-${product.id}`,
       productId: product.id,
       productName: product.name,
-      productImage: product.images?.length > 0 
-        ? `http://localhost:8080/uploads/productImages/${product.id}/${product.images[0].imageName}`
-        : null,
+      productImage:
+        product.images?.length > 0
+          ? `http://localhost:8080/uploads/productImages/${product.id}/${product.images[0].imageName}`
+          : null,
       unitPrice: product.price,
       quantity: quantity,
     };
@@ -114,6 +160,7 @@ export default function ProductViewPage() {
         );
         
         setProduct(response.data);
+        console.log("Fetched product:", response.data);
 
         // Handle specifications - now comes as Map/object from backend
         if (response.data.specifications) {
@@ -299,22 +346,26 @@ export default function ProductViewPage() {
                     {product.name}
                   </h1>
 
-                  {/* AR Icon */}
-                  <a
-                    href=""
-                    className="flex items-center gap-2 group/ar flex-shrink-0 bg-[#00355412] hover:bg-[#00355420] px-3 py-2 rounded-xl border border-[#00355420] hover:border-[#00355440] transition-all"
+                  {/* AR Icon - Updated with proper functionality */}
+                  <button
+                    onClick={handleArView}
+                    disabled={loadingArModel}
+                    className="flex items-center gap-2 group/ar flex-shrink-0 bg-[#00355412] hover:bg-[#00355420] px-3 py-2 rounded-xl border border-[#00355420] hover:border-[#00355440] transition-all disabled:opacity-50"
                   >
-                    <img src={ar} className="w-7 h-7" alt="AR View" />
+                    {loadingArModel ? (
+                      <div className="animate-spin rounded-full h-7 w-7 border-b-2 border-[#003554]"></div>
+                    ) : (
+                      <img src={ar} className="w-7 h-7" alt="AR View" />
+                    )}
                     <span className="text-sm font-medium text-[#003554]">
-                      View in AR
+                      {loadingArModel ? "Loading..." : "View in AR"}
                     </span>
-                  </a>
+                  </button>
                 </div>
 
                 <div className="text-3xl font-bold text-gray-500 mb-6">
                   ${product.price.toFixed(2)}
                 </div>
-
                 <div className="text-sm text-gray-500 mb-2">
                   Shipping calculated at checkout.
                 </div>
@@ -326,48 +377,66 @@ export default function ProductViewPage() {
             </div>
 
             <div className="mt-8 space-y-4">
-              {/* Quantity Selector */}
-              <div className="flex items-center space-x-4">
-                <span className="text-gray-700 font-medium">Quantity:</span>
-                <div className="flex items-center border border-gray-300 rounded-lg">
-                  <button
-                    onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                    className="px-3 py-2 text-gray-600 cursor-pointer hover:text-[#006494] hover:bg-gray-50 transition-colors rounded-l-lg"
-                    disabled={quantity <= 1}
-                  >
-                    <span className="text-xl font-semibold">−</span>
-                  </button>
-                  <span className="px-4 py-2 min-w-[3rem] text-center font-medium border-l border-r border-gray-300">
-                    {quantity}
-                  </span>
-                  <button
-                    onClick={() => setQuantity(quantity + 1)}
-                    className="px-3 py-2 cursor-pointer text-gray-600 hover:text-[#006494] hover:bg-gray-50 transition-colors rounded-r-lg"
-                  >
-                    <span className="text-xl font-semibold">+</span>
-                  </button>
+              {product.quantity > 0 ? (
+                <>
+                  {/* Quantity Selector */}
+                  <div className="flex items-center space-x-4">
+                    <span className="text-gray-700 font-medium">Quantity:</span>
+                    <div className="flex items-center border border-gray-300 rounded-lg">
+                      <button
+                        onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                        className="px-3 py-2 text-gray-600 cursor-pointer hover:text-[#006494] hover:bg-gray-50 transition-colors rounded-l-lg"
+                        disabled={quantity <= 1}
+                      >
+                        <span className="text-xl font-semibold">−</span>
+                      </button>
+                      <span className="px-4 py-2 min-w-[3rem] text-center font-medium border-l border-r border-gray-300">
+                        {quantity}
+                      </span>
+                      <button
+                        onClick={() =>
+                          setQuantity(Math.min(product.quantity, quantity + 1))
+                        }
+                        disabled={quantity >= product.quantity}
+                        className="px-3 py-2 cursor-pointer text-gray-600 hover:text-[#006494] hover:bg-gray-50 transition-colors rounded-r-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        <span className="text-xl font-semibold">+</span>
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Action Buttons */}
+                  <div className="space-y-3">
+                    {/* Buy Now Button */}
+                    <button
+                      onClick={() => buyNow(product, quantity)}
+                      className="w-full bg-[#006494] hover:bg-[#003554] text-white py-4 px-6 rounded-xl font-semibold text-lg transition-colors"
+                    >
+                      BUY NOW
+                    </button>
+
+                    {/* Add to Cart Button */}
+                    <button
+                      onClick={() => addToCart(product.id, quantity)}
+                      disabled={cartLoading}
+                      className="w-full bg-white hover:bg-gray-50 text-[#006494] font-semibold py-4 px-6 rounded-xl border-2 border-[#006494] hover:border-[#003554] transition-all duration-300 disabled:opacity-50"
+                    >
+                      {cartLoading ? "Adding..." : "ADD TO CART"}
+                    </button>
+                  </div>
+                </>
+              ) : (
+                /* Out of Stock Message */
+                <div className="bg-red-50 border border-red-200 rounded-xl p-6 text-center">
+                  <p className="text-red-700 font-semibold text-lg">
+                    Out of Stock
+                  </p>
+                  <p className="text-red-600 text-sm mt-1">
+                    This item is currently unavailable
+                  </p>
                 </div>
-              </div>
+              )}
 
-              {/* Action Buttons */}
-              <div className="space-y-3">
-                {/* Buy Now Button */}
-                <button
-                  onClick={() => buyNow(product, quantity)}
-                  className="w-full cursor-pointer bg-[#006494] hover:bg-[#003554] text-white py-4 px-6 rounded-xl font-semibold text-lg transition-colors"
-                >
-                  BUY NOW
-                </button>
-
-                {/* Add to Cart Button */}
-                <button
-                  onClick={() => addToCart(product.id, quantity)}
-                  disabled={cartLoading}
-                  className="w-full cursor-pointer bg-white hover:bg-gray-50 text-[#006494] font-semibold py-4 px-6 rounded-xl border-2 border-[#006494] hover:border-[#003554] transition-all duration-300 disabled:opacity-50"
-                >
-                  {cartLoading ? "Adding..." : "ADD TO CART"}
-                </button>
-              </div>
             </div>
           </div>
         </div>
@@ -451,6 +520,77 @@ export default function ProductViewPage() {
           </section>
         )}
       </div>
+
+      {/* AR Model Viewer Modal */}
+      {arViewingModel && (
+        <div className="fixed inset-0 bg-black/75 backdrop-blur-sm flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl w-full max-w-4xl h-[85vh] mx-4 shadow-2xl flex flex-col">
+            <div className="p-4 border-b border-gray-200 flex items-center justify-between">
+              <div>
+                <h3 className="text-xl font-semibold text-[#003554]">
+                  {arViewingModel.productName}
+                </h3>
+              </div>
+              <button
+                onClick={closeArViewer}
+                className="p-2 hover:bg-gray-100 rounded-lg transition-all"
+              >
+                <X className="w-5 h-5 cursor-pointer" />
+              </button>
+            </div>
+            <div className="flex-1 p-4 flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100">
+              {arViewingModel.modelFilePath ? (
+                <div
+                  className="w-full h-full rounded-lg overflow-hidden shadow-inner"
+                  style={{ minHeight: "400px" }}
+                >
+                  <model-viewer
+                    src={`http://localhost:8080/api/3d-models/files/${arViewingModel.modelFilePath
+                      .split("\\")
+                      .pop()}`}
+                    alt={`AR 3D model of ${arViewingModel.productName}`}
+                    ar
+                    ar-modes="webxr scene-viewer quick-look"
+                    camera-controls
+                    auto-rotate
+                    loading="eager"
+                    style={{
+                      width: "100%",
+                      height: "100%",
+                      backgroundColor: "#ffffff",
+                    }}
+                    onError={(e) => {
+                      console.error("AR Model viewer error:", e);
+                    }}
+                    onLoad={() => {
+                      console.log("AR Model loaded successfully");
+                    }}
+                  >
+                    <div slot="ar-button" className="absolute bottom-4 right-4">
+                      <button className="bg-[#003554] text-white px-6 py-3 rounded-xl font-semibold shadow-lg hover:bg-[#002a43] transition-all">
+                        View in AR
+                      </button>
+                    </div>
+                  </model-viewer>
+                </div>
+              ) : (
+                <div className="flex flex-col items-center justify-center text-gray-500">
+                  <div className="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center mb-4">
+                    <AlertCircle className="w-8 h-8" />
+                  </div>
+                  <h3 className="text-lg font-medium mb-2">
+                    AR Model Not Available
+                  </h3>
+                  <p className="text-sm text-center">
+                    The 3D model file could not be loaded for AR viewing. Please
+                    check if the model exists.
+                  </p>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Alert Component */}
       <Alert

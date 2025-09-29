@@ -191,9 +191,6 @@ export default function HomePage() {
                     <Button variant="primary" size="medium">
                       More About
                     </Button>
-                    <Button variant="secondary" size="medium">
-                      Get a Quotation
-                    </Button>
                   </div>
                 </div>
               </div>

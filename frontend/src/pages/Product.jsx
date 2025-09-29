@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import ar from "../assets/ar.gif";
 import Footer from "../components/Footer";
-import { Search } from "lucide-react";
+import { Search, X, Eye, AlertCircle } from "lucide-react";
 import axios from "axios";
 import DynamicHeader from "../components/DynamicHeader";
 import useAuth from "../hooks/useAuth";
@@ -14,6 +14,8 @@ function Product() {
   const [search, setSearch] = useState("");
   const [filteredProducts, setFilteredProducts] = useState([]);
   const [cartLoading, setCartLoading] = useState({});
+  const [arViewingModel, setArViewingModel] = useState(null);
+  const [loadingArModel, setLoadingArModel] = useState(null);
   const { isAuthenticated, user } = useAuth();
   const Navigate = useNavigate();
 
@@ -47,6 +49,48 @@ function Product() {
     } catch (error) {
       console.error(error);
     }
+  };
+
+  // Load model-viewer script if not already loaded
+  useEffect(() => {
+    if (!document.querySelector('script[src*="model-viewer"]')) {
+      const script = document.createElement('script');
+      script.type = 'module';
+      script.src = 'https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js';
+      document.head.appendChild(script);
+    }
+  }, []);
+
+  // Handle AR View click
+  const handleArView = async (productId, productName) => {
+    try {
+      setLoadingArModel(productId);
+      
+      // Fetch 3D models for this product
+      const response = await api.get(`/3d-models/product/${productId}`, {
+        withCredentials: true,
+      });
+
+      if (response.data.success && response.data.models.length > 0) {
+        // Get the first (or most recent) model
+        const model = response.data.models[0];
+        setArViewingModel({
+          ...model,
+          productName: productName
+        });
+      } else {
+        showAlert("No 3D model available for AR view yet", "warning");
+      }
+    } catch (error) {
+      console.error("Error fetching 3D model:", error);
+      showAlert("Failed to load 3D model for AR view", "error");
+    } finally {
+      setLoadingArModel(null);
+    }
+  };
+
+  const closeArViewer = () => {
+    setArViewingModel(null);
   };
 
   // Search function
@@ -479,21 +523,29 @@ function Product() {
 
                         {/* AR Button */}
                         <div className="flex-shrink-0 text-center">
-                          <a href="" className="block group/ar">
+                          <button 
+                            onClick={() => handleArView(product.id, product.name)}
+                            className="block group/ar cursor-pointer"
+                            disabled={loadingArModel === product.id}
+                          >
                             <div className="relative">
                               <div className="absolute inset-0 bg-gradient-to-r from-[#003554] to-[#051923] rounded-2xl blur opacity-10 group-hover/ar:opacity-20 transition-opacity"></div>
                               <div className="relative bg-[#00355412] p-3 rounded-2xl border border-[#00355420] hover:border-[#00355440] transition-all">
-                                <img
-                                  src={ar}
-                                  className="w-8 h-8 sm:w-10 sm:h-10"
-                                  alt="AR View"
-                                />
+                                {loadingArModel === product.id ? (
+                                  <div className="animate-spin rounded-full h-8 w-8 sm:h-10 sm:w-10 border-b-2 border-[#003554]"></div>
+                                ) : (
+                                  <img
+                                    src={ar}
+                                    className="w-8 h-8 sm:w-10 sm:h-10"
+                                    alt="AR View"
+                                  />
+                                )}
                               </div>
                             </div>
                             <span className="text-xs font-medium text-gray-600 mt-2 block">
-                              AR View
+                              {loadingArModel === product.id ? "Loading..." : "AR View"}
                             </span>
-                          </a>
+                          </button>
                         </div>
                       </div>
 
@@ -510,7 +562,7 @@ function Product() {
                                   ?.imageUrl?.replace(
                                     "C:\\Users\\USER",
                                     "http://localhost:8080"
-                                  ) || epoc
+                                  ) || "default-image-url"
                               }
                               alt={product.name}
                             />
@@ -519,14 +571,14 @@ function Product() {
                       </a>
 
                       {/* Action Buttons */}
-<div className="mt-8">
-  <a
-    href={`/productview/${product.id}`}
-    className="block w-full bg-[#003554] hover:bg-[#002a43] text-white font-semibold py-4 px-6 rounded-xl text-center transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
-  >
-    View Details
-  </a>
-</div>
+                      <div className="mt-8">
+                        <a
+                          href={`/productview/${product.id}`}
+                          className="block w-full bg-[#003554] hover:bg-[#002a43] text-white font-semibold py-4 px-6 rounded-xl text-center transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+                        >
+                          View Details
+                        </a>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -562,6 +614,73 @@ function Product() {
           )}
         </div>
       </div>
+
+      {/* AR Model Viewer Modal */}
+      {arViewingModel && (
+        <div className="fixed inset-0 bg-black/75 backdrop-blur-sm flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl w-full max-w-4xl h-[85vh] mx-4 shadow-2xl flex flex-col">
+            <div className="p-4 border-b border-gray-200 flex items-center justify-between">
+              <div>
+                <h3 className="text-xl font-semibold text-[#003554]">
+                  {arViewingModel.productName}
+                </h3>
+              </div>
+              <button
+                onClick={closeArViewer}
+                className="p-2 hover:bg-gray-100 rounded-lg transition-all"
+              >
+                <X className="w-5 h-5 cursor-pointer" />
+              </button>
+            </div>
+            <div className="flex-1 p-4 flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100">
+              {arViewingModel.modelFilePath ? (
+                <div
+                  className="w-full h-full rounded-lg overflow-hidden shadow-inner"
+                  style={{ minHeight: "400px" }}
+                >
+                  <model-viewer
+                    src={`http://localhost:8080/api/3d-models/files/${arViewingModel.modelFilePath.split('\\').pop()}`}
+                    alt={`AR 3D model of ${arViewingModel.productName}`}
+                    ar
+                    ar-modes="webxr scene-viewer quick-look"
+                    camera-controls
+                    auto-rotate
+                    loading="eager"
+                    style={{
+                      width: "100%",
+                      height: "100%",
+                      backgroundColor: "#ffffff",
+                    }}
+                    onError={(e) => {
+                      console.error("AR Model viewer error:", e);
+                    }}
+                    onLoad={() => {
+                      console.log("AR Model loaded successfully");
+                    }}
+                  >
+                    <div slot="ar-button" className="absolute bottom-4 right-4">
+                      <button className="bg-[#003554] text-white px-6 py-3 rounded-xl font-semibold shadow-lg hover:bg-[#002a43] transition-all">
+                        View in AR
+                      </button>
+                    </div>
+                  </model-viewer>
+                </div>
+              ) : (
+                <div className="flex flex-col items-center justify-center text-gray-500">
+                  <div className="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center mb-4">
+                    <AlertCircle className="w-8 h-8" />
+                  </div>
+                  <h3 className="text-lg font-medium mb-2">AR Model Not Available</h3>
+                  <p className="text-sm text-center">
+                    The 3D model file could not be loaded for AR viewing. Please check if the model exists.
+                  </p>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
       <Alert
         open={alert.open}
         onClose={closeAlert}

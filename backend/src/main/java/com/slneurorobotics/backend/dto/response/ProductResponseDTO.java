@@ -19,6 +19,7 @@ public class ProductResponseDTO {
     private String tutorialLink;
     private BigDecimal price;
     private Boolean enabled;
+    private int quantity;
     private List<ProductImageResponseDTO> images;
     private Map<String, String> specifications;
 }

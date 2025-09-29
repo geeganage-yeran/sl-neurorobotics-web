@@ -12,7 +12,8 @@ import {
   Package,
   LogOut,
   ShoppingBag,
-  Home
+  Home,
+  Rotate3d
 } from "lucide-react";
 import Logo from "../assets/image5.png";
 
@@ -64,12 +65,6 @@ const AdminSidebar = ({ activePage, setActivePage }) => {
       description: "Manage site users",
     },
     {
-      name: "Quotations",
-      icon: FileText,
-      path: "/admin/quotations",
-      description: "Quotation requests",
-    },
-    {
       name: "FAQ's",
       icon: HelpCircle,
       path: "/admin/FAQ",
@@ -80,6 +75,12 @@ const AdminSidebar = ({ activePage, setActivePage }) => {
       icon: Home,
       path: "/admin/managehomepage",
       description: "Update HomePage sections",
+    },
+    {
+      name: "3D Models",
+      icon: Rotate3d,
+      path: "/admin/3dmodelgenerator",
+      description: "Generate 3D models",
     },
     {
       name: "Settings",

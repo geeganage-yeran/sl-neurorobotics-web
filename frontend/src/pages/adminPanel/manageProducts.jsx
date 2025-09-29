@@ -31,10 +31,11 @@ function ManageProducts() {
     description: "",
     overview: "",
     tutorialLink: "",
+    quantity: "",
     enabled: true,
     specifications: {},
-    images: [], // For preview
-    newImages: [], // For file uploads
+    images: [],
+    newImages: [],
     keepExistingImages: true,
   });
   const [newSpecKey, setNewSpecKey] = useState("");
@@ -70,9 +71,9 @@ function ManageProducts() {
         withCredentials: true,
       });
 
-      // Fixed: Use response.data directly since api service handles the response
       if (response.data) {
         setProducts(response.data);
+        console.log("Fetched products:", response.data);
       } else {
         console.error("Failed to fetch products");
       }
@@ -85,12 +86,10 @@ function ManageProducts() {
 
   const fetchProductById = async (id) => {
     try {
-      // Fixed: Corrected template literal syntax
       const response = await api.get(`/admin/products/${id}`, {
         withCredentials: true,
       });
 
-      // Fixed: Use response.data directly
       if (response.data) {
         return response.data;
       }
@@ -114,6 +113,8 @@ function ManageProducts() {
       newErrors.price = "Valid price is required";
     if (!formData.description.trim())
       newErrors.description = "Description is required";
+    if (!formData.quantity || formData.quantity < 0)
+      newErrors.quantity = "Valid quantity is required";
     if (formData.tutorialLink && !isValidUrl(formData.tutorialLink)) {
       newErrors.tutorialLink = "Please enter a valid URL";
     }
@@ -132,7 +133,6 @@ function ManageProducts() {
 
   const openModal = async (product = null) => {
     if (product) {
-      // Fetch full product details for editing
       const fullProduct = await fetchProductById(product.id);
       if (fullProduct) {
         setCurrentProduct(fullProduct);
@@ -143,6 +143,7 @@ function ManageProducts() {
           description: fullProduct.description,
           overview: fullProduct.overview || "",
           tutorialLink: fullProduct.tutorialLink || "",
+          quantity: fullProduct.quantity ? fullProduct.quantity.toString() : "0",
           enabled: fullProduct.enabled,
           specifications: fullProduct.specifications || {},
           images: fullProduct.images || [],
@@ -159,6 +160,7 @@ function ManageProducts() {
         description: "",
         overview: "",
         tutorialLink: "",
+        quantity: "",
         enabled: true,
         specifications: {},
         images: [],
@@ -248,6 +250,7 @@ function ManageProducts() {
         overview: formData.overview,
         tutorialLink: formData.tutorialLink,
         price: parseFloat(formData.price),
+        quantity: parseInt(formData.quantity) || 0,
         enabled: formData.enabled,
         specifications: formData.specifications,
       };
@@ -255,13 +258,11 @@ function ManageProducts() {
       const formDataToSend = new FormData();
       formDataToSend.append("product", JSON.stringify(productData));
 
-      // Add new images if any
       if (formData.newImages.length > 0) {
         formData.newImages.forEach((file, index) => {
           formDataToSend.append("images", file);
         });
 
-        // Add image names and display orders
         const imageNames = formData.newImages.map((file) => file.name);
         const displayOrders = formData.newImages.map(
           (_, index) => formData.images.length + index + 1
@@ -276,7 +277,6 @@ function ManageProducts() {
       }
 
       if (currentProduct) {
-        // Determine if we should keep existing images based on whether any were removed
         const shouldKeepExisting =
           formData.keepExistingImages && removedImageIds.length === 0;
         formDataToSend.append(
@@ -284,7 +284,6 @@ function ManageProducts() {
           shouldKeepExisting.toString()
         );
 
-        // If we removed specific images, send the list of removed image IDs
         if (removedImageIds.length > 0) {
           removedImageIds.forEach((id) => {
             formDataToSend.append("removedImageIds", id.toString());
@@ -301,34 +300,20 @@ function ManageProducts() {
 
         if (response.data) {
           showAlert("Updated successfully");
-          await fetchProducts(); // Refresh the product list
+          await fetchProducts();
           closeModal();
-          // Reset removed image IDs for next operation
           setRemovedImageIds([]);
         } else {
           console.error("Failed to update product:", response.data);
           showAlert("Failed to update product. Please try again", "error");
         }
       } else {
-        // Creating new product
-        // const response = await api.post("/admin/addProduct", formDataToSend, {
-        //   headers: {
-        //     "Content-Type": "multipart/form-data",
-        //   },
-        //   withCredentials: true,
-        // });
-
-        if (response.data) {
-          await fetchProducts(); // Refresh the product list
-          closeModal();
-        } else {
-          console.error("Failed to create product:", response.data);
-          alert("Failed to create product. Please try again.");
-        }
+        // Creating new product logic would go here
+        console.log("Create product functionality not implemented");
       }
     } catch (error) {
       console.error("Error submitting form:", error);
-      alert("An error occurred while saving the product. Please try again.");
+      showAlert("An error occurred while saving the product. Please try again.", "error");
     } finally {
       setSubmitting(false);
     }
@@ -345,18 +330,18 @@ function ManageProducts() {
         withCredentials: true,
       });
 
-      // Fixed: Check response.data instead of response.ok
       if (response.data) {
-        await fetchProducts(); // Refresh the product list
+        await fetchProducts();
         setIsDeleteDialogOpen(false);
         setDeleteProductId(null);
+        showAlert("Product deleted successfully");
       } else {
         console.error("Failed to delete product");
-        alert("Failed to delete product. Please try again.");
+        showAlert("Failed to delete product. Please try again.", "error");
       }
     } catch (error) {
       console.error("Error deleting product:", error);
-      alert("An error occurred while deleting the product. Please try again.");
+      showAlert("An error occurred while deleting the product. Please try again.", "error");
     }
   };
 
@@ -393,7 +378,7 @@ function ManageProducts() {
                 placeholder="Search products..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#003554]focus:border-transparent w-60"
+                className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#003554] focus:border-transparent w-60"
               />
             </div>
           </div>
@@ -425,28 +410,39 @@ function ManageProducts() {
                   <h3 className="font-semibold text-gray-900 text-sm leading-tight">
                     {product.name}
                   </h3>
-                  <span
-                    className={`px-2 py-1 rounded-full text-xs font-medium ${
-                      product.enabled
-                        ? "bg-green-100 text-green-800"
-                        : "bg-red-100 text-red-800"
-                    }`}
-                  >
-                    {product.enabled ? "Active" : "Inactive"}
-                  </span>
+                  <div className="flex flex-row items-center gap-1 flex-wrap justify-end">
+                    <span
+                      className={`px-2 py-1 rounded-full text-xs font-medium ${
+                        product.enabled
+                          ? "bg-green-100 text-green-800"
+                          : "bg-red-100 text-red-800"
+                      }`}
+                    >
+                      {product.enabled ? "Active" : "Inactive"}
+                    </span>
+                    {/* Low Stock Alert */}
+                    {product.quantity <= 10 && product.quantity > 0 && (
+                      <span className="px-5 py-1 mt-2 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
+                        Low Stock
+                      </span>
+                    )}
+                    {product.quantity === 0 && (
+                      <span className="px-2 py-1 mt-2 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                        No Stock
+                      </span>
+                    )}
+                  </div>
                 </div>
-
-                <p className="text-gray-600 text-sm mb-3 line-clamp-2">
-                  {product.summary || product.description}
-                </p>
 
                 <div className="flex items-center justify-between mb-3">
                   <span className="text-lg font-bold text-[#003554]">
                     ${product.price}
                   </span>
-                  <span className="text-xs text-gray-500">
-                    {product.images ? product.images.length : 0} images
-                  </span>
+                  <div className="text-right">
+                    <div className="text-xs text-gray-500">
+                      Qty: {product.quantity || 0}
+                    </div>
+                  </div>
                 </div>
 
                 <div className="flex gap-2">
@@ -496,7 +492,7 @@ function ManageProducts() {
             </div>
 
             <div className="p-6 space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 {/* Product Name */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -507,7 +503,7 @@ function ManageProducts() {
                     name="name"
                     value={formData.name}
                     onChange={handleInputChange}
-                    className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-[#003554]focus:border-transparent ${
+                    className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-[#003554] focus:border-transparent ${
                       errors.name ? "border-red-300" : "border-gray-300"
                     }`}
                     placeholder="Enter product name"
@@ -529,13 +525,35 @@ function ManageProducts() {
                     onChange={handleInputChange}
                     step="0.01"
                     min="0"
-                    className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-[#003554]focus:border-transparent ${
+                    className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-[#003554] focus:border-transparent ${
                       errors.price ? "border-red-300" : "border-gray-300"
                     }`}
                     placeholder="0.00"
                   />
                   {errors.price && (
                     <p className="text-red-500 text-sm mt-1">{errors.price}</p>
+                  )}
+                </div>
+
+                {/* Quantity */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Quantity *
+                  </label>
+                  <input
+                    type="number"
+                    name="quantity"
+                    value={formData.quantity}
+                    onChange={handleInputChange}
+                    min="0"
+                    step="1"
+                    className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-[#003554] focus:border-transparent ${
+                      errors.quantity ? "border-red-300" : "border-gray-300"
+                    }`}
+                    placeholder="0"
+                  />
+                  {errors.quantity && (
+                    <p className="text-red-500 text-sm mt-1">{errors.quantity}</p>
                   )}
                 </div>
               </div>
@@ -550,7 +568,7 @@ function ManageProducts() {
                   name="summary"
                   value={formData.summary}
                   onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#003554]focus:border-transparent"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#003554] focus:border-transparent"
                   placeholder="Brief summary of the product"
                 />
               </div>
@@ -565,7 +583,7 @@ function ManageProducts() {
                   value={formData.description}
                   onChange={handleInputChange}
                   rows="3"
-                  className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-[#003554]focus:border-transparent ${
+                  className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-[#003554] focus:border-transparent ${
                     errors.description ? "border-red-300" : "border-gray-300"
                   }`}
                   placeholder="Enter product description"
@@ -587,7 +605,7 @@ function ManageProducts() {
                   value={formData.overview}
                   onChange={handleInputChange}
                   rows="4"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#003554]focus:border-transparent"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#003554] focus:border-transparent"
                   placeholder="Detailed overview of the product..."
                 />
               </div>
@@ -685,14 +703,14 @@ function ManageProducts() {
                       value={newSpecKey}
                       onChange={(e) => setNewSpecKey(e.target.value)}
                       placeholder="Key"
-                      className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#003554]focus:border-transparent"
+                      className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#003554] focus:border-transparent"
                     />
                     <input
                       type="text"
                       value={newSpecValue}
                       onChange={(e) => setNewSpecValue(e.target.value)}
                       placeholder="Value"
-                      className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#003554]focus:border-transparent"
+                      className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#003554] focus:border-transparent"
                     />
                     <button
                       type="button"

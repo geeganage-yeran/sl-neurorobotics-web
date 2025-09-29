@@ -23,6 +23,11 @@ export const validationRules = {
     maxLength: 1000,
     sanitize: true,
   },
+  quantity: {
+    required: true,
+    min: 0,
+    type: 'number',
+  },
   price: {
     required: true,
     min: 0,
@@ -37,30 +42,30 @@ export const validationRules = {
   specifications: {
     maxItems: 20,
     itemValidation: {
-      name: { 
-        required: true, 
-        minLength: 2, 
+      name: {
+        required: true,
+        minLength: 2,
         maxLength: 100,
-        sanitize: true 
+        sanitize: true
       },
-      description: { 
-        required: true, 
-        minLength: 5, 
+      description: {
+        required: true,
+        minLength: 5,
         maxLength: 500,
-        sanitize: true 
+        sanitize: true
       },
     },
   },
   images: {
     maxSize: 8 * 1024 * 1024,
-    maxFiles: 10, 
+    maxFiles: 10,
     allowedTypes: ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'],
   },
 };
 
 export const sanitizeInput = (input) => {
   if (typeof input !== 'string') return input;
-  
+
   return input
     .trim()
     .replace(/\s+/g, ' ')
@@ -72,9 +77,9 @@ export const sanitizeInput = (input) => {
 
 export const sanitizeUrl = (url) => {
   if (typeof url !== 'string') return url;
-  
+
   const trimmed = url.trim();
-  
+
   if (!trimmed.match(/^https?:\/\//i)) {
     return '';
   }
@@ -129,7 +134,7 @@ export const validateField = (fieldName, value, rules = validationRules[fieldNam
 
   if (typeof sanitizedValue === 'string') {
     const trimmedValue = sanitizedValue.trim();
-    
+
     if (rules.minLength && trimmedValue.length < rules.minLength) {
       errors.push(errorMessages.minLength(fieldLabel, rules.minLength));
     }
@@ -145,14 +150,14 @@ export const validateField = (fieldName, value, rules = validationRules[fieldNam
 
   if (rules.type === 'number' || (typeof sanitizedValue === 'number' || (typeof sanitizedValue === 'string' && !isNaN(parseFloat(sanitizedValue))))) {
     const numValue = typeof sanitizedValue === 'number' ? sanitizedValue : parseFloat(sanitizedValue);
-    
+
     if (isNaN(numValue)) {
       errors.push(errorMessages.invalidNumber(fieldLabel));
     } else {
       if (rules.min !== undefined && numValue < rules.min) {
         errors.push(errorMessages.min(fieldLabel, rules.min));
       }
-      
+
       if (rules.max !== undefined && numValue > rules.max) {
         errors.push(errorMessages.max(fieldLabel, rules.max));
       }
@@ -210,7 +215,7 @@ export const validateForm = (formData, specifications = [], images = []) => {
 
   Object.keys(validationRules).forEach(fieldName => {
     if (fieldName === 'specifications' || fieldName === 'images') return;
-    
+
     const validation = validateField(fieldName, formData[fieldName]);
     if (validation.errors.length > 0) {
       errors[fieldName] = validation.errors;
@@ -224,7 +229,7 @@ export const validateForm = (formData, specifications = [], images = []) => {
   } else {
     const specErrors = [];
     const sanitizedSpecs = [];
-    
+
     specifications.forEach((spec, index) => {
       const specValidation = validateSpecification(spec);
       if (Object.keys(specValidation.errors).length > 0) {
@@ -232,7 +237,7 @@ export const validateForm = (formData, specifications = [], images = []) => {
       }
       sanitizedSpecs[index] = specValidation.sanitized;
     });
-    
+
     if (specErrors.length > 0) {
       errors.specifications = specErrors;
     }
@@ -271,13 +276,13 @@ export const getFieldError = (errors, fieldName) => {
 };
 
 export const hasFieldError = (errors, fieldName) => {
-  return errors && errors[fieldName] && 
+  return errors && errors[fieldName] &&
     (Array.isArray(errors[fieldName]) ? errors[fieldName].length > 0 : true);
 };
 
 export const formatValidationErrors = (errors) => {
   const formatted = [];
-  
+
   Object.keys(errors).forEach(fieldName => {
     const fieldErrors = errors[fieldName];
     if (Array.isArray(fieldErrors)) {
@@ -293,6 +298,6 @@ export const formatValidationErrors = (errors) => {
       });
     }
   });
-  
+
   return formatted;
 };

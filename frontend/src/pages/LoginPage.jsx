@@ -309,6 +309,7 @@ export default function LoginPage() {
 
               <div className="flex justify-end">
                 <button
+                  type="button"
                   onClick={handleForgotPassword}
                   className="text-sm text-[#0582CA] hover:text-[#003554] transition-colors duration-200 bg-transparent border-none cursor-pointer"
                 >
