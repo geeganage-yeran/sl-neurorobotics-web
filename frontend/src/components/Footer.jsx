@@ -14,7 +14,7 @@ const Footer = () => {
         try {
             // Change to GET request and handle response properly
             const response = await api.get("/public/getLatestProducts");
-            
+
             // If using axios (most common), response data is in response.data
             if (response && response.data) {
                 setLatestProducts(response.data);
@@ -70,20 +70,21 @@ const Footer = () => {
                                 {latestProducts.length > 0 ? (
                                     latestProducts.map((product) => (
                                         <li key={product.id}>
-                                            <button
-                                                onClick={() => handleProductClick(product.id, product.name)}
+                                            <a
+                                                href="/shop"
                                                 className="text-left transition-colors hover:text-white hover:underline focus:outline-none focus:text-white cursor-pointer"
                                             >
-                                                {product.name && product.name.length > 30 
-                                                    ? `${product.name.substring(0, 30)}...` 
+                                                {product.name && product.name.length > 30
+                                                    ? `${product.name.substring(0, 30)}...`
                                                     : product.name || 'Unnamed Product'}
-                                            </button>
+                                            </a>
                                         </li>
                                     ))
                                 ) : (
                                     <li className="text-gray-500">No products available</li>
                                 )}
                             </ul>
+
                         )}
                     </div>
 
@@ -91,9 +92,8 @@ const Footer = () => {
                         <h3 className="mb-4 font-semibold text-white">Company</h3>
                         <ul className="space-y-2 text-sm text-gray-400">
                             <li><a href="#" className="transition-colors hover:text-white">About</a></li>
-                            <li><a href="#" className="transition-colors hover:text-white">Careers</a></li>
-                            <li><a href="#" className="transition-colors hover:text-white">Press</a></li>
-                            <li><a href="#" className="transition-colors hover:text-white">News</a></li>
+                            <li><a href="/about#contactUs" className="transition-colors hover:text-white">Contact</a></li>
+                            <li><a href="/shop" className="transition-colors hover:text-white">Shop</a></li>
                         </ul>
                     </div>
                 </div>

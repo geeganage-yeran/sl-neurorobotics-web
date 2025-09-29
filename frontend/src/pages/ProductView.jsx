@@ -112,6 +112,7 @@ export default function ProductViewPage() {
         const response = await axios.get(
           `http://localhost:8080/api/public/getProduct/${id}`
         );
+        
         setProduct(response.data);
 
         // Handle specifications - now comes as Map/object from backend
@@ -311,7 +312,7 @@ export default function ProductViewPage() {
                 </div>
 
                 <div className="text-3xl font-bold text-gray-500 mb-6">
-                  ${product.price}
+                  ${product.price.toFixed(2)}
                 </div>
 
                 <div className="text-sm text-gray-500 mb-2">
@@ -353,7 +354,7 @@ export default function ProductViewPage() {
                 {/* Buy Now Button */}
                 <button
                   onClick={() => buyNow(product, quantity)}
-                  className="w-full bg-[#006494] hover:bg-[#003554] text-white py-4 px-6 rounded-xl font-semibold text-lg transition-colors"
+                  className="w-full cursor-pointer bg-[#006494] hover:bg-[#003554] text-white py-4 px-6 rounded-xl font-semibold text-lg transition-colors"
                 >
                   BUY NOW
                 </button>
@@ -362,7 +363,7 @@ export default function ProductViewPage() {
                 <button
                   onClick={() => addToCart(product.id, quantity)}
                   disabled={cartLoading}
-                  className="w-full bg-white hover:bg-gray-50 text-[#006494] font-semibold py-4 px-6 rounded-xl border-2 border-[#006494] hover:border-[#003554] transition-all duration-300 disabled:opacity-50"
+                  className="w-full cursor-pointer bg-white hover:bg-gray-50 text-[#006494] font-semibold py-4 px-6 rounded-xl border-2 border-[#006494] hover:border-[#003554] transition-all duration-300 disabled:opacity-50"
                 >
                   {cartLoading ? "Adding..." : "ADD TO CART"}
                 </button>
@@ -438,7 +439,7 @@ export default function ProductViewPage() {
                   <iframe
                     width="100%"
                     height="100%"
-                    src={product.tutorialLink}
+                    src={`https://www.youtube.com/embed/${product.tutorialLink.split("youtu.be/")[1]}`}
                     title={`${product.name} Setup Tutorial`}
                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                     allowFullScreen

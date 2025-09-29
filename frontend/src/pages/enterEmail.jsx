@@ -117,7 +117,7 @@ export default function ForgotPasswordForm() {
             <div className="space-y-3">
               <button
                 onClick={() => navigate('/verify-reset-code', { state: { email } })}
-                className="cursor-pointer w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-6 rounded-xl transition-colors duration-200"
+                className="cursor-pointer w-full bg-[#006494]  hover:bg-[#003554] text-white font-medium py-3 px-6 rounded-xl transition-colors duration-200"
               >
                 Enter Reset Code
               </button>
@@ -194,7 +194,7 @@ export default function ForgotPasswordForm() {
             <button
               onClick={handleSubmit}
               disabled={isLoading}
-              className="cursor-pointer w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 disabled:from-gray-400 disabled:to-gray-400 text-white font-medium py-3 px-6 rounded-xl transition-all duration-200 transform hover:scale-[1.02] disabled:scale-100 disabled:cursor-not-allowed"
+              className="cursor-pointer w-full bg-[#006494]  hover:bg-[#003554] disabled:from-gray-400 disabled:to-gray-400 text-white font-medium py-3 px-6 rounded-xl transition-all duration-200 transform hover:scale-[1.02] disabled:scale-100 disabled:cursor-not-allowed"
             >
               {isLoading ? (
                 <div className="flex items-center justify-center gap-2">

@@ -473,7 +473,7 @@ function Product() {
                             {product.name}
                           </h3>
                           <div className="text-2xl sm:text-3xl font-semibold text-[#006494]">
-                            ${product.price}
+                            ${product.price.toFixed(2)}
                           </div>
                         </div>
 
