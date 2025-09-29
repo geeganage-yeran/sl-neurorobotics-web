@@ -276,7 +276,7 @@ export default function OTPVerificationForm() {
             <button
               onClick={handleSubmit}
               disabled={isVerifying || otp.join('').length !== 6 || isResending}
-              className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white font-semibold py-4 px-8 rounded-2xl transition-all duration-300 transform hover:scale-[1.02] disabled:scale-100 disabled:cursor-not-allowed shadow-lg text-lg"
+              className="w-full bg-[#006494]  hover:bg-[#003554] cursor-pointer disabled:bg-gray-400 text-white font-semibold py-4 px-8 rounded-2xl transition-all duration-300 transform hover:scale-[1.02] disabled:scale-100 disabled:cursor-not-allowed shadow-lg text-lg"
             >
               {isVerifying ? (
                 <div className="flex items-center justify-center gap-2">

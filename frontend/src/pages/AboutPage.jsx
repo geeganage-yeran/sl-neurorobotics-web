@@ -3,6 +3,7 @@ import { Mail, Phone, MapPin, Globe } from "lucide-react";
 import Footer from "../components/Footer";
 import image1 from "../assets/image5.png";
 import image2 from "../assets/aboutus.jpg";
+import image3 from "../assets/image8.png";
 import Alert from "../components/Alert";
 import DynamicHeader from "../components/DynamicHeader";
 import api from "../services/api";
@@ -226,11 +227,11 @@ export default function AboutPage() {
           <div className="flex flex-col space-y-6 lg:flex-row lg:items-start lg:space-x-8 lg:space-y-0">
             {/* Image Container */}
             <div className="flex-shrink-0 w-full lg:w-auto">
-              <div className="flex items-center justify-center w-full h-64 mx-auto overflow-hidden bg-blue-100 rounded-lg lg:w-96 xl:w-96 sm:w-100 lg:h-80 lg:mx-0">
+              <div className="flex items-center justify-center w-full h-64 mx-auto overflow-hidden bg-blue-100 rounded-lg lg:w-96 xl:w-96 sm:w-100 lg:h-80 lg:mx-0 ">
                 <img
-                  src={image1}
+                  src={image3}
                   alt="Company Logo"
-                  className="object-cover w-full h-full"
+                  className="object-contain w-full h-full"
                 />
               </div>
             </div>

@@ -246,37 +246,6 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Newsletter Section */}
-      <section className="py-16 bg-white">
-        <div className="max-w-4xl px-4 mx-auto text-center sm:px-6 lg:px-8">
-          <h2 className="text-3xl text-all-ca font-bold text-[#051923] leading-9 mb-8 uppercase">
-            Subscribe to Our Newsletter
-          </h2>
-          <div className="flex flex-col max-w-lg mx-auto sm:flex-row">
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="Enter your email"
-              className="flex-1 px-6 py-3 border border-gray-300 rounded-l-lg sm:rounded-r-none rounded-r-lg text-gray-800 focus:outline-none focus:ring-2 focus:ring-[#006494] focus:border-transparent"
-            />
-            <button
-              onClick={handleSubscribe}
-              className="bg-[#006494] hover:bg-[#003554] text-white px-8 py-3 rounded-r-lg sm:rounded-l-none rounded-l-lg transition-all duration-300 ease-in-out cursor-pointer  font-semibold mt-2 sm:mt-0"
-            >
-              Subscribe
-            </button>
-          </div>
-          <Alert
-            open={alert.open}
-            onClose={closeAlert}
-            message={alert.message}
-            type={alert.type}
-            position={alert.position}
-            autoHideDuration={3000}
-          />
-        </div>
-      </section>
       <Footer />
     </div>
   );

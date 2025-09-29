@@ -39,12 +39,12 @@ const HeaderV3 = () => {
           >
             Home
           </a>
-          <a
+          {/* <a
             href="/resources"
             className="font-semibold text-[#003554] hover:text-[#006494] transition-colors"
           >
             Resources
-          </a>
+          </a> */}
           <a
             href="/shop"
             className="font-semibold text-[#003554] hover:text-[#006494] transition-colors"

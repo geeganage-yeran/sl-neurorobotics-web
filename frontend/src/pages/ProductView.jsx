@@ -158,6 +158,7 @@ export default function ProductViewPage() {
         const response = await axios.get(
           `http://localhost:8080/api/public/getProduct/${id}`
         );
+        
         setProduct(response.data);
         console.log("Fetched product:", response.data);
 
@@ -363,7 +364,7 @@ export default function ProductViewPage() {
                 </div>
 
                 <div className="text-3xl font-bold text-gray-500 mb-6">
-                  ${product.price}
+                  ${product.price.toFixed(2)}
                 </div>
                 <div className="text-sm text-gray-500 mb-2">
                   Shipping calculated at checkout.
@@ -435,6 +436,7 @@ export default function ProductViewPage() {
                   </p>
                 </div>
               )}
+
             </div>
           </div>
         </div>
@@ -506,7 +508,7 @@ export default function ProductViewPage() {
                   <iframe
                     width="100%"
                     height="100%"
-                    src={product.tutorialLink}
+                    src={`https://www.youtube.com/embed/${product.tutorialLink.split("youtu.be/")[1]}`}
                     title={`${product.name} Setup Tutorial`}
                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                     allowFullScreen

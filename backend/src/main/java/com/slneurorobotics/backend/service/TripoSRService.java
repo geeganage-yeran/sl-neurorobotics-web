@@ -33,6 +33,7 @@ public class TripoSRService {
     private String apiKey;
 
     @Value("${app.models.dir}")
+
     private String modelsDir;
 
     private final RestTemplate restTemplate = new RestTemplate();
@@ -73,7 +74,6 @@ public class TripoSRService {
             throw new RuntimeException("Failed to generate 3D model: " + e.getMessage());
         }
     }
-
 
     /**
      * Validates the uploaded image file
