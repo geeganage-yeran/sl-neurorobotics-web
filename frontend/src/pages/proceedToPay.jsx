@@ -701,7 +701,6 @@ const ProceedToPay = () => {
 
       console.log("Sending order payload:", orderPayload);
 
-      // Step 2: Call your enhanced checkout endpoint
       const response = await api.post("/checkout/session", orderPayload, {
         headers: {
           "Content-Type": "application/json",
@@ -717,11 +716,9 @@ const ProceedToPay = () => {
         throw new Error("Failed to create checkout session");
       }
 
-      // Step 3: Store order ID for tracking (optional)
       localStorage.setItem("currentOrderId", orderId);
       localStorage.setItem("checkoutSessionId", sessionId);
 
-      // Step 4: Redirect to Stripe Checkout
       const stripe = await stripePromise;
       const { error } = await stripe.redirectToCheckout({
         sessionId: sessionId,

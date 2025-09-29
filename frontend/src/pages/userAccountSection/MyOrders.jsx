@@ -13,7 +13,7 @@ import CancelModal from "../../components/confirmDialog";
 import api from "../../services/api";
 
 function MyOrder({ user }) {
-  const [activeTab, setActiveTab] = useState("shipped");
+  const [activeTab, setActiveTab] = useState("pending");
   const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -48,7 +48,7 @@ function MyOrder({ user }) {
     if (selectedOrder) {
       try {
         const response = await api.put(
-          `/admin/orders/${selectedOrder.orderId}/cancel`,
+          `/orders/${selectedOrder.orderId}/cancel`,
           { reason: "Cancelled by user" },
           { withCredentials: true }
         );
@@ -125,12 +125,19 @@ function MyOrder({ user }) {
   const filteredOrders =
     activeTab === "cancelled"
       ? orders.filter((order) => order.status === "CANCELLED")
+      : activeTab === "pending"
+      ? orders.filter(
+          (order) => order.status === "PAID" || order.status === "PROCESSING"
+        )
       : activeTab === "shipped"
       ? orders.filter((order) => order.status === "SHIPPED")
       : orders.filter((order) => order.status === "DELIVERED");
 
   const getOrderCounts = () => {
     return {
+      pending: orders.filter(
+        (o) => o.status === "PAID" || o.status === "PROCESSING"
+      ).length,
       cancelled: orders.filter((o) => o.status === "CANCELLED").length,
       shipped: orders.filter((o) => o.status === "SHIPPED").length,
       delivered: orders.filter((o) => o.status === "DELIVERED").length,
@@ -165,6 +172,16 @@ function MyOrder({ user }) {
               {/* Filter Tabs */}
               <div className="px-6 py-4 border-b border-gray-200">
                 <div className="flex space-x-8 overflow-x-auto">
+                  <button
+                    onClick={() => setActiveTab("pending")}
+                    className={`pb-2 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
+                      activeTab === "pending"
+                        ? "border-[#003554] text-[#003554]"
+                        : "border-transparent text-gray-500 hover:text-gray-700 cursor-pointer"
+                    }`}
+                  >
+                    Pending ({counts.pending})
+                  </button>
                   <button
                     onClick={() => setActiveTab("shipped")}
                     className={`pb-2 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
@@ -224,17 +241,24 @@ function MyOrder({ user }) {
                               )}`}
                             >
                               {getStatusIcon(order.status)}
-                              <span className="ml-1">{getStatusText(order.status)}</span>
+                              <span className="ml-1">
+                                {getStatusText(order.status)}
+                              </span>
                             </span>
                           </div>
-                          
+
                           {/* Order Items */}
                           {order.items && order.items.length > 0 && (
                             <div className="mb-3">
                               {order.items.map((item, index) => (
-                                <div key={index} className="text-gray-600 text-sm mb-1">
-                                  <span className="font-medium">{item.productName}</span> - 
-                                  Qty: {item.quantity} × ${item.price}
+                                <div
+                                  key={index}
+                                  className="text-gray-600 text-sm mb-1"
+                                >
+                                  <span className="font-medium">
+                                    {item.productName}
+                                  </span>{" "}
+                                  - Qty: {item.quantity} × ${item.price}
                                 </div>
                               ))}
                             </div>
@@ -277,12 +301,13 @@ function MyOrder({ user }) {
                           )}
 
                           {/* Cancellation Reason */}
-                          {order.status === "CANCELLED" && order.cancellationReason && (
-                            <div className="mt-2 text-sm text-red-600">
-                              <span className="font-medium">Cancelled:</span>{" "}
-                              {order.cancellationReason}
-                            </div>
-                          )}
+                          {order.status === "CANCELLED" &&
+                            order.cancellationReason && (
+                              <div className="mt-2 text-sm text-red-600">
+                                <span className="font-medium">Cancelled:</span>{" "}
+                                {order.cancellationReason}
+                              </div>
+                            )}
                         </div>
                       </div>
 
@@ -298,20 +323,21 @@ function MyOrder({ user }) {
                               Pay Now
                             </button>
                           )}
-                          
-                          {(order.status === "PAID" || order.status === "PROCESSING") && (
-                            <button 
+
+                          {(order.status === "PAID" ||
+                            order.status === "PROCESSING") && (
+                            <button
                               onClick={() => {
                                 setSelectedOrder(order);
                                 setCancelDialogOpen(true);
-                              }} 
+                              }}
                               className="inline-flex cursor-pointer items-center px-3 py-1.5 border border-red-600 rounded-lg text-sm font-medium text-red-600 bg-white hover:bg-red-50 transition-colors"
                             >
                               <CircleX className="w-4 h-4 mr-1" />
                               Cancel
                             </button>
                           )}
-                          
+
                           {order.status === "SHIPPED" && order.trackingLink && (
                             <a
                               href={order.trackingLink}
@@ -342,7 +368,7 @@ function MyOrder({ user }) {
                 </div>
               )}
             </div>
-            
+
             {/* Cancel Order Dialog */}
             <CancelModal
               isOpen={cancelDialogOpen}

@@ -27,21 +27,21 @@ public class ProductController {
     private final ObjectMapper objectMapper;
     private final HomePageService homePageService;
 
-    @PostMapping("/addProduct")
-    public ResponseEntity<?> createProduct(
-            @RequestParam("product") String productJson,
-            @RequestParam("images") List<MultipartFile> images,
-            @RequestParam("imageNames") List<String> imageNames,
-            @RequestParam("displayOrders") List<Integer> displayOrders
-    ) {
-        try {
-            ProductRequestDTO productRequest = objectMapper.readValue(productJson, ProductRequestDTO.class);
-            productService.saveProduct(productRequest, images, imageNames, displayOrders);
-            return ResponseEntity.ok("Product created successfully");
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body("Failed to create Product: " + e.getMessage());
-        }
-    }
+//    @PostMapping("/addProduct")
+//    public ResponseEntity<?> createProduct(
+//            @RequestParam("product") String productJson,
+//            @RequestParam("images") List<MultipartFile> images,
+//            @RequestParam("imageNames") List<String> imageNames,
+//            @RequestParam("displayOrders") List<Integer> displayOrders
+//    ) {
+//        try {
+//            ProductRequestDTO productRequest = objectMapper.readValue(productJson, ProductRequestDTO.class);
+//            productService.saveProduct(productRequest, images, imageNames, displayOrders);
+//            return ResponseEntity.ok("Product created successfully");
+//        } catch (Exception e) {
+//            return ResponseEntity.badRequest().body("Failed to create Product: " + e.getMessage());
+//        }
+//    }
 
     @GetMapping(value = "/getProduct")
     public List<ProductResponseDTO> getAllProducts(){
@@ -88,8 +88,6 @@ public class ProductController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
-
-    // Add this method to ProductController.java
 
     @GetMapping("/getLatestProduct")
     public ResponseEntity<ProductResponseDTO> getLatestProduct() {

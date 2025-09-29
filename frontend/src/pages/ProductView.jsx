@@ -379,51 +379,68 @@ export default function ProductViewPage() {
             <div className="mt-8 space-y-4">
               {product.quantity > 0 ? (
                 <>
-                  {/* Quantity Selector */}
-                  <div className="flex items-center space-x-4">
-                    <span className="text-gray-700 font-medium">Quantity:</span>
-                    <div className="flex items-center border border-gray-300 rounded-lg">
-                      <button
-                        onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                        className="px-3 py-2 text-gray-600 cursor-pointer hover:text-[#006494] hover:bg-gray-50 transition-colors rounded-l-lg"
-                        disabled={quantity <= 1}
-                      >
-                        <span className="text-xl font-semibold">−</span>
-                      </button>
-                      <span className="px-4 py-2 min-w-[3rem] text-center font-medium border-l border-r border-gray-300">
-                        {quantity}
-                      </span>
-                      <button
-                        onClick={() =>
-                          setQuantity(Math.min(product.quantity, quantity + 1))
-                        }
-                        disabled={quantity >= product.quantity}
-                        className="px-3 py-2 cursor-pointer text-gray-600 hover:text-[#006494] hover:bg-gray-50 transition-colors rounded-r-lg disabled:opacity-50 disabled:cursor-not-allowed"
-                      >
-                        <span className="text-xl font-semibold">+</span>
-                      </button>
+                  {/* Only show purchase options if NOT admin */}
+                  {user?.role !== "ADMIN" && (
+                    <>
+                      {/* Quantity Selector */}
+                      <div className="flex items-center space-x-4">
+                        <span className="text-gray-700 font-medium">Quantity:</span>
+                        <div className="flex items-center border border-gray-300 rounded-lg">
+                          <button
+                            onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                            className="px-3 py-2 text-gray-600 cursor-pointer hover:text-[#006494] hover:bg-gray-50 transition-colors rounded-l-lg"
+                            disabled={quantity <= 1}
+                          >
+                            <span className="text-xl font-semibold">−</span>
+                          </button>
+                          <span className="px-4 py-2 min-w-[3rem] text-center font-medium border-l border-r border-gray-300">
+                            {quantity}
+                          </span>
+                          <button
+                            onClick={() =>
+                              setQuantity(Math.min(product.quantity, quantity + 1))
+                            }
+                            disabled={quantity >= product.quantity}
+                            className="px-3 py-2 cursor-pointer text-gray-600 hover:text-[#006494] hover:bg-gray-50 transition-colors rounded-r-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                          >
+                            <span className="text-xl font-semibold">+</span>
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Action Buttons */}
+                      <div className="space-y-3">
+                        {/* Buy Now Button */}
+                        <button
+                          onClick={() => buyNow(product, quantity)}
+                          className="w-full bg-[#006494] hover:bg-[#003554] text-white py-4 px-6 rounded-xl font-semibold text-lg transition-colors"
+                        >
+                          BUY NOW
+                        </button>
+
+                        {/* Add to Cart Button */}
+                        <button
+                          onClick={() => addToCart(product.id, quantity)}
+                          disabled={cartLoading}
+                          className="w-full bg-white hover:bg-gray-50 text-[#006494] font-semibold py-4 px-6 rounded-xl border-2 border-[#006494] hover:border-[#003554] transition-all duration-300 disabled:opacity-50"
+                        >
+                          {cartLoading ? "Adding..." : "ADD TO CART"}
+                        </button>
+                      </div>
+                    </>
+                  )}
+                  
+                  {/* Admin viewing message */}
+                  {user?.role === "ADMIN" && (
+                    <div className="bg-blue-50 border border-blue-200 rounded-xl p-6 text-center">
+                      <p className="text-blue-700 font-semibold text-lg">
+                        Admin View
+                      </p>
+                      <p className="text-blue-600 text-sm mt-1">
+                        Purchase options are not available for admin accounts
+                      </p>
                     </div>
-                  </div>
-
-                  {/* Action Buttons */}
-                  <div className="space-y-3">
-                    {/* Buy Now Button */}
-                    <button
-                      onClick={() => buyNow(product, quantity)}
-                      className="w-full bg-[#006494] hover:bg-[#003554] text-white py-4 px-6 rounded-xl font-semibold text-lg transition-colors"
-                    >
-                      BUY NOW
-                    </button>
-
-                    {/* Add to Cart Button */}
-                    <button
-                      onClick={() => addToCart(product.id, quantity)}
-                      disabled={cartLoading}
-                      className="w-full bg-white hover:bg-gray-50 text-[#006494] font-semibold py-4 px-6 rounded-xl border-2 border-[#006494] hover:border-[#003554] transition-all duration-300 disabled:opacity-50"
-                    >
-                      {cartLoading ? "Adding..." : "ADD TO CART"}
-                    </button>
-                  </div>
+                  )}
                 </>
               ) : (
                 /* Out of Stock Message */

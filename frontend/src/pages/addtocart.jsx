@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Trash2, Plus, Minus, ShoppingBag, Tag, Truck, X } from "lucide-react";
+import { Trash2, Plus, Minus, ShoppingBag, Tag, Truck, X, AlertCircle } from "lucide-react";
 import { useParams, useNavigate } from "react-router-dom";
 import api from "../services/api";
 import Alert from "../components/Alert";
@@ -39,10 +39,24 @@ const AddToCart = () => {
       showAlert("Your cart is empty", "error");
       return;
     }
+    
+    // Check if any items exceed available stock
+    const itemsExceedingStock = cartItems.filter(
+      item => item.quantity > item.availableStock
+    );
+    
+    if (itemsExceedingStock.length > 0) {
+      showAlert(
+        "Some items in your cart exceed available stock. Please adjust quantities.",
+        "error"
+      );
+      return;
+    }
+    
     // Navigate to checkout page with cart data
     navigate(`/checkout/${userId}`, {
       state: {
-        source: "cart", // Add source identifier
+        source: "cart",
         cartItems,
         subtotal,
         discount,
@@ -61,7 +75,28 @@ const AddToCart = () => {
       const response = await api.get(`/cart/item/${userId}`);
 
       if (response.data && response.data.items) {
-        setCartItems(response.data.items);
+        // Fetch stock information for each cart item
+        const itemsWithStock = await Promise.all(
+          response.data.items.map(async (item) => {
+            try {
+              const productResponse = await api.get(
+                `/public/getProduct/${item.productId}`
+              );
+              return {
+                ...item,
+                availableStock: productResponse.data.quantity || 0,
+              };
+            } catch (error) {
+              console.error(`Error fetching stock for product ${item.productId}:`, error);
+              return {
+                ...item,
+                availableStock: 0,
+              };
+            }
+          })
+        );
+        
+        setCartItems(itemsWithStock);
         setCartData(response.data);
       } else {
         setCartItems([]);
@@ -74,8 +109,14 @@ const AddToCart = () => {
     }
   };
 
-  const updateQuantity = async (cartItemId, newQuantity) => {
+  const updateQuantity = async (cartItemId, newQuantity, availableStock) => {
     if (newQuantity < 1) return;
+    
+    // Check if new quantity exceeds available stock
+    if (newQuantity > availableStock) {
+      showAlert(`Only ${availableStock} items available in stock`, "warning");
+      return;
+    }
 
     try {
       await api.put(`/cart/update/${cartItemId}`, newQuantity, {
@@ -238,38 +279,56 @@ const AddToCart = () => {
                           </h3>
 
                           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-3 sm:space-y-0">
-                            <div className="flex items-center justify-center sm:justify-start space-x-3">
-                              <span className="text-sm text-gray-600">
-                                Quantity:
-                              </span>
-                              <div className="flex items-center border border-gray-300 rounded">
-                                <button
-                                  onClick={() =>
-                                    updateQuantity(
-                                      item.cartItemId,
-                                      item.quantity - 1
-                                    )
-                                  }
-                                  className="p-2 hover:bg-gray-100 transition-colors cursor-pointer"
-                                  disabled={item.quantity <= 1}
-                                >
-                                  <Minus className="w-4 h-4" />
-                                </button>
-                                <span className="px-4 py-2 text-sm font-medium min-w-[3rem] text-center">
-                                  {item.quantity}
+                            <div className="flex flex-col items-center sm:items-start space-y-2">
+                              <div className="flex items-center space-x-3">
+                                <span className="text-sm text-gray-600">
+                                  Quantity:
                                 </span>
-                                <button
-                                  onClick={() =>
-                                    updateQuantity(
-                                      item.cartItemId,
-                                      item.quantity + 1
-                                    )
-                                  }
-                                  className="p-2 hover:bg-gray-100 transition-colors cursor-pointer"
-                                >
-                                  <Plus className="w-4 h-4" />
-                                </button>
+                                <div className="flex items-center border border-gray-300 rounded">
+                                  <button
+                                    onClick={() =>
+                                      updateQuantity(
+                                        item.cartItemId,
+                                        item.quantity - 1,
+                                        item.availableStock
+                                      )
+                                    }
+                                    className="p-2 hover:bg-gray-100 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                                    disabled={item.quantity <= 1}
+                                  >
+                                    <Minus className="w-4 h-4" />
+                                  </button>
+                                  <span className="px-4 py-2 text-sm font-medium min-w-[3rem] text-center">
+                                    {item.quantity}
+                                  </span>
+                                  <button
+                                    onClick={() =>
+                                      updateQuantity(
+                                        item.cartItemId,
+                                        item.quantity + 1,
+                                        item.availableStock
+                                      )
+                                    }
+                                    className="p-2 hover:bg-gray-100 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                                    disabled={item.quantity >= item.availableStock}
+                                  >
+                                    <Plus className="w-4 h-4" />
+                                  </button>
+                                </div>
                               </div>
+                              
+                              {/* Stock availability indicator */}
+                              <span className="text-xs text-gray-500">
+                                ({item.availableStock} available)
+                              </span>
+                              
+                              {/* Out of stock warning */}
+                              {item.quantity > item.availableStock && (
+                                <div className="text-xs text-red-600 flex items-center">
+                                  <AlertCircle className="w-3 h-3 mr-1" />
+                                  Limited stock available. Please adjust quantity.
+                                </div>
+                              )}
                             </div>
 
                             <div className="text-center sm:text-right">
@@ -423,7 +482,7 @@ const AddToCart = () => {
 
                 {/* Proceed to Checkout Button */}
                 <button
-                  className="w-full py-3 sm:py-4 px-6 rounded-lg font-semibold text-lg transition-colors flex items-center justify-center space-x-2 cursor-pointer"
+                  className="w-full py-3 sm:py-4 px-6 rounded-lg font-semibold text-lg transition-colors flex items-center justify-center space-x-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                   onClick={proceedToCheckout}
                   style={{ backgroundColor: "#051923", color: "white" }}
                   disabled={cartItems.length === 0}

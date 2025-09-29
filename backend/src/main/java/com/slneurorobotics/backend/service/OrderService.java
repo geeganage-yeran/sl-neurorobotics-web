@@ -30,6 +30,7 @@ public class OrderService {
     private final OrderRepository orderRepository;
     private final OrderItemRepository orderItemRepository;
     private final PaymentRepository paymentRepository;
+    private final ProductService productService;
 
     /**
      * Create a temporary order (before payment)
@@ -80,50 +81,63 @@ public class OrderService {
         return convertToResponseDTO(savedOrder, orderItems, null);
     }
 
-    /**
-     * Confirm order after successful payment
-     */
-    public OrderResponseDTO confirmOrder(Long orderId, String stripePaymentIntentId, BigDecimal paidAmount) {
-        log.info("Confirming order: {} with payment intent: {}", orderId, stripePaymentIntentId);
 
-        Order order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new RuntimeException("Order not found: " + orderId));
+    @Transactional
+    public OrderResponseDTO confirmOrder(Long orderId, String paymentIntentId, BigDecimal paidAmount) {
+        log.info("Confirming order {} with payment intent {} and amount {}",
+                orderId, paymentIntentId, paidAmount);
 
-        // Validate order can be confirmed
-        if (order.getStatus() != Order.OrderStatus.TEMP) {
-            throw new RuntimeException("Order is not in TEMP status, cannot confirm");
+        try {
+            // 1. Retrieve the order with order items
+            Order order = orderRepository.findById(orderId)
+                    .orElseThrow(() -> new RuntimeException("Order not found with ID: " + orderId));
+
+            // Get order items separately if not loaded
+            List<OrderItem> orderItems = orderItemRepository.findByOrderIdWithProduct(orderId);
+            if (orderItems.isEmpty()) {
+                // Fallback if the above method doesn't exist
+                orderItems = orderItemRepository.findByOrderId(orderId);
+            }
+
+            // 2. Validate order can be confirmed
+            if (order.getStatus() != Order.OrderStatus.TEMP) {
+                throw new RuntimeException("Order cannot be confirmed. Current status: " + order.getStatus());
+            }
+
+            // 3. Prepare stock reduction items from order items
+            List<ProductService.StockReductionItem> stockReductions = orderItems.stream()
+                    .map(orderItem -> new ProductService.StockReductionItem(
+                            orderItem.getProductId(),
+                            orderItem.getQuantity()
+                    ))
+                    .collect(Collectors.toList());
+
+            // 4. Validate stock availability before confirming order
+            productService.validateStockAvailability(stockReductions);
+
+            // 5. Update order status and payment details
+            order.setStatus(Order.OrderStatus.PAID);
+            order.setStripePaymentIntentId(paymentIntentId);
+            order.setPaidAmount(paidAmount);  // This will now work after adding the field
+            order.setPaidAt(LocalDateTime.now());  // This will now work after adding the field
+            order.setUpdatedBy(order.getUserId()); // Set who updated it
+            order.setUpdatedAt(LocalDateTime.now()); // This should be handled by @PreUpdate but being explicit
+
+            // 6. Save the order first
+            Order updatedOrder = orderRepository.save(order);
+
+            // 7. Reduce stock quantities
+            productService.reduceStockQuantity(stockReductions);
+
+            log.info("Order {} confirmed successfully with stock reduction completed", orderId);
+
+            // 8. Convert to DTO and return - use the existing method you have
+            return convertToResponseDTO(updatedOrder, orderItems, null);
+
+        } catch (Exception e) {
+            log.error("Error confirming order {}: {}", orderId, e.getMessage());
+            throw new RuntimeException("Failed to confirm order: " + e.getMessage(), e);
         }
-
-        // Validate payment amount matches order total
-        if (paidAmount.compareTo(order.getTotalAmount()) != 0) {
-            log.warn("Payment amount mismatch. Order: {}, Paid: {}", order.getTotalAmount(), paidAmount);
-        }
-
-        // Update order status and payment intent ID
-        int updated = orderRepository.updateOrderStatusAndPaymentIntent(
-                orderId, Order.OrderStatus.PAID, stripePaymentIntentId, LocalDateTime.now());
-
-        if (updated == 0) {
-            throw new RuntimeException("Failed to update order status");
-        }
-
-        // Create payment record
-        Payment payment = new Payment();
-        payment.setOrderId(orderId);
-        payment.setStripePaymentIntentId(stripePaymentIntentId);
-        payment.setAmount(paidAmount);
-        payment.setStatus(Payment.PaymentStatus.SUCCEEDED);
-        payment.setCurrency("USD");
-        payment.setCreatedBy(order.getUserId());
-
-        paymentRepository.save(payment);
-
-        // Get updated order with items and payment
-        Order confirmedOrder = orderRepository.findById(orderId).get();
-        List<OrderItem> orderItems = orderItemRepository.findByOrderIdOrderByCreatedAt(orderId);
-
-        log.info("Order confirmed successfully: {}", orderId);
-        return convertToResponseDTO(confirmedOrder, orderItems, payment);
     }
 
     /**

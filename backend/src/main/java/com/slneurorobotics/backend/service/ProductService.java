@@ -14,6 +14,7 @@ import com.slneurorobotics.backend.repository.ProductRepository;
 import com.slneurorobotics.backend.repository.ProductImageRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.TypeToken;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,6 +35,7 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class ProductService {
 
     private final ProductRepository productRepository;
@@ -440,8 +442,6 @@ public class ProductService {
         return Optional.of(convertToResponseDTO(product));
     }
 
-
-
     private void updateProductDetailsInJson(Product product, ProductRequestDTO productRequest) {
         try {
             ObjectMapper mapper = new ObjectMapper();
@@ -648,6 +648,92 @@ public class ProductService {
         }
     }
 
+    /**
+     * Reduce stock quantity for multiple products based on order items
+     */
+    @Transactional
+    public void reduceStockQuantity(List<StockReductionItem> stockReductions) {
+        log.info("Starting stock reduction for {} products", stockReductions.size());
 
+        for (StockReductionItem item : stockReductions) {
+            reduceStockForSingleProduct(item.getProductId(), item.getQuantity());
+        }
+
+        log.info("Completed stock reduction for all products");
+    }
+
+    /**
+     * Reduce stock for a single product
+     */
+    @Transactional
+    public void reduceStockForSingleProduct(Long productId, int quantityToReduce) {
+        log.info("Reducing stock for product {} by quantity {}", productId, quantityToReduce);
+
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() -> new RuntimeException("Product not found with ID: " + productId));
+
+        // Check if sufficient stock is available
+        if (product.getQuantity() < quantityToReduce) {
+            log.error("Insufficient stock for product {}. Available: {}, Required: {}",
+                    productId, product.getQuantity(), quantityToReduce);
+            throw new RuntimeException(
+                    String.format("Insufficient stock for product %s. Available: %d, Required: %d",
+                            product.getName(), product.getQuantity(), quantityToReduce)
+            );
+        }
+
+        // Reduce the stock
+        int newQuantity = product.getQuantity() - quantityToReduce;
+        product.setQuantity(newQuantity);
+
+        productRepository.save(product);
+
+        log.info("Stock reduced successfully for product {}. New quantity: {}",
+                productId, newQuantity);
+
+        // Log warning if stock is getting low
+        if (newQuantity <= 5) { // You can make this threshold configurable
+            log.warn("LOW STOCK ALERT: Product {} now has only {} units remaining",
+                    product.getName(), newQuantity);
+        }
+    }
+
+    /**
+     * Validate stock availability before order confirmation
+     */
+    public void validateStockAvailability(List<StockReductionItem> stockRequirements) {
+        log.info("Validating stock availability for {} products", stockRequirements.size());
+
+        for (StockReductionItem item : stockRequirements) {
+            Product product = productRepository.findById(item.getProductId())
+                    .orElseThrow(() -> new RuntimeException("Product not found with ID: " + item.getProductId()));
+
+            if (product.getQuantity() < item.getQuantity()) {
+                throw new RuntimeException(
+                        String.format("Insufficient stock for product %s. Available: %d, Required: %d",
+                                product.getName(), product.getQuantity(), item.getQuantity())
+                );
+            }
+        }
+
+        log.info("Stock validation passed for all products");
+    }
+
+    /**
+     * Inner class to represent stock reduction requirements
+     */
+    public static class StockReductionItem {
+        private Long productId;
+        private int quantity;
+
+        public StockReductionItem(Long productId, int quantity) {
+            this.productId = productId;
+            this.quantity = quantity;
+        }
+
+        // Getters
+        public Long getProductId() { return productId; }
+        public int getQuantity() { return quantity; }
+    }
 
 }
