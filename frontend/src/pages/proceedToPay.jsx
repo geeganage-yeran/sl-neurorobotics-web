@@ -602,8 +602,8 @@ const ProceedToPay = () => {
   const subtotal = orderData.subtotal;
   const discountAmount = orderData.discountAmount;
   const shippingCost = subtotal > 50 ? 0 : 9.99;
-  const tax = (subtotal - discountAmount) * 0.08;
-  const total = subtotal - discountAmount + shippingCost + tax;
+  // const tax = (subtotal - discountAmount) * 0.08;
+  const total = subtotal - discountAmount + shippingCost;
 
   // Calculate total items
   const totalItemsCount = cartItems.reduce(
@@ -915,10 +915,10 @@ const ProceedToPay = () => {
                     </span>
                   </div>
 
-                  <div className="flex justify-between">
+                  {/* <div className="flex justify-between">
                     <span className="text-gray-600">Tax</span>
                     <span className="text-gray-600">${tax.toFixed(2)}</span>
-                  </div>
+                  </div> */}
 
                   <div className="border-t pt-4">
                     <div

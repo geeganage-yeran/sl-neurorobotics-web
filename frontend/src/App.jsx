@@ -3,7 +3,6 @@ import HomePage from "./pages/HomePage";
 import { Routes, Route, BrowserRouter } from "react-router-dom";
 import AboutPage from "./pages/AboutPage";
 import AddCart from "./pages/addtocart";
-import ResourcesPage from "./pages/ResourcesPage";
 import Userdashboard from "./pages/UserDashboard";
 import AdminDashboard from "./pages/AdminDashboard";
 import Register from "./pages/RegistrationPage";

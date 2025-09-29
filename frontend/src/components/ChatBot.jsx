@@ -13,7 +13,7 @@ const NeuroLinkChatbot = () => {
   const [connectionError, setConnectionError] = useState(false);
   const messagesEndRef = useRef(null);
 
-  // Configure your backend URL here
+
   const BACKEND_URL = "http://localhost:8080";
   const CHATBOT_ENDPOINT = "/api/chatbot/ask";
 
@@ -49,12 +49,11 @@ const NeuroLinkChatbot = () => {
         headers: {
           'Content-Type': 'application/json',
         },
-        timeout: 30000, // 30 second timeout
+        timeout: 30000,
       });
 
       console.log('Backend response:', response.data);
       
-      // Return the response from your ChatbotResponseDTO
       return response.data.response || "I apologize, but I couldn't process your request at the moment.";
       
     } catch (error) {

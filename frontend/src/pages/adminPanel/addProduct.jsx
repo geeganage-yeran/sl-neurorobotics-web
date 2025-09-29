@@ -248,10 +248,15 @@ const addProduct = () => {
     }
 
     try {
+      const specificationsMap = specifications.reduce((acc, spec) => {
+        acc[spec.name] = spec.description;
+        return acc;
+      }, {});
+
       const productData = {
         ...validation.sanitizedData,
-        specifications,
-        enabled: formData.enabled, // Explicitly include the enabled state
+        specifications: specificationsMap,
+        enabled: formData.enabled,
       };
 
       const formDataToSend = new FormData();

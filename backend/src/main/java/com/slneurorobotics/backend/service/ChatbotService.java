@@ -35,18 +35,18 @@ public class ChatbotService {
     }
 
     public String processUserQuestion(String userQuestion) {
-        // Always get ALL products and FAQs for context
+
         List<Product> allProducts = productRepository.findByEnabledTrue();
         List<FAQ> allFAQs = faqRepository.findAll();
 
-        // Find specific matches for the user question
+
         List<Product> relevantProducts = findRelevantProducts(userQuestion, allProducts);
         List<FAQ> relevantFAQs = findRelevantFAQs(userQuestion, allFAQs);
 
-        // Build comprehensive context
+
         String context = buildSmartContext(userQuestion, allProducts, allFAQs, relevantProducts, relevantFAQs);
 
-        // Get response from OpenAI
+
         return getOpenAIResponse(context, userQuestion);
     }
 

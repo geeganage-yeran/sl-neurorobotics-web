@@ -9,7 +9,6 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/chatbot")
-//@CrossOrigin(origins = {"http://localhost:3000", "http://localhost:5173"})
 public class ChatbotController {
 
     @Autowired
@@ -24,7 +23,7 @@ public class ChatbotController {
                         .body(new ChatbotResponseDTO("Please provide a valid question."));
             }
 
-            // Process the question through our intelligent service
+
             String response = chatbotService.processUserQuestion(request.getQuestion());
 
             return ResponseEntity.ok(new ChatbotResponseDTO(response));

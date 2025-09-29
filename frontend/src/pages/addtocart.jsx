@@ -186,22 +186,22 @@ const AddToCart = () => {
     }
   };
 
-  const applyPromoCode = () => {
-    if (promoCode.toLowerCase() === "save10") {
-      setAppliedPromo(promoCode);
-      setDiscount(10);
-      setPromoCode("");
-      showAlert("Promo code applied successfully!", "success");
-    } else {
-      showAlert("Invalid promo code", "error");
-    }
-  };
+  // const applyPromoCode = () => {
+  //   if (promoCode.toLowerCase() === "save10") {
+  //     setAppliedPromo(promoCode);
+  //     setDiscount(10);
+  //     setPromoCode("");
+  //     showAlert("Promo code applied successfully!", "success");
+  //   } else {
+  //     showAlert("Invalid promo code", "error");
+  //   }
+  // };
 
-  const removePromoCode = () => {
-    setAppliedPromo("");
-    setDiscount(0);
-    showAlert("Promo code removed", "success");
-  };
+  // const removePromoCode = () => {
+  //   setAppliedPromo("");
+  //   setDiscount(0);
+  //   showAlert("Promo code removed", "success");
+  // };
 
   // Calculate totals
   const subtotal = cartItems.reduce(
@@ -400,7 +400,7 @@ const AddToCart = () => {
                 </h2>
 
                 {/* Promo Code */}
-                <div className="mb-4 sm:mb-6">
+                {/* <div className="mb-4 sm:mb-6">
                   <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2">
                     <input
                       type="text"
@@ -428,7 +428,7 @@ const AddToCart = () => {
                       </button>
                     </div>
                   )}
-                </div>
+                </div> */}
 
                 {/* Price Breakdown */}
                 <div className="space-y-3 mb-4 sm:mb-6">
@@ -452,10 +452,10 @@ const AddToCart = () => {
                       <span>-${discountAmount.toFixed(2)}</span>
                     </div>
                   )}
-                  <div className="flex justify-between">
+                  {/* <div className="flex justify-between">
                     <span className="text-gray-600">Tax</span>
                     <span className="text-gray-600">${tax.toFixed(2)}</span>
-                  </div>
+                  </div> */}
                   <div className="border-t pt-3">
                     <div
                       className="flex justify-between text-lg sm:text-xl font-bold"
